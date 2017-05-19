@@ -100,13 +100,7 @@ class PluginManager
 	 */
 	public function resolveClassPath($properties)
 	{
-		$path = $properties['path'];
-
-		if ($properties['location'] === 'local') {
-			return $path;
-		}
-
-		return $path .'src' .DS;
+		return $properties['path'] .'src' .DS;
 	}
 
 	/**
