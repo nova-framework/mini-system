@@ -1,0 +1,38 @@
+{
+    "name": "nova-framework/mini-system",
+    "type": "project",
+    "description": "Mini MVC Framework for PHP 5.6+",
+    "homepage": "https://github.com/nova-framework/mini-system",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Virgil-Adrian Teaca",
+            "email": "virgil@giulianaeassociati.com",
+            "homepage": "http://giulianaeassociati.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=5.6.0",
+        "danielstjules/stringy": "~1.8",
+        "nesbot/carbon": "^1.21",
+        "doctrine/inflector": "1.1.*",
+        "symfony/console": "3.1.*",
+        "symfony/finder": "3.1.*",
+        "symfony/debug": "3.1.*",
+        "symfony/http-foundation": "3.1.*",
+        "symfony/http-kernel": "3.1.*",
+        "monolog/monolog": "1.*",
+        "swiftmailer/swiftmailer": "^5.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Mini\\" : "src/"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
+    },
+    "prefer-stable": true,
+    "minimum-stability": "dev"
+}
