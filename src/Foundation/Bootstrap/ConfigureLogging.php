@@ -47,7 +47,8 @@ class ConfigureLogging
 	 */
 	protected function configureHandlers(Application $app, Writter $log)
 	{
-		$method = 'configure' .ucfirst($app['config']['app.log']) .'Handler';
+		//$method = 'configure' .ucfirst($app['config']['app.log']) .'Handler';
+		$method = 'configureSingleHandler';
 
 		call_user_func(array($this, $method), $app, $log);
 	}

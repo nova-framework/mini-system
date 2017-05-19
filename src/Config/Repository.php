@@ -2,13 +2,13 @@
 
 namespace Mini\Config;
 
-use Mini\Support\Arr;
+use Mini\Support\NamespacedItemResolver;
 
 use Closure;
 use ArrayAccess;
 
 
-class Repository implements ArrayAccess
+class Repository extends NamespacedItemResolver implements ArrayAccess
 {
 	/**
 	 * The loader implementation.
@@ -18,22 +18,45 @@ class Repository implements ArrayAccess
 	protected $loader;
 
 	/**
+	 * The current environment.
+	 *
+	 * @var string
+	 */
+	protected $environment;
+
+	/**
 	 * All of the configuration items.
 	 *
 	 * @var array
 	 */
 	protected $items = array();
 
+	/**
+	 * All of the registered packages.
+	 *
+	 * @var array
+	 */
+	protected $packages = array();
+
+	/**
+	 * The after load callbacks for namespaces.
+	 *
+	 * @var array
+	 */
+	protected $afterLoad = array();
 
 	/**
 	 * Create a new configuration repository.
 	 *
 	 * @param  \Mini\Config\LoaderInterface  $loader
+	 * @param  string  $environment
 	 * @return void
 	 */
-	public function __construct(LoaderInterface $loader)
+	public function __construct(LoaderInterface $loader, $environment)
 	{
 		$this->loader = $loader;
+
+		$this->environment = $environment;
 	}
 
 	/**
@@ -57,7 +80,7 @@ class Repository implements ArrayAccess
 	 */
 	public function hasGroup($key)
 	{
-		list($group, $item) = $this->parseKey($key);
+		list($namespace, $group, $item) = $this->parseKey($key);
 
 		return $this->loader->exists($group, $namespace);
 	}
@@ -71,11 +94,13 @@ class Repository implements ArrayAccess
 	 */
 	public function get($key, $default = null)
 	{
-		list($group, $item) = $this->parseKey($key);
+		list($namespace, $group, $item) = $this->parseKey($key);
 
-		$this->load($group);
+		$collection = $this->getCollection($group, $namespace);
 
-		return Arr::get($this->items[$group], $item, $default);
+		$this->load($group, $namespace, $collection);
+
+		return array_get($this->items[$collection], $item, $default);
 	}
 
 	/**
@@ -87,15 +112,16 @@ class Repository implements ArrayAccess
 	 */
 	public function set($key, $value)
 	{
-		list($group, $item) = $this->parseKey($key);
+		list($namespace, $group, $item) = $this->parseKey($key);
 
-		//
-		$this->load($group);
+		$collection = $this->getCollection($group, $namespace);
+
+		$this->load($group, $namespace, $collection);
 
 		if (is_null($item)) {
-			$this->items[$group] = $value;
+			$this->items[$collection] = $value;
 		} else {
-			Arr::set($this->items[$group], $item, $value);
+			array_set($this->items[$collection], $item, $value);
 		}
 	}
 
@@ -107,22 +133,163 @@ class Repository implements ArrayAccess
 	 * @param  string  $collection
 	 * @return void
 	 */
-	protected function load($group)
+	protected function load($group, $namespace, $collection)
 	{
-		if (! isset($this->items[$group])) {
-			$this->items[$group] = $this->loader->load($group);
+		$env = $this->environment;
+
+		if (isset($this->items[$collection])) {
+			return;
 		}
+
+		$items = $this->loader->load($env, $group, $namespace);
+
+		if (isset($this->afterLoad[$namespace])) {
+			$items = $this->callAfterLoad($namespace, $group, $items);
+		}
+
+		$this->items[$collection] = $items;
 	}
 
 	/**
-	 * Parse a key into group, and item.
+	 * Call the after load callback for a namespace.
+	 *
+	 * @param  string  $namespace
+	 * @param  string  $group
+	 * @param  array   $items
+	 * @return array
+	 */
+	protected function callAfterLoad($namespace, $group, $items)
+	{
+		$callback = $this->afterLoad[$namespace];
+
+		return call_user_func($callback, $this, $group, $items);
+	}
+
+	/**
+	 * Parse an array of namespaced segments.
 	 *
 	 * @param  string  $key
 	 * @return array
 	 */
-	public function parseKey($key)
+	protected function parseNamespacedSegments($key)
 	{
-		return array_pad(explode('.', $key, 2), 2, null);
+		list($namespace, $item) = explode('::', $key);
+
+		if (array_key_exists($namespace, $this->packages)) {
+			return $this->parsePackageSegments($key, $namespace, $item);
+		}
+
+		return parent::parseNamespacedSegments($key);
+	}
+
+	/**
+	 * Parse the segments of a package namespace.
+	 *
+	 * @param  string  $key
+	 * @param  string  $namespace
+	 * @param  string  $item
+	 * @return array
+	 */
+	protected function parsePackageSegments($key, $namespace, $item)
+	{
+		$itemSegments = explode('.', $item);
+
+		if (! $this->loader->exists($itemSegments[0], $namespace)) {
+			return array($namespace, 'config', $item);
+		}
+
+		return parent::parseNamespacedSegments($key);
+	}
+
+	/**
+	 * Register a Package for cascading configuration.
+	 *
+	 * @param  string  $package
+	 * @param  string  $hint
+	 * @param  string  $namespace
+	 * @return void
+	 */
+	public function package($package, $hint, $namespace = null)
+	{
+		$namespace = $this->getPackageNamespace($package, $namespace);
+
+		$this->packages[$namespace] = $package;
+
+		$this->addNamespace($namespace, $hint);
+
+		$this->afterLoading($namespace, function($me, $group, $items) use ($package)
+		{
+			$env = $me->getEnvironment();
+
+			$loader = $me->getLoader();
+
+			return $loader->cascadePackage($env, $package, $group, $items);
+		});
+	}
+
+	/**
+	 * Get the configuration namespace for a Package.
+	 *
+	 * @param  string  $package
+	 * @param  string  $namespace
+	 * @return string
+	 */
+	protected function getPackageNamespace($package, $namespace)
+	{
+		if (is_null($namespace)) {
+			list($vendor, $namespace) = explode('/', $package);
+		}
+
+		return $namespace;
+	}
+
+	/**
+	 * Register an after load callback for a given namespace.
+	 *
+	 * @param  string   $namespace
+	 * @param  \Closure  $callback
+	 * @return void
+	 */
+	public function afterLoading($namespace, Closure $callback)
+	{
+		$this->afterLoad[$namespace] = $callback;
+	}
+
+	/**
+	 * Get the collection identifier.
+	 *
+	 * @param  string  $group
+	 * @param  string  $namespace
+	 * @return string
+	 */
+	protected function getCollection($group, $namespace = null)
+	{
+		$namespace = $namespace ?: '*';
+
+		return $namespace .'::' .$group;
+	}
+
+	/**
+	 * Add a new namespace to the loader.
+	 *
+	 * @param  string  $namespace
+	 * @param  string  $hint
+	 * @return void
+	 */
+	public function addNamespace($namespace, $hint)
+	{
+		$this->loader->addNamespace($namespace, $hint);
+	}
+
+	/**
+	 * Returns all registered namespaces with the config
+	 * loader.
+	 *
+	 * @return array
+	 */
+	public function getNamespaces()
+	{
+		return $this->loader->getNamespaces();
 	}
 
 	/**
@@ -144,6 +311,36 @@ class Repository implements ArrayAccess
 	public function setLoader(LoaderInterface $loader)
 	{
 		$this->loader = $loader;
+	}
+
+	/**
+	 * Get the current configuration environment.
+	 *
+	 * @return string
+	 */
+	public function getEnvironment()
+	{
+		return $this->environment;
+	}
+
+	/**
+	 * Get the after load callback array.
+	 *
+	 * @return array
+	 */
+	public function getAfterLoadCallbacks()
+	{
+		return $this->afterLoad;
+	}
+
+	/**
+	 * Get the current configuration packages.
+	 *
+	 * @return string
+	 */
+	public function getPackages()
+	{
+		return $this->packages;
 	}
 
 	/**

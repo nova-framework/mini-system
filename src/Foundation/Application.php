@@ -5,6 +5,7 @@ namespace Mini\Foundation;
 use Mini\Config\FileLoader;
 use Mini\Container\Container;
 use Mini\Events\EventServiceProvider;
+use Mini\Filesystem\Filesystem;
 use Mini\Foundation\EnvironmentDetector;
 use Mini\Foundation\ProviderRepository;
 use Mini\Http\Request;
@@ -613,6 +614,7 @@ class Application extends Container
 			'cookie'		=> 'Mini\Cookie\CookieJar',
 			'encrypter'	 	=> 'Mini\Encryption\Encrypter',
 			'events'		=> 'Mini\Events\Dispatcher',
+			'files'			=> 'Mini\Filesystem\Filesystem',
 			'redirect'		=> 'Mini\Routing\Redirector',
 			'request'		=> 'Mini\Http\Request',
 			'router'		=> 'Mini\Routing\Router',
@@ -637,7 +639,7 @@ class Application extends Container
 	 */
 	public function getConfigLoader()
 	{
-		return new FileLoader($this['path'] .DS .'Config');
+		return new FileLoader(new Filesystem, $this['path'] .DS .'Config');
 	}
 
 	/**

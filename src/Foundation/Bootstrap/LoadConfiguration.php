@@ -20,7 +20,7 @@ class LoadConfiguration
 	{
 		// Register the Config Repository.
 		$app->instance('config', $config = new Repository(
-			$app->getConfigLoader()
+			$app->getConfigLoader(), $app->environment()
 		));
 
 		// Set the default Timezone.
