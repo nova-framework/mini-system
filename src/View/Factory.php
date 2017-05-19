@@ -86,12 +86,12 @@ class Factory
 	 * Create a View instance
 	 *
 	 * @param string $path
-	 * @param array|string $data
-	 * @param string|null $module
+	 * @param array $data
+	 * @param array $mergeData
 	 * @return \Nova\View\View
 	 * @throws \BadMethodCallException
 	 */
-	public function make($view, $data = array())
+	public function make($view, $data = array(), $mergeData = array())
 	{
 		$path = $this->findViewFile($view);
 
@@ -99,7 +99,9 @@ class Factory
 			throw new BadMethodCallException("File path [$path] does not exist");
 		}
 
-		return new View($this, $this->getEngineFromPath($path), $view, $path, $this->parseData($data));
+		$data = array_merge($mergeData, $this->parseData($data));
+
+		return new View($this, $this->getEngineFromPath($path), $view, $path, $data);
 	}
 
 	/**
