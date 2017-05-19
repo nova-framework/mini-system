@@ -47,9 +47,6 @@ class PluginManager
 		$plugins->each(function($properties)
 		{
 			$this->registerServiceProvider($properties);
-
-			// The Assets Namespace will be registered only for Themes.
-			//$this->registerAssetsNamespace($properties);
 		});
 	}
 
@@ -77,31 +74,6 @@ class PluginManager
 			$this->app->register($serviceProvider);
 		} else if (class_exists($classicProvider)) {
 			$this->app->register($classicProvider);
-		}
-	}
-
-	/**
-	 * Register the Module Service Provider.
-	 *
-	 * @param string $properties
-	 *
-	 * @return string
-	 */
-	protected function registerAssetsNamespace($properties)
-	{
-		if ($properties['theme'] === false) return;
-
-		//
-		$directory = 'assets';
-
-		if ($properties['location'] === 'local') {
-			$directory = ucfirst($directory);
-		}
-
-		$path = $properties['path'] .$directory;
-
-		if ($this->app['files']->isDirectory($path)) {
-			$this->app['assets']->addNamespace($properties['slug'], $path);
 		}
 	}
 
@@ -135,27 +107,6 @@ class PluginManager
 		}
 
 		return $path .'src' .DS;
-	}
-
-	/**
-	 * Resolve the correct module files path.
-	 *
-	 * @param array  $properties
-	 * @param string $path
-	 *
-	 * @return string
-	 */
-	public function resolveAssetPath($properties, $path)
-	{
-		$directory = 'assets';
-
-		if ($properties['location'] === 'local') {
-			$directory = ucfirst($directory);
-		}
-
-		$basePath = $properties['path'] .$directory;
-
-		return $basePath .DS .str_replace('/', DS, $path);
 	}
 
 	/**
