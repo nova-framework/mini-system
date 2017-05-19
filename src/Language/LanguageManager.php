@@ -66,11 +66,10 @@ class LanguageManager
 		// Setup the default path hints.
 		$this->hints = array(
 			// Namespace for the Framework path.
-			'nova'		=> dirname(__DIR__) .DS .'Language',
+			'nova' => dirname(__DIR__) .DS .'Language',
 
-			// Namespaces for the Site paths.
-			'app'		=> APPPATH .'Language',
-			'shared'	=> BASEPATH .'shared' .DS .'Language',
+			// Namespaces for the Application paths.
+			'app'  => APPPATH .'Language',
 		);
 	}
 
