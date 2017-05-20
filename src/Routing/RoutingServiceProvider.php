@@ -2,6 +2,7 @@
 
 namespace Mini\Routing;
 
+use Mini\Routing\Assets\Router as AssetsRouter;
 use Mini\Routing\Redirector;
 use Mini\Routing\ResponseFactory;
 use Mini\Routing\Router;
@@ -26,6 +27,8 @@ class RoutingServiceProvider extends ServiceProvider
 		$this->registerRedirector();
 
 		$this->registerResponseFactory();
+
+		$this->registerAssetDispatcher();
 	}
 
 	/**
@@ -95,6 +98,19 @@ class RoutingServiceProvider extends ServiceProvider
 		$this->app->singleton('response.factory', function ($app)
 		{
 			return new ResponseFactory();
+		});
+	}
+
+	/**
+	 * Register the Assets Dispatcher.
+	 *
+	 * @return void
+	 */
+	protected function registerAssetDispatcher()
+	{
+		$this->app->bindShared('assets', function($app)
+		{
+			return new AssetsRouter($app, $app['files']);
 		});
 	}
 }
