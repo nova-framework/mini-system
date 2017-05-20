@@ -38,7 +38,7 @@ class ServeAsset
 	 */
 	public function handle($request, Closure $next)
 	{
-		$assets = $this->app['assets.router'];
+		$assets = $this->app['asset.router'];
 
 		return $assets->dispatch($request) ?: $next($request);
 	}

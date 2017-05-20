@@ -87,7 +87,7 @@ abstract class ServiceProvider
 		$path = dirname($path) .DS .'webroot';
 
 		if ($this->app['files']->isDirectory($path)) {
-			$this->app['assets.router']->package($package, $path, $namespace);
+			$this->app['asset.router']->package($package, $path, $namespace);
 		}
 	}
 

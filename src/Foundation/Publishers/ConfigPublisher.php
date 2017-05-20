@@ -1,6 +1,6 @@
 <?php
 
-namespace Mini\Foundation;
+namespace Mini\Foundation\Publishers;
 
 use Mini\Config\Repository as Config;
 use Mini\Filesystem\Filesystem;
@@ -139,7 +139,7 @@ class ConfigPublisher
 			throw new \InvalidArgumentException("Configuration not found.");
 		}
 
-		return $this->publishPath .str_replace('/', DS, "/Packages/{$namespace}");
+		return $this->publishPath .str_replace('/', DS, "/Plugins/{$namespace}");
 	}
 
 }

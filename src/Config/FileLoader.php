@@ -143,7 +143,7 @@ class FileLoader implements LoaderInterface
 	{
 		$group = ucfirst($group);
 
-		$file = str_replace('/', DS, "Packages/{$package}/{$group}.php");
+		$file = str_replace('/', DS, "Plugins/{$package}/{$group}.php");
 
 		if ($this->files->exists($path = $this->defaultPath .DS .$file)) {
 			$items = array_merge(

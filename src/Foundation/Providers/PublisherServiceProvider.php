@@ -3,7 +3,9 @@
 namespace Mini\Foundation\Providers;
 
 use Mini\Support\ServiceProvider;
-use Mini\Foundation\ConfigPublisher;
+use Mini\Foundation\Publishers\AssetPublisher;
+use Mini\Foundation\Publishers\ConfigPublisher;
+use Mini\Foundation\Console\AssetPublishCommand;
 use Mini\Foundation\Console\ConfigPublishCommand;
 
 
@@ -23,9 +25,47 @@ class PublisherServiceProvider extends ServiceProvider
 	 */
 	public function register()
 	{
+		$this->registerAssetPublisher();
+
 		$this->registerConfigPublisher();
 
-		$this->commands('command.config.publish');
+		$this->commands(
+			'command.asset.publish', 'command.config.publish'
+		);
+	}
+
+	/**
+	 * Register the asset publisher service and command.
+	 *
+	 * @return void
+	 */
+	protected function registerAssetPublisher()
+	{
+		$this->registerAssetPublishCommand();
+
+		$this->app->bindShared('asset.publisher', function($app)
+		{
+			$publicPath = $app['path.public'];
+
+			$publisher = new AssetPublisher($app['files'], $publicPath);
+
+			$publisher->setPackagePath($app['path.base'] .DS .'vendor');
+
+			return $publisher;
+		});
+	}
+
+	/**
+	 * Register the asset publish console command.
+	 *
+	 * @return void
+	 */
+	protected function registerAssetPublishCommand()
+	{
+		$this->app->bindShared('command.asset.publish', function($app)
+		{
+			return new AssetPublishCommand($app['asset.router'], $app['asset.publisher']);
+		});
 	}
 
 	/**
@@ -69,7 +109,10 @@ class PublisherServiceProvider extends ServiceProvider
 	 */
 	public function provides()
 	{
-		return array('config.publisher', 'command.config.publish');
+		return array(
+			'asset.publisher', 'command.asset.publish',
+			'config.publisher', 'command.config.publish'
+		);
 	}
 
 }

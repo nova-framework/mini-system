@@ -77,9 +77,9 @@ class Router
 		$this->cacheControl  = $config->get('assets.cache', array());
 
 		// The Asset Route for Plugins.
-		$this->route('plugins/([^/]+)/assets/(.*)', function ($plugin, $path)
+		$this->route('plugins/([^/]+)/(.*)', function ($package, $path)
 		{
-			if (! is_null($namedPath = $this->findNamedPath($plugin))) {
+			if (! is_null($namedPath = $this->findNamedPath($package))) {
 				return $namedPath .DS .str_replace('/', DS, $path);
 			}
 
@@ -190,7 +190,19 @@ class Router
 	}
 
 	/**
-	 * Returns all registered namespaces with the manager.
+	 * Get a namespace hint from the router.
+	 *
+	 * @param  string  $namespace
+	 * @param  string  $hint
+	 * @return void
+	 */
+	public function getNamespace($namespace)
+	{
+		return $this->findNamedPath($namespace);
+	}
+
+	/**
+	 * Returns all registered namespaces with the router.
 	 *
 	 * @return array
 	 */

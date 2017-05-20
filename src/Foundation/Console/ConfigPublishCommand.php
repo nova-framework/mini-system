@@ -4,7 +4,7 @@ namespace Mini\Foundation\Console;
 
 use Mini\Console\Command;
 use Mini\Console\ConfirmableTrait;
-use Mini\Foundation\ConfigPublisher;
+use Mini\Foundation\Publishers\ConfigPublisher;
 
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
