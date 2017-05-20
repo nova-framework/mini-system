@@ -1,6 +1,6 @@
 <?php
 
-namespace Mini\Assets\Middleware;
+namespace Mini\Routing\Middleware;
 
 use Mini\Foundation\Application;
 
