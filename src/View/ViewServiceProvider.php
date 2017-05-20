@@ -2,10 +2,11 @@
 
 namespace Mini\View;
 
-use Mini\View\Engines\Engine as DefaultEngine;
 use Mini\View\Engines\EngineResolver;
+use Mini\View\Engines\PhpEngine;
 use Mini\View\Engines\TemplateEngine;
 use Mini\View\Factory;
+use Mini\View\FileViewFinder;
 use Mini\View\Template;
 use Mini\Support\ServiceProvider;
 
@@ -29,6 +30,8 @@ class ViewServiceProvider extends ServiceProvider
 		$this->registerTemplate();
 
 		$this->registerEngineResolver();
+
+		$this->registerViewFinder();
 
 		$this->registerFactory();
 	}
@@ -62,7 +65,7 @@ class ViewServiceProvider extends ServiceProvider
 			// Register the Default Engine instance.
 			$resolver->register('default', function()
 			{
-				return new DefaultEngine();
+				return new PhpEngine();
 			});
 
 			// Register the Template Engine instance.
@@ -86,11 +89,28 @@ class ViewServiceProvider extends ServiceProvider
 		{
 			$resolver = $app['view.engine.resolver'];
 
-			$factory = new Factory($resolver, $app['files']);
+			$finder = $app['view.finder'];
+
+			$factory = new Factory($resolver, $finder, $app['files']);
 
 			$factory->share('app', $app);
 
 			return $factory;
+		});
+	}
+
+	/**
+	 * Register the view finder implementation.
+	 *
+	 * @return void
+	 */
+	public function registerViewFinder()
+	{
+		$this->app->bindShared('view.finder', function($app)
+		{
+			$paths = $app['config']->get('view.paths', array());
+
+			return new FileViewFinder($app['files'], $paths);
 		});
 	}
 
@@ -101,6 +121,6 @@ class ViewServiceProvider extends ServiceProvider
 	 */
 	public function provides()
 	{
-		return array('view', 'template');
+		return array('view', 'view.engine.resolver', 'view.finder', 'template');
 	}
 }

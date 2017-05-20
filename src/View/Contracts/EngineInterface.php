@@ -1,6 +1,6 @@
 <?php
 
-namespace Mini\View\Engines;
+namespace Mini\View\Contracts;
 
 
 interface EngineInterface

@@ -4,7 +4,7 @@ namespace Mini\View;
 
 use Mini\Support\Contracts\ArrayableInterface;
 use Mini\Support\Contracts\RenderableInterface;
-use Mini\View\Engines\EngineInterface;
+use Mini\View\Contracts\EngineInterface;
 use Mini\View\Factory;
 
 use ArrayAccess;
@@ -25,7 +25,7 @@ class View implements ArrayAccess, RenderableInterface
 	/**
 	 * The View Engine instance.
 	 *
-	 * @var \Mini\View\Engines\EngineInterface
+	 * @var \Mini\View\Contracts\EngineInterface
 	 */
 	protected $engine;
 

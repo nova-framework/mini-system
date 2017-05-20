@@ -6,10 +6,12 @@ use Mini\Filesystem\Filesystem;
 use Mini\Support\Contracts\ArrayableInterface as Arrayable;
 use Mini\Support\Arr;
 use Mini\Support\Str;
+use Mini\View\Contracts\ViewFinderInterface;
 use Mini\View\Engines\EngineResolver;
 use Mini\View\View;
 
 use BadMethodCallException;
+use InvalidArgumentException;
 
 
 class Factory
@@ -20,6 +22,13 @@ class Factory
 	 * @var \Nova\View\Engines\EngineResolver
 	 */
 	protected $engines;
+
+	/**
+	 * The view finder implementation.
+	 *
+	 * @var \Nova\View\Contracts\ViewFinderInterface
+	 */
+	protected $finder;
 
 	/**
 	* The Filesystem instance.
@@ -74,9 +83,10 @@ class Factory
 	 *
 	 * @return void
 	 */
-	function __construct(EngineResolver $engines, Filesystem $files)
+	function __construct(EngineResolver $engines, ViewFinderInterface $finder, Filesystem $files)
 	{
 		$this->engines = $engines;
+		$this->finder  = $finder;
 		$this->files   = $files;
 
 		$this->share('__env', $this);
@@ -93,7 +103,7 @@ class Factory
 	 */
 	public function make($view, $data = array(), $mergeData = array())
 	{
-		$path = $this->findViewFile($view);
+		$path = $this->finder->find($view);
 
 		if (is_null($path) || ! is_readable($path)) {
 			throw new BadMethodCallException("File path [$path] does not exist");
@@ -136,9 +146,14 @@ class Factory
 	 */
 	public function exists($view)
 	{
-		$path = $this->findViewFile($view);
+		try {
+			$this->finder->find($view);
 
-		return ! is_null($path) && is_readable($path);
+		} catch (InvalidArgumentException $e) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
@@ -389,6 +404,29 @@ class Factory
 	}
 
 	/**
+	 * Add a location to the array of view locations.
+	 *
+	 * @param  string  $location
+	 * @return void
+	 */
+	public function addLocation($location)
+	{
+		$this->finder->addLocation($location);
+	}
+
+	/**
+	 * Add a new namespace to the loader.
+	 *
+	 * @param  string  $namespace
+	 * @param  string|array  $hints
+	 * @return void
+	 */
+	public function addNamespace($namespace, $hints)
+	{
+		$this->finder->addNamespace($namespace, $hints);
+	}
+
+	/**
 	 * Register a valid view extension and its engine.
 	 *
 	 * @param  string   $extension
@@ -398,6 +436,8 @@ class Factory
 	 */
 	public function addExtension($extension, $engine, $resolver = null)
 	{
+		$this->finder->addExtension($extension);
+
 		if (isset($resolver)) {
 			$this->engines->register($engine, $resolver);
 		}
@@ -425,6 +465,27 @@ class Factory
 	public function getEngineResolver()
 	{
 		return $this->engines;
+	}
+
+	/**
+	 * Get the view finder instance.
+	 *
+	 * @return \Mini\View\Contracts\ViewFinderInterface
+	 */
+	public function getFinder()
+	{
+		return $this->finder;
+	}
+
+	/**
+	 * Set the view finder instance.
+	 *
+	 * @param  \Mini\View\Contracts\ViewFinderInterface  $finder
+	 * @return void
+	 */
+	public function setFinder(ViewFinderInterface $finder)
+	{
+		$this->finder = $finder;
 	}
 
 	/**
@@ -457,34 +518,5 @@ class Factory
 	public function getSections()
 	{
 		return $this->sections;
-	}
-
-	/**
-	 * Get the view file.
-	 *
-	 * @param	string	 $view
-	 * @return	string
-	 */
-	protected function findViewFile($view)
-	{
-		if (isset($this->views[$view])) {
-			return $this->views[$view];
-		}
-
-		// Compute the view file path (without extension).
-		$viewPath = APPPATH .str_replace('/', DS, "Views/$view");
-
-		// Get all possible file paths, with one of the known extensions.
-		$paths = array_map(function($extension) use ($viewPath)
-		{
-			return $viewPath .'.' .$extension;
-
-		}, array_keys($this->extensions));
-
-		foreach($paths as $path) {
-			if ($this->files->exists($path)) {
-				return $this->views[$view] = $path;
-			}
-		}
 	}
 }

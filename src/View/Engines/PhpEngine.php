@@ -2,12 +2,12 @@
 
 namespace Mini\View\Engines;
 
-use Mini\View\Engines\EngineInterface;
+use Mini\View\Contracts\EngineInterface;
 
 use Exception;
 
 
-class Engine implements EngineInterface
+class PhpEngine implements EngineInterface
 {
 
 	/**

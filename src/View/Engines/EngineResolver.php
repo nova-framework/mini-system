@@ -39,7 +39,7 @@ class EngineResolver
 	 * Resolve an Engine instance by name.
 	 *
 	 * @param  string  $engine
-	 * @return \Mini\View\Engines\EngineInterface
+	 * @return \Mini\View\Contracts\EngineInterface
 	 */
 	public function resolve($engine)
 	{

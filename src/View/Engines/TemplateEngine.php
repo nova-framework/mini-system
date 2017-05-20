@@ -2,7 +2,7 @@
 
 namespace Mini\View\Engines;
 
-use Mini\View\Engines\Engine;
+use Mini\View\Engines\PhpEngine;
 use Mini\View\Template;
 use Mini\Support\Str;
 
@@ -11,7 +11,7 @@ use Symfony\Component\Debug\Exception\FatalThrowableError;
 use ErrorException;
 
 
-class TemplateEngine extends Engine
+class TemplateEngine extends PhpEngine
 {
 	/**
 	 * The Template instance.

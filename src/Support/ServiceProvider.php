@@ -62,7 +62,7 @@ abstract class ServiceProvider
 		//
 		$path = $path ?: $this->guessPackagePath();
 
-		// Determine the Package Configuration path.
+		// Determine the Package Config path.
 		$config = $path .DS .'Config';
 
 		if ($this->app['files']->isDirectory($config)) {
@@ -74,6 +74,13 @@ abstract class ServiceProvider
 
 		if ($this->app['files']->isDirectory($language)) {
 			$this->app['language']->package($package, $language, $namespace);
+		}
+
+		// Determine the Package Views path.
+		$views = $path .DS .'Views';
+
+		if ($this->app['files']->isDirectory($views)) {
+			$this->app['view']->addNamespace($package, $views);
 		}
 	}
 
@@ -101,7 +108,7 @@ abstract class ServiceProvider
 	protected function getPackageNamespace($package, $namespace)
 	{
 		if (is_null($namespace)) {
-			list($vendor, $namespace) = explode('/', $package);
+			list(, $namespace) = array_pad(explode('/', $package, 2), 2, $package);
 
 			return Str::snake($namespace);
 		}
