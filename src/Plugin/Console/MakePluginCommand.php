@@ -50,6 +50,7 @@ class MakePluginCommand extends Command
 		'src/Config/Config.php',
 		'src/Providers/PluginServiceProvider.php',
 		'README.md',
+		'composer.json'
 	);
 
 	/**
@@ -61,6 +62,7 @@ class MakePluginCommand extends Command
 		'config',
 		'plugin-service-provider',
 		'readme',
+		'composer'
 	);
 
 	/**
@@ -82,7 +84,8 @@ class MakePluginCommand extends Command
 	 *
 	 * @var array
 	 */
-	protected $container = array();
+	protected $data = array();
+
 
 	/**
 	 * Create a new command instance.
@@ -108,19 +111,51 @@ class MakePluginCommand extends Command
 	{
 		$name = $this->argument('name');
 
+		if (strpos($name, '/') > 0) {
+			list ($vendor, $name) = explode('/', $name);
+		} else {
+			$vendor = null;
+		}
+
 		if (Str::length($name) > 3) {
 			$slug = Str::snake($name);
 		} else {
 			$slug = Str::lower($name);
 		}
 
-		$this->container['slug'] = $slug;
+		$this->data['slug'] = $slug;
 
 		//
-		$name = (Str::length($slug) > 3) ? Str::studly($slug) : Str::upper($slug);
+		if (Str::length($slug) > 3) {
+			$name = Str::studly($slug);
+		} else {
+			$name = Str::upper($slug);
+		}
 
-		$this->container['name']	  = $name;
-		$this->container['namespace'] = $name;
+		$this->data['name'] = $name;
+
+		//
+		$otherSlug = str_replace('_', '-', $slug);
+
+		if (! is_null($vendor)) {
+			$package = Str::studly($vendor) .'/' .$name;
+
+			$this->data['lower_package'] = Str::snake($vendor, '-') .'/' .$otherSlug;
+		} else {
+			$package = $name;
+
+			$this->data['lower_package'] = $otherSlug;
+		}
+
+		$this->data['package'] = $package;
+
+		$this->data['namespace'] = str_replace('/', '\\', $package);
+
+		//
+		$config = $this->container['config'];
+
+		$this->data['author'] = $config->get('plugins.author.name');
+		$this->data['email']  = $config->get('plugins.author.email');
 
 		if ($this->option('quick')) {
 			return $this->generate();
@@ -137,11 +172,11 @@ class MakePluginCommand extends Command
 	 */
 	private function stepOne()
 	{
-		$this->container['name'] = $this->ask('Please enter the name of the plugin:', $this->container['name']);
+		$this->data['name'] = $this->ask('Please enter the name of the plugin:', $this->data['name']);
 
 		$this->comment('You have provided the following information:');
 
-		$this->comment('Name:		'.$this->container['name']);
+		$this->comment('Name:		'.$this->data['name']);
 
 		if ($this->confirm('Do you wish to continue?')) {
 			$this->generate();
@@ -157,27 +192,40 @@ class MakePluginCommand extends Command
 	 */
 	protected function generate()
 	{
+		$slug = $this->data['slug'];
+
+		if ($this->files->exists($this->getPluginPath($slug))) {
+            $this->error('The Plugin [' .$slug .'] already exists!');
+
+            return false;
+        }
+
 		$steps = array(
-			'Generating folders...'	  => 'generateFolders',
-			'Generating files...'		=> 'generateFiles',
-			'Generating .gitkeep...'	 => 'generateGitkeep',
+			'Generating folders...'				=> 'generateFolders',
+			'Generating files...'				=> 'generateFiles',
+			'Generating .gitkeep ...'			=> 'generateGitkeep',
+			'Updating the composer.json ...'	=> 'updateComposerJson',
 		);
 
 		$progress = new ProgressBar($this->output, count($steps));
 
 		$progress->start();
 
-		foreach ($steps as $message => $function) {
+		foreach ($steps as $message => $method) {
 			$progress->setMessage($message);
 
-			$this->$function();
+			call_user_func(array($this, $method));
 
 			$progress->advance();
 		}
 
 		$progress->finish();
 
-		$this->info("\nPlugin generated successfully.");
+		$this->info("\nGenerating optimized class loader");
+
+		$this->container['composer']->dumpOptimized();
+
+		$this->info("Plugin generated successfully.");
 	}
 
 	/**
@@ -185,7 +233,7 @@ class MakePluginCommand extends Command
 	 */
 	protected function generateFolders()
 	{
-		$slug = $this->container['slug'];
+		$slug = $this->data['slug'];
 
 		//
 		$path = $this->plugin->getPath();
@@ -230,7 +278,7 @@ class MakePluginCommand extends Command
 		}
 
 		// Generate the Language files
-		$slug = $this->container['slug'];
+		$slug = $this->data['slug'];
 
 		$pluginPath = $this->getPluginPath($slug);
 
@@ -253,7 +301,7 @@ return array (
 	 */
 	protected function generateGitkeep()
 	{
-		$slug = $this->container['slug'];
+		$slug = $this->data['slug'];
 
 		$pluginPath = $this->getPluginPath($slug);
 
@@ -269,6 +317,28 @@ return array (
 
 			$this->files->put($gitkeep, '');
 		}
+	}
+
+	/**
+	 * Update the composer.json and run the Composer.
+	 */
+	protected function updateComposerJson()
+	{
+		$composerJson = getenv('COMPOSER') ?: 'composer.json';
+
+		$path = base_path($composerJson);
+
+		// Read and update the file contents.
+		$config = json_decode(file_get_contents($path), true);
+
+		$namespace = $this->data['namespace'] .'\\';
+
+		$config['autoload']['psr-4'][$namespace] = 'plugins/' . $this->data['name'] . "/src/";
+
+		// Write the patched contents to file.
+		$output = json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\n";
+
+		file_put_contents($path, $output);
 	}
 
 	/**
@@ -291,7 +361,7 @@ return array (
 	{
 		$paths = array();
 
-		$languages = $this->nova['config']['languages'];
+		$languages = $this->container['config']['languages'];
 
 		foreach (array_keys($languages) as $code) {
 			$paths[] = 'src' .DS .'Language' .DS .strtoupper($code);
@@ -309,7 +379,9 @@ return array (
 	 */
 	protected function getDestinationFile($file)
 	{
-		return $this->getPluginPath($this->container['slug']) .$this->formatContent($file);
+		$slug = $this->data['slug'];
+
+		return $this->getPluginPath($slug) .$this->formatContent($file);
 	}
 
 	/**
@@ -341,14 +413,22 @@ return array (
 			'{{slug}}',
 			'{{name}}',
 			'{{namespace}}',
-			'{{path}}'
+			'{{package}}',
+			'{{lower_package}}',
+			'{{author}}',
+			'{{email}}',
+			'{{json_namespace}}',
 		);
 
 		$replaces = array(
-			$this->container['slug'],
-			$this->container['name'],
-			$this->container['namespace'],
-			$this->plugin->getNamespace(),
+			$this->data['slug'],
+			$this->data['name'],
+			$this->data['namespace'],
+			$this->data['package'],
+			$this->data['lower_package'],
+			$this->data['author'],
+			$this->data['email'],
+			str_replace('/', '\\\\', $this->data['package'])
 		);
 
 		return str_replace($searches, $replaces, $content);

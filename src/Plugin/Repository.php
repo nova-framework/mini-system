@@ -153,23 +153,6 @@ class Repository
 			$plugins->put($name, array('path' => $pluginPath .DS, 'location' => $location));
 		}
 
-		// Retrieve the local Plugins information.
-
-		try {
-			$paths = collect($this->files->directories($path));
-
-			$paths->each(function ($path) use ($plugins) {
-				$plugin = basename($path);
-
-				if (! $plugins->has($plugin)) {
-					$plugins->put($plugin, array('path' => $path .DS, 'location' => 'local'));
-				}
-			});
-
-		} catch (InvalidArgumentException $e) {
-			// Do nothing.
-		}
-
 		// Process the retrieved information to generate their records.
 
 		$items = $plugins->map(function ($properties, $name)

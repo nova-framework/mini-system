@@ -5,8 +5,10 @@ namespace Mini\Foundation\Providers;
 use Mini\Foundation\Console\UpCommand;
 use Mini\Foundation\Console\DownCommand;
 use Mini\Foundation\Console\ServeCommand;
+use Mini\Foundation\Console\OptimizeCommand;
 use Mini\Foundation\Console\RouteListCommand;
 use Mini\Foundation\Console\KeyGenerateCommand;
+use Mini\Foundation\Console\EnvironmentCommand;
 use Mini\Foundation\Console\ViewClearCommand;
 
 use Mini\Support\ServiceProvider;
@@ -28,7 +30,9 @@ class ForgeServiceProvider extends ServiceProvider
 	 */
 	protected $commands = array(
 		'Down'			=> 'command.down',
+		'Environment'	=> 'command.environment',
 		'KeyGenerate'	=> 'command.key.generate',
+		'Optimize'		=> 'command.optimize',
 		'RouteList'		=> 'command.route.list',
 		'Serve'			=> 'command.serve',
 		'Up'			=> 'command.up',
@@ -69,11 +73,37 @@ class ForgeServiceProvider extends ServiceProvider
 	 *
 	 * @return void
 	 */
+	protected function registerEnvironmentCommand()
+	{
+		$this->app->singleton('command.environment', function ()
+		{
+			return new EnvironmentCommand;
+		});
+	}
+
+	/**
+	 * Register the command.
+	 *
+	 * @return void
+	 */
 	protected function registerKeyGenerateCommand()
 	{
 		$this->app->singleton('command.key.generate', function ($app)
 		{
 			return new KeyGenerateCommand($app['files']);
+		});
+	}
+
+	/**
+	 * Register the command.
+	 *
+	 * @return void
+	 */
+	protected function registerOptimizeCommand()
+	{
+		$this->app->singleton('command.optimize', function ($app)
+		{
+			return new OptimizeCommand($app['composer']);
 		});
 	}
 

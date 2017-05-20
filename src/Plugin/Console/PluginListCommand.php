@@ -32,7 +32,7 @@ class PluginListCommand extends Command
 	 *
 	 * @var array
 	 */
-	protected $headers = ['Package', 'Slug', 'Config Files', 'Translations', 'Location'];
+	protected $headers = ['Package', 'Slug', 'Location'];
 
 	/**
 	 * Create a new command instance.
@@ -89,9 +89,6 @@ class PluginListCommand extends Command
 	 */
 	protected function getPluginInformation($plugin)
 	{
-		$config   = $plugin['path'] .'Config';
-		$language = $plugin['path'] .'Language';
-
 		if ($plugin['location'] === 'local') {
 			$location = 'Local';
 		} else {
@@ -101,8 +98,6 @@ class PluginListCommand extends Command
 		return array(
 			'name'	 => $plugin['name'],
 			'slug'	 => $plugin['slug'],
-			'config'   => is_dir($config)   ? 'Yes' : 'No',
-			'language' => is_dir($language) ? 'Yes' : 'No',
 			'location' => $location,
 		);
 	}
