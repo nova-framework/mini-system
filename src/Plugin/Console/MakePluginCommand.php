@@ -227,10 +227,10 @@ class MakePluginCommand extends Command
 		$slug = $this->data['slug'];
 
 		if ($this->files->exists($this->getPluginPath($slug))) {
-            $this->error('The Plugin [' .$slug .'] already exists!');
+			$this->error('The Plugin [' .$slug .'] already exists!');
 
-            return false;
-        }
+			return false;
+		}
 
 		$steps = array(
 			'Generating folders...'				=> 'generateFolders',

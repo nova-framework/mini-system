@@ -209,41 +209,41 @@ class Repository
 		return false;
 	}
 
-    /**
-     * Write the service cache file to disk.
-     *
-     * @param  array  $plugins
-     * @param  string $cachePath
-     * @return void
-     */
-    public function writeCache($cachePath, $plugins)
-    {
-        $data = array();
+	/**
+	 * Write the service cache file to disk.
+	 *
+	 * @param  array  $plugins
+	 * @param  string $cachePath
+	 * @return void
+	 */
+	public function writeCache($cachePath, $plugins)
+	{
+		$data = array();
 
-        foreach ($plugins->all() as $key => $plugin) {
-            $properties = ($plugin instanceof Collection) ? $module->all() : $plugin;
+		foreach ($plugins->all() as $key => $plugin) {
+			$properties = ($plugin instanceof Collection) ? $module->all() : $plugin;
 
-            // Normalize to *nix paths.
-            $properties['path'] = str_replace('\\', '/', $properties['path']);
+			// Normalize to *nix paths.
+			$properties['path'] = str_replace('\\', '/', $properties['path']);
 
-            //
-            ksort($properties);
+			//
+			ksort($properties);
 
-            $data[$key] = $properties;
-        }
+			$data[$key] = $properties;
+		}
 
-        //
-        $data = var_export($data, true);
+		//
+		$data = var_export($data, true);
 
-        $content = <<<PHP
+		$content = <<<PHP
 <?php
 
 return $data;
 
 PHP;
 
-        $this->files->put($cachePath, $content);
-    }
+		$this->files->put($cachePath, $content);
+	}
 
 	/**
 	 * Get the name for a Package.
