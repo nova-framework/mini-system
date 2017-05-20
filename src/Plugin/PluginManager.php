@@ -68,12 +68,8 @@ class PluginManager
 		// Calculate the name of Service Provider, including the namespace.
 		$serviceProvider = "{$namespace}\\Providers\\PluginServiceProvider";
 
-		$classicProvider = "{$namespace}\\{$basename}ServiceProvider";
-
 		if (class_exists($serviceProvider)) {
 			$this->app->register($serviceProvider);
-		} else if (class_exists($classicProvider)) {
-			$this->app->register($classicProvider);
 		}
 	}
 
