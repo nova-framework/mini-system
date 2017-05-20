@@ -110,7 +110,7 @@ class RoutingServiceProvider extends ServiceProvider
 	{
 		$this->app->bindShared('assets.router', function($app)
 		{
-			return new AssetsRouter($app, $app['files']);
+			return new AssetsRouter($app['files'], $app['config']);
 		});
 	}
 }

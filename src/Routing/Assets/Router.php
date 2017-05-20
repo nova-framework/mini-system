@@ -2,6 +2,7 @@
 
 namespace Mini\Routing\Assets;
 
+use Mini\Config\Repository as ConfigRepository;
 use Mini\Container\Container;
 use Mini\Filesystem\Filesystem;
 use Mini\Support\Facades\Response;
@@ -22,11 +23,11 @@ use LogicException;
 class Router
 {
 	/**
-	 * The container instance used by Dispatcher.
+	 * The Nova Filesystem instance.
 	 *
-	 * @var \Mini\Container\Container
+	 * @var \Mini\Filesystem\Filesystem
 	 */
-	protected $container;
+	protected $files;
 
 	/**
 	 * All of the registered Asset Routes.
@@ -41,13 +42,6 @@ class Router
 	 * @var array
 	 */
 	protected $hints = array();
-
-	/**
-	 * The Nova Filesystem instance.
-	 *
-	 * @var \Mini\Filesystem\Filesystem
-	 */
-	protected $files;
 
 	/**
 	 * Whether or not the CSS and JS files are automatically compressed.
@@ -74,32 +68,22 @@ class Router
 	 *
 	 * @return void
 	 */
-	public function __construct(Container $container, Filesystem $files)
+	public function __construct(Filesystem $files, ConfigRepository $config)
 	{
-		$this->container = $container;
-
 		$this->files = $files;
 
 		//
-		$config = $this->container['config'];
-
 		$this->compressFiles = $config->get('assets.compress', true);
 		$this->cacheControl  = $config->get('assets.cache', array());
-
-		// The Asset Route for default Assets folder.
-		$this->route('assets/(.*)', function ($path)
-		{
-			return base_path('assets') .DS .str_replace('/', DS, $path);
-		});
 
 		// The Asset Route for Plugins.
 		$this->route('plugins/([^/]+)/assets/(.*)', function ($plugin, $path)
 		{
-			if (is_null($namedPath = $this->findNamedPath($plugin))) {
-				return Response::make('File Not Found', 404);
+			if (! is_null($namedPath = $this->findNamedPath($plugin))) {
+				return $namedPath .DS .str_replace('/', DS, $path);
 			}
 
-			return $namedPath .DS .str_replace('/', DS, $path);
+			return Response::make('File Not Found', 404);
 		});
 	}
 
@@ -306,7 +290,7 @@ class Router
 		// Prepare against the Request instance.
 		$response->isNotModified($request);
 
-		return $response;
+		return $response->prepare($request);
 	}
 
 	protected function setupCacheControl(SymfonyResponse $response)

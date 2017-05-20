@@ -20,6 +20,34 @@ if (! function_exists('site_url'))
 	}
 }
 
+if (! function_exists('theme_url'))
+{
+    /**
+     * Resource URL helper
+     *
+     * @param string $path
+     * @param string $plugin
+     *
+     * @return string
+     */
+    function plugin_url($path, $plugin)
+    {
+        if (! Plugin::exists($plugin)) {
+            throw new LogicException("Plugin [$plugin] not found");
+        }
+
+        if (Str::length($plugin) > 3) {
+            $plugin = Str::snake($plugin, '-');
+        } else {
+            $plugin = Str::lower($plugin);
+        }
+
+        $path = 'plugins/' .$plugin .'/assets/' .ltrim($path, '/');
+
+        return url($path);
+    }
+}
+
 if (! function_exists('__'))
 {
 	/**
