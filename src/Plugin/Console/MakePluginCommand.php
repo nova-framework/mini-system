@@ -34,9 +34,11 @@ class MakePluginCommand extends Command
 	 * @var array
 	 */
 	protected $pluginFolders = array(
-		'Config/',
-		'Language/',
-		'Providers/',
+		'src/',
+		'src/Config/',
+		'src/Language/',
+		'src/Providers/',
+		'webroot/'
 	);
 
 	/**
@@ -45,8 +47,8 @@ class MakePluginCommand extends Command
 	 * @var array
 	 */
 	protected $pluginFiles = array(
-		'Config/Config.php',
-		'Providers/PluginServiceProvider.php',
+		'src/Config/Config.php',
+		'src/Providers/PluginServiceProvider.php',
 		'README.md',
 	);
 
@@ -292,7 +294,7 @@ return array (
 		$languages = $this->nova['config']['languages'];
 
 		foreach (array_keys($languages) as $code) {
-			$paths[] = 'Language' .DS .strtoupper($code);
+			$paths[] = 'src' .DS .'Language' .DS .strtoupper($code);
 		}
 
 		return $paths;
