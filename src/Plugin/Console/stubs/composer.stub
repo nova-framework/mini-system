@@ -1,6 +1,6 @@
 {
     "name": "{{lower_package}}",
-    "description": "{{name}} is a plugin for the Mini MVC Framework",
+    "description": "{{name}} is a plugin for Mini MVC Framework",
     "license": "{{license}}",
     "authors": [
         {

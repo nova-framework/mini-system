@@ -360,17 +360,18 @@ return array (
 
 		$path = base_path($composerJson);
 
-		// Read and update the file contents.
+		//
 		$config = json_decode(file_get_contents($path), true);
 
-		$namespace = $this->data['namespace'] .'\\';
+		if (is_array($config) && isset($config['autoload'])) {
+			$namespace = $this->data['namespace'] .'\\';
 
-		$config['autoload']['psr-4'][$namespace] = 'plugins/' . $this->data['name'] . "/src/";
+			$config['autoload']['psr-4'][$namespace] = 'plugins/' . $this->data['name'] . "/src/";
 
-		// Write the patched contents to file.
-		$output = json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\n";
+			$output = json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\n";
 
-		file_put_contents($path, $output);
+			file_put_contents($path, $output);
+		}
 	}
 
 	/**
