@@ -1,10 +1,12 @@
 {
     "name": "{{lower_package}}",
     "description": "{{name}} is a plugin for the Mini MVC Framework",
+    "license": "{{license}}",
     "authors": [
         {
             "name": "{{author}}",
-            "email": "{{email}}"
+            "email": "{{email}}",
+            "homepage": "{{homepage}}"
         }
     ],
     "require": {

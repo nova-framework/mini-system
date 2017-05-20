@@ -129,51 +129,121 @@ class Repository
 
 	protected function getPlugins()
 	{
-		$path = $this->getPluginsPath();
+		$dataPath = base_path('vendor/mininova-plugins.php');
 
-		// Retrieve the Composer's Plugins information.
-		$infoPath = base_path('vendor/mininova-plugins.php');
+		$cachePath = storage_path('plugins.php');
 
-		try {
-			$data = $this->files->getRequire($infoPath);
+		if ($this->isExpired($cachePath, $dataPath)) {
+			// Retrieve the Composer's Plugins information.
 
-		} catch (FileNotFoundException $e) {
-			$data = array();
+			try {
+				$data = $this->files->getRequire($dataPath);
+
+			} catch (FileNotFoundException $e) {
+				$data = array();
+			}
+
+			// Process the plugins data.
+			$path = $this->getPluginsPath();
+
+			$plugins = collect();
+
+			foreach (Arr::get($data, 'plugins', array()) as $name => $pluginPath) {
+				$pluginPath = realpath($pluginPath);
+
+				$location = Str::startsWith($pluginPath, $path) ? 'local' : 'vendor';
+
+				$plugins->put($name, array('path' => $pluginPath .DS, 'location' => $location));
+			}
+
+			// Process the retrieved information to generate their records.
+
+			$items = $plugins->map(function ($properties, $name)
+			{
+				$basename = $this->getPackageName($name);
+
+				if (Str::length($basename) > 3) {
+					$slug =  Str::snake($basename);
+				} else {
+					$slug = Str::lower($basename);
+				}
+
+				$properties['name'] = $name;
+				$properties['slug'] = $slug;
+
+				$properties['namespace'] = str_replace('/', '\\', $name);
+
+				$properties['basename'] = $basename;
+
+				return $properties;
+			});
+
+			$this->writeCache($cachePath, $items);
+		} else {
+			$items = collect(
+				$this->files->getRequire($cachePath)
+			);
 		}
-
-		// Process the plugins data.
-
-		$plugins = collect();
-
-		foreach (Arr::get($data, 'plugins', array()) as $name => $pluginPath) {
-			$pluginPath = realpath($pluginPath);
-
-			$location = Str::startsWith($pluginPath, $path) ? 'local' : 'vendor';
-
-			$plugins->put($name, array('path' => $pluginPath .DS, 'location' => $location));
-		}
-
-		// Process the retrieved information to generate their records.
-
-		$items = $plugins->map(function ($properties, $name)
-		{
-			$basename = $this->getPackageName($name);
-
-			$slug = (Str::length($basename) > 3) ? Str::snake($basename) : Str::lower($basename);
-
-			//
-			$properties['name'] = $name;
-			$properties['slug'] = $slug;
-
-			$properties['namespace'] = str_replace('/', '\\', $name);
-
-			$properties['basename'] = $basename;
-
-			return $properties;
-		});
 
 		return $items->sortBy('slug');
 	}
+
+	/**
+	* Determine if the cache file is expired.
+	*
+	* @param  string  $path
+	* @return bool
+	*/
+	public function isExpired($cachePath, $path)
+	{
+		if (! $this->files->exists($cachePath)) {
+			return true;
+		}
+
+		$lastModified = $this->files->lastModified($path);
+
+		if ($lastModified >= $this->files->lastModified($cachePath)) {
+			return true;
+		}
+
+		return false;
+	}
+
+    /**
+     * Write the service cache file to disk.
+     *
+     * @param  array  $plugins
+     * @param  string $cachePath
+     * @return void
+     */
+    public function writeCache($cachePath, $plugins)
+    {
+        $data = array();
+
+        foreach ($plugins->all() as $key => $plugin) {
+            $properties = ($plugin instanceof Collection) ? $module->all() : $plugin;
+
+            // Normalize to *nix paths.
+            $properties['path'] = str_replace('\\', '/', $properties['path']);
+
+            //
+            ksort($properties);
+
+            $data[$key] = $properties;
+        }
+
+        //
+        $data = var_export($data, true);
+
+        $content = <<<PHP
+<?php
+
+return $data;
+
+PHP;
+
+        $this->files->put($cachePath, $content);
+    }
 
 	/**
 	 * Get the name for a Package.

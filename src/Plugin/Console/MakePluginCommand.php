@@ -144,7 +144,7 @@ class MakePluginCommand extends Command
 		} else {
 			$package = $name;
 
-			$this->data['lower_package'] = $otherSlug;
+			$this->data['lower_package'] = 'acme-corp/' .$otherSlug;
 		}
 
 		$this->data['package'] = $package;
@@ -154,8 +154,11 @@ class MakePluginCommand extends Command
 		//
 		$config = $this->container['config'];
 
-		$this->data['author'] = $config->get('plugins.author.name');
-		$this->data['email']  = $config->get('plugins.author.email');
+		$this->data['author']	= $config->get('plugins.author.name');
+		$this->data['email']	= $config->get('plugins.author.email');
+		$this->data['homepage']	= $config->get('plugins.author.homepage');
+
+		$this->data['license'] = 'MIT';
 
 		if ($this->option('quick')) {
 			return $this->generate();
@@ -163,7 +166,6 @@ class MakePluginCommand extends Command
 
 		$this->stepOne();
 	}
-
 
 	/**
 	 * Step 1: Configure plugin.
@@ -173,10 +175,40 @@ class MakePluginCommand extends Command
 	private function stepOne()
 	{
 		$this->data['name'] = $this->ask('Please enter the name of the plugin:', $this->data['name']);
+		$this->data['slug'] = $this->ask('Please enter the slug of the plugin:', $this->data['slug']);
+
+		if (strpos($this->data['package'], '/') > 0) {
+			list($vendor) = explode('/', $this->data['package']);
+		} else {
+			$vendor = null;
+		}
+
+		$vendor = $this->ask('Please enter the vendor of the plugin:', $vendor);
+
+		//
+		$slug = str_replace('_', '-', $this->data['slug']);
+
+		if (! empty($vendor)) {
+			$this->data['package'] = Str::studly($vendor) .'/' .$this->data['name'];
+
+			$this->data['lower_package'] = Str::snake($vendor, '-') .'/' .$slug;
+		} else {
+			$this->data['package'] = $this->data['name'];
+
+			$this->data['lower_package'] = 'acme-corp/' .$slug;
+		}
+
+		//
+		$this->data['namespace']	= $this->ask('Please enter the namespace of the plugin:', $this->data['namespace']);
+		$this->data['license']		= $this->ask('Please enter the license of the plugin:', $this->data['license']);
 
 		$this->comment('You have provided the following information:');
 
 		$this->comment('Name:		'.$this->data['name']);
+		$this->comment('Slug:		'.$this->data['slug']);
+		$this->comment('Package:	'.$this->data['package']);
+		$this->comment('Namespace:	'.$this->data['namespace']);
+		$this->comment('License:	'.$this->data['license']);
 
 		if ($this->confirm('Do you wish to continue?')) {
 			$this->generate();
@@ -417,6 +449,8 @@ return array (
 			'{{lower_package}}',
 			'{{author}}',
 			'{{email}}',
+			'{{homepage}}',
+			'{{license}}',
 			'{{json_namespace}}',
 		);
 
@@ -428,6 +462,8 @@ return array (
 			$this->data['lower_package'],
 			$this->data['author'],
 			$this->data['email'],
+			$this->data['homepage'],
+			$this->data['license'],
 			str_replace('/', '\\\\', $this->data['package'])
 		);
 
