@@ -104,6 +104,23 @@ class Router
 	}
 
 	/**
+	 * Dispatch an URI and return the associated file path.
+	 *
+	 * @param  string  $uri
+	 * @return string|null
+	 */
+	public function match($uri)
+	{
+		foreach ($this->routes as $pattern => $callback) {
+			if (preg_match('#^' .$pattern .'$#i', $uri, $matches)) {
+				$parameters = array_slice($matches, 1);
+
+				return call_user_func_array($callback, $parameters);
+			}
+		}
+	}
+
+	/**
 	 * Register a new Asset Route with the manager.
 	 *
 	 * @param  string  $pattern
@@ -142,6 +159,63 @@ class Router
 	}
 
 	/**
+	 * Register a Package for cascading configuration.
+	 *
+	 * @param  string  $package
+	 * @param  string  $hint
+	 * @param  string  $namespace
+	 * @return void
+	 */
+	public function package($package, $hint, $namespace = null)
+	{
+		$namespace = $this->getPackageNamespace($package, $namespace);
+
+		$this->addNamespace($namespace, $hint);
+	}
+
+	/**
+	 * Get the configuration namespace for a Package.
+	 *
+	 * @param  string  $package
+	 * @param  string  $namespace
+	 * @return string
+	 */
+	protected function getPackageNamespace($package, $namespace)
+	{
+		if (is_null($namespace)) {
+			list($vendor, $namespace) = explode('/', $package);
+
+			return Str::snake($namespace);
+		}
+
+		return $namespace;
+	}
+
+	/**
+	 * Add a new namespace to the loader.
+	 *
+	 * @param  string  $namespace
+	 * @param  string  $hint
+	 * @return void
+	 */
+	public function addNamespace($namespace, $hint)
+	{
+		$namespace = str_replace('_', '-', $namespace);
+
+		$this->hints[$namespace] = $hint;
+	}
+
+	/**
+	 * Returns all registered namespaces with the manager.
+	 *
+	 * @return array
+	 */
+	public function getNamespaces()
+	{
+		return $this->hints;
+	}
+
+	/**
 	 * Dispatch a Assets File Response.
 	 *
 	 * For proper Assets serving, the file URI should be either of the following:
@@ -168,23 +242,6 @@ class Router
 			return $response;
 		} else if (! is_null($response)) {
 			return $this->serve($response, $request);
-		}
-	}
-
-	/**
-	 * Dispatch an URI and return the associated file path.
-	 *
-	 * @param  string  $uri
-	 * @return string|null
-	 */
-	public function match($uri)
-	{
-		foreach ($this->routes as $pattern => $callback) {
-			if (preg_match('#^' .$pattern .'$#i', $uri, $matches)) {
-				$parameters = array_slice($matches, 1);
-
-				return call_user_func_array($callback, $parameters);
-			}
 		}
 	}
 
@@ -324,62 +381,5 @@ class Router
 		$guesser = MimeTypeGuesser::getInstance();
 
 		return $guesser->guess($path);
-	}
-
-	/**
-	 * Register a Package for cascading configuration.
-	 *
-	 * @param  string  $package
-	 * @param  string  $hint
-	 * @param  string  $namespace
-	 * @return void
-	 */
-	public function package($package, $hint, $namespace = null)
-	{
-		$namespace = $this->getPackageNamespace($package, $namespace);
-
-		$this->addNamespace($namespace, $hint);
-	}
-
-	/**
-	 * Get the configuration namespace for a Package.
-	 *
-	 * @param  string  $package
-	 * @param  string  $namespace
-	 * @return string
-	 */
-	protected function getPackageNamespace($package, $namespace)
-	{
-		if (is_null($namespace)) {
-			list($vendor, $namespace) = explode('/', $package);
-
-			return Str::snake($namespace);
-		}
-
-		return $namespace;
-	}
-
-	/**
-	 * Add a new namespace to the loader.
-	 *
-	 * @param  string  $namespace
-	 * @param  string  $hint
-	 * @return void
-	 */
-	public function addNamespace($namespace, $hint)
-	{
-		$namespace = str_replace('_', '-', $namespace);
-
-		$this->hints[$namespace] = $hint;
-	}
-
-	/**
-	 * Returns all registered namespaces with the manager.
-	 *
-	 * @return array
-	 */
-	public function getNamespaces()
-	{
-		return $this->hints;
 	}
 }
