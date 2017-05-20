@@ -1,5 +1,6 @@
 {
     "name": "{{lower_package}}",
+    "type": "mininova-plugin",
     "description": "{{name}} is a plugin for Mini MVC Framework",
     "license": "{{license}}",
     "authors": [

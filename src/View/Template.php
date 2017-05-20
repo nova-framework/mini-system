@@ -22,6 +22,13 @@ class Template
 	protected $files;
 
 	/**
+	 * The file currently being compiled.
+	 *
+	 * @var string
+	 */
+	protected $path;
+
+	/**
 	* Get the cache path for the compiled views.
 	*
 	* @var string
@@ -50,11 +57,25 @@ class Template
 	protected $footer = array();
 
 	/**
-	 * The file currently being compiled.
+	 * Placeholder to temporary mark the position of verbatim blocks.
 	 *
 	 * @var string
 	 */
-	protected $path;
+	protected $verbatimPlaceholder = '@__verbatim__@';
+
+	/**
+	 * Array to temporary store the verbatim blocks found in the template.
+	 *
+	 * @var array
+	 */
+	protected $verbatimBlocks = array();
+
+	/**
+	 * Counter to keep track of nested forelse statements.
+	 *
+	 * @var int
+	 */
+	protected $forelseCounter = 0;
 
 
 	/**
@@ -134,15 +155,59 @@ class Template
 	{
 		$result = '';
 
+		if (strpos($value, '@verbatim') !== false) {
+			$value = $this->storeVerbatimBlocks($value);
+		}
+
 		$this->footer = array();
 
 		foreach (token_get_all($value) as $token) {
 			$result .= is_array($token) ? $this->parseToken($token) : $token;
 		}
 
+		if (! empty($this->verbatimBlocks)) {
+			$result = $this->restoreVerbatimBlocks($result);
+		}
+
 		if (count($this->footer) > 0) {
 			$result = ltrim($result, PHP_EOL) .PHP_EOL .implode(PHP_EOL, array_reverse($this->footer));
 		}
+
+		return $result;
+	}
+
+	/**
+	 * Store the verbatim blocks and replace them with a temporary placeholder.
+	 *
+	 * @param  string  $value
+	 * @return string
+	 */
+	protected function storeVerbatimBlocks($value)
+	{
+		return preg_replace_callback('/(?<!@)@verbatim(.*?)@endverbatim/s', function ($matches)
+		{
+			$this->verbatimBlocks[] = $matches[1];
+
+			return $this->verbatimPlaceholder;
+
+		}, $value);
+	}
+
+	/**
+	 * Replace the raw placeholders with the original code stored in the raw blocks.
+	 *
+	 * @param  string  $result
+	 * @return string
+	 */
+	protected function restoreVerbatimBlocks($result)
+	{
+		$result = preg_replace_callback('/' .preg_quote($this->verbatimPlaceholder) .'/', function ()
+		{
+			return array_shift($this->verbatimBlocks);
+
+		}, $result);
+
+		$this->verbatimBlocks = array();
 
 		return $result;
 	}
@@ -382,6 +447,52 @@ class Template
 	}
 
 	/**
+	 * Compile the unless statements into valid PHP.
+	 *
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileUnless($expression)
+	{
+		return "<?php if ( ! $expression): ?>";
+	}
+
+	/**
+	 * Compile the end unless statements into valid PHP.
+	 *
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileEndunless($expression)
+	{
+		return "<?php endif; ?>";
+	}
+
+	/**
+	 * Compile the forelse statements into valid PHP.
+	 *
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileForelse($expression)
+	{
+		$empty = '$__empty_' . ++$this->forelseCounter;
+
+		return "<?php {$empty} = true; foreach{$expression}: {$empty} = false; ?>";
+	}
+
+	/**
+	 * Compile the end-for-else statements into valid PHP.
+	 *
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileEndforelse($expression)
+	{
+		return "<?php endif; ?>";
+	}
+
+	/**
 	 * Compile the raw PHP statements into valid PHP.
 	 *
 	 * @param  string  $expression
@@ -401,6 +512,50 @@ class Template
 	protected function compileEndphp($expression)
 	{
 		return ' ?>';
+	}
+
+	/**
+	 * Compile the can statements into valid PHP.
+	 *
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileCan($expression)
+	{
+		return "<?php if (app('gate')->check{$expression}): ?>";
+	}
+
+	/**
+	 * Compile the end-can statements into valid PHP.
+	 *
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileEndcan($expression)
+	{
+		return '<?php endif; ?>';
+	}
+
+	/**
+	 * Compile the cannot statements into valid PHP.
+	 *
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileCannot($expression)
+	{
+		return "<?php if (app('gate')->denies{$expression}): ?>";
+	}
+
+	/**
+	 * Compile the end-cannot statements into valid PHP.
+	 *
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileEndcannot($expression)
+	{
+		return '<?php endif; ?>';
 	}
 
 	/**
