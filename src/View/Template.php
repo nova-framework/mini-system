@@ -3,6 +3,8 @@
 namespace Mini\View;
 
 use Mini\Filesystem\Filesystem;
+use Mini\Support\Arr;
+use Mini\Support\Str;
 
 
 class Template
