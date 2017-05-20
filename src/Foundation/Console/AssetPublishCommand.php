@@ -123,7 +123,7 @@ class AssetPublishCommand extends Command
 		//
 		$namespaces = $this->router->getNamespaces();
 
-		foreach ($paths as $name => $hint) {
+		foreach ($namespaces as $name => $hint) {
 			$packages[] = $name;
 		}
 
