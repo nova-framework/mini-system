@@ -2,8 +2,10 @@
 
 namespace Mini\Cache;
 
-use Closure;
+use Mini\Cache\Contracts\StoreInterface;
 use Mini\Support\Manager;
+
+use Closure;
 
 
 class CacheManager extends Manager
@@ -18,7 +20,7 @@ class CacheManager extends Manager
 	{
 		return $this->repository(new ArrayStore);
 	}
-	
+
 	/**
 	 * Create an instance of the file cache driver.
 	 *
@@ -86,7 +88,7 @@ class CacheManager extends Manager
 	/**
 	 * Create a new cache repository with the given implementation.
 	 *
-	 * @param  \Mini\Cache\StoreInterface  $store
+	 * @param  \Mini\Cache\Contracts\StoreInterface  $store
 	 * @return \Mini\Cache\Repository
 	 */
 	protected function repository(StoreInterface $store)

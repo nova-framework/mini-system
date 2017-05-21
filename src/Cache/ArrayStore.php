@@ -2,6 +2,8 @@
 
 namespace Mini\Cache;
 
+use Mini\Cache\Contracts\StoreInterface;
+
 
 class ArrayStore implements StoreInterface
 {

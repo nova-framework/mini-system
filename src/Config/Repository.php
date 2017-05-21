@@ -49,7 +49,7 @@ class Repository extends NamespacedItemResolver implements ArrayAccess
 	/**
 	 * Create a new configuration repository.
 	 *
-	 * @param  \Mini\Config\LoaderInterface  $loader
+	 * @param  \Mini\Config\Contracts\LoaderInterface  $loader
 	 * @param  string  $environment
 	 * @return void
 	 */

@@ -2,6 +2,7 @@
 
 namespace Mini\Cache;
 
+use Mini\Cache\Contracts\StoreInterface;
 use Mini\Filesystem\Filesystem;
 
 

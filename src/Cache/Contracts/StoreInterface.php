@@ -1,6 +1,6 @@
 <?php
 
-namespace Mini\Cache;
+namespace Mini\Cache\Contracts;
 
 
 interface StoreInterface

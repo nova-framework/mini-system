@@ -2,6 +2,7 @@
 
 namespace Mini\Cache;
 
+use Mini\Cache\Contracts\StoreInterface;
 use Mini\Support\Traits\MacroableTrait;
 
 use Carbon\Carbon;
@@ -20,7 +21,7 @@ class Repository implements ArrayAccess
 	/**
 	 * The cache store implementation.
 	 *
-	 * @var \Mini\Cache\StoreInterface
+	 * @var \Mini\Cache\Contracts\StoreInterface
 	 */
 	protected $store;
 
@@ -34,7 +35,7 @@ class Repository implements ArrayAccess
 	/**
 	 * Create a new cache repository instance.
 	 *
-	 * @param  \Mini\Cache\StoreInterface  $store
+	 * @param  \Mini\Cache\Contracts\StoreInterface  $store
 	 */
 	public function __construct(StoreInterface $store)
 	{
