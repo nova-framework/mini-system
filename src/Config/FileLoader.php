@@ -2,6 +2,7 @@
 
 namespace Mini\Config;
 
+use Mini\Config\Contracts\LoaderInterface;
 use Mini\Filesystem\Filesystem;
 
 

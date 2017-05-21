@@ -2,6 +2,7 @@
 
 namespace Mini\Config;
 
+use Mini\Config\Contracts\LoaderInterface;
 use Mini\Support\NamespacedItemResolver;
 
 use Closure;
@@ -13,7 +14,7 @@ class Repository extends NamespacedItemResolver implements ArrayAccess
 	/**
 	 * The loader implementation.
 	 *
-	 * @var \Mini\Config\LoaderInterface
+	 * @var \Mini\Config\Contracts\LoaderInterface
 	 */
 	protected $loader;
 

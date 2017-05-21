@@ -1,6 +1,6 @@
 <?php
 
-namespace Mini\Config;
+namespace Mini\Config\Contracts;
 
 
 interface LoaderInterface
