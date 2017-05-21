@@ -47,6 +47,7 @@ class RouteServiceProvider extends ServiceProvider
 			call_user_func(array($this, 'map'), $this->app['router']);
 		}
 	}
+
 	/**
 	 * Load the standard routes file for the application.
 	 *
