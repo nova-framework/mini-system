@@ -50,33 +50,33 @@ if (! function_exists('theme_url'))
 
 if (! function_exists('plugin_path'))
 {
-    /**
-     * Return the path to the given module file.
-     *
-     * @param string $module
-     * @param string $path
-     *
-     * @return string
-     */
-    function plugin_path($module, $path = '')
-    {
-        $modules = app('plugins');
+	/**
+	 * Return the path to the given module file.
+	 *
+	 * @param string $module
+	 * @param string $path
+	 *
+	 * @return string
+	 */
+	function plugin_path($module, $path = '')
+	{
+		$modules = app('plugins');
 
-        //
-        $properties = $modules->where('basename', $module);
+		//
+		$properties = $modules->where('basename', $module);
 
-        if (! $properties->isEmpty()) {
-            $result = $modules->resolveClassPath($properties);
-        } else {
-            return false;
-        }
+		if (! $properties->isEmpty()) {
+			$result = $modules->resolveClassPath($properties);
+		} else {
+			return false;
+		}
 
-        if (! empty($path)) {
-            $result .= str_replace('/', DS, $path);
-        }
+		if (! empty($path)) {
+			$result .= str_replace('/', DS, $path);
+		}
 
-        return realpath($result);
-    }
+		return realpath($result);
+	}
 }
 
 if (! function_exists('__'))

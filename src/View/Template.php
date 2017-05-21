@@ -44,8 +44,6 @@ class Template
 	 */
 	protected $compilers = array(
 		'Extensions',
-		'StructureOpenings',
-		'StructureClosings',
 		'Statements',
 		'Comments',
 		'Echos'
@@ -251,32 +249,6 @@ class Template
 	}
 
 	/**
-	 * Rewrites Template structure openings into PHP structure openings.
-	 *
-	 * @param  string  $value
-	 * @return string
-	 */
-	protected static function compileStructureOpenings($value)
-	{
-		$pattern = '/(\s*)@(if|elseif|foreach|for|while)(\s*\(.*\))/';
-
-		return preg_replace($pattern, '$1<?php $2$3: ?>', $value);
-	}
-
-	/**
-	 * Rewrites Template structure closings into PHP structure closings.
-	 *
-	 * @param  string  $value
-	 * @return string
-	 */
-	protected static function compileStructureClosings($value)
-	{
-		$pattern = '/(\s*)@(endif|endforeach|endfor|endwhile)(\s*)/';
-
-		return preg_replace($pattern, '$1<?php $2; ?>$3', $value);
-	}
-
-	/**
 	 * Compile Template Statements that start with "@"
 	 *
 	 * @param  string  $value
@@ -348,6 +320,7 @@ class Template
 		return preg_replace('/^(?=\$)(.+?)(?:\s+or\s+)(.+?)$/is', 'isset($1) ? $1 : $2', $value);
 	}
 
+
 	/**
 	 * Compile the each statements into valid PHP.
 	 *
@@ -414,7 +387,6 @@ class Template
 		return "<?php \$__env->stopSection(); ?>";
 	}
 
-
 	/**
 	 * Compile the stop statements into valid PHP.
 	 *
@@ -435,17 +407,6 @@ class Template
 	protected function compileOverwrite($expression)
 	{
 		return "<?php \$__env->stopSection(true); ?>";
-	}
-
-	/**
-	 * Compile the else statements into valid PHP.
-	 *
-	 * @param  string  $expression
-	 * @return string
-	 */
-	protected function compileElse($expression)
-	{
-		return "<?php else: ?>";
 	}
 
 	/**
@@ -471,6 +432,61 @@ class Template
 	}
 
 	/**
+	 * Compile the else statements into valid PHP.
+	 *
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileElse($expression)
+	{
+		return "<?php else: ?>";
+	}
+
+	/**
+	 * Compile the for statements into valid PHP.
+	 *
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileFor($expression)
+	{
+		return "<?php for{$expression}: ?>";
+	}
+
+	/**
+	 * Compile the foreach statements into valid PHP.
+	 *
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileForeach($expression)
+	{
+		return "<?php foreach{$expression}: ?>";
+	}
+
+	/**
+	 * Compile the break statements into valid PHP.
+	 *
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileBreak($expression)
+	{
+		return $expression ? "<?php if{$expression} break; ?>" : '<?php break; ?>';
+	}
+
+	/**
+	 * Compile the continue statements into valid PHP.
+	 *
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileContinue($expression)
+	{
+		return $expression ? "<?php if{$expression} continue; ?>" : '<?php continue; ?>';
+	}
+
+	/**
 	 * Compile the forelse statements into valid PHP.
 	 *
 	 * @param  string  $expression
@@ -481,6 +497,96 @@ class Template
 		$empty = '$__empty_' . ++$this->forelseCounter;
 
 		return "<?php {$empty} = true; foreach{$expression}: {$empty} = false; ?>";
+	}
+
+	/**
+	 * Compile the if statements into valid PHP.
+	 *
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileIf($expression)
+	{
+		return "<?php if{$expression}: ?>";
+	}
+
+	/**
+	 * Compile the else-if statements into valid PHP.
+	 *
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileElseif($expression)
+	{
+		return "<?php elseif{$expression}: ?>";
+	}
+
+	/**
+	 * Compile the forelse statements into valid PHP.
+	 *
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileEmpty($expression)
+	{
+		$empty = '$__empty_' . $this->forelseCounter--;
+
+		return "<?php endforeach; if ({$empty}): ?>";
+	}
+
+	/**
+	 * Compile the while statements into valid PHP.
+	 *
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileWhile($expression)
+	{
+		return "<?php while{$expression}: ?>";
+	}
+
+	/**
+	 * Compile the end-while statements into valid PHP.
+	 *
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileEndwhile($expression)
+	{
+		return "<?php endwhile; ?>";
+	}
+
+	/**
+	 * Compile the end-for statements into valid PHP.
+	 *
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileEndfor($expression)
+	{
+		return "<?php endfor; ?>";
+	}
+
+	/**
+	 * Compile the end-for-each statements into valid PHP.
+	 *
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileEndforeach($expression)
+	{
+		return "<?php endforeach; ?>";
+	}
+
+	/**
+	 * Compile the end-if statements into valid PHP.
+	 *
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileEndif($expression)
+	{
+		return "<?php endif; ?>";
 	}
 
 	/**
@@ -514,6 +620,17 @@ class Template
 	protected function compileEndphp($expression)
 	{
 		return ' ?>';
+	}
+
+	/**
+	 * Compile the unset statements into valid PHP.
+	 *
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileUnset($expression)
+	{
+		return "<?php unset{$expression}; ?>";
 	}
 
 	/**
@@ -588,6 +705,39 @@ class Template
 		$expression = $this->stripParentheses($expression);
 
 		return "<?php echo \$__env->make($expression, array_except(get_defined_vars(), array('__data', '__path')))->render(); ?>";
+	}
+
+	/**
+	 * Compile the stack statements into the content
+	 *
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileStack($expression)
+	{
+		return "<?php echo \$__env->yieldContent{$expression}; ?>";
+	}
+
+	/**
+	 * Compile the push statements into valid PHP.
+	 *
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compilePush($expression)
+	{
+		return "<?php \$__env->startSection{$expression}; ?>";
+	}
+
+	/**
+	 * Compile the endpush statements into valid PHP.
+	 *
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileEndpush($expression)
+	{
+		return "<?php \$__env->appendSection(); ?>";
 	}
 
 	/**
