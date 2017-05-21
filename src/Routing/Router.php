@@ -204,6 +204,22 @@ class Router
 	}
 
 	/**
+	 * Register a new fallback route responding to all verbs and any URI.
+	 *
+	 * @param  \Closure|array|string  $action
+	 * @return \Mini\Routing\Route
+	 */
+	public function fallback($action)
+	{
+		$methods = array('GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE');
+
+		$route = $this->createRoute($methods, '{slug?}', $action)
+			->where('slug', '(.*)');
+
+		return $this->routes->setFallback($route);
+	}
+
+	/**
 	 * Register a group of routes that share attributes.
 	 *
 	 * @param  array	$attributes

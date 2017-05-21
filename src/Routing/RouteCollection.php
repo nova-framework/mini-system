@@ -12,9 +12,10 @@ use Mini\Support\Arr;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 
-use Countable;
 use ArrayIterator;
+use Countable;
 use IteratorAggregate;
+use LogicException;
 
 
 class RouteCollection implements Countable, IteratorAggregate
@@ -32,6 +33,13 @@ class RouteCollection implements Countable, IteratorAggregate
 	 * @var array
 	 */
 	protected $allRoutes = array();
+
+	/**
+	 * The fallback Route, if any is registered.
+	 *
+	 * @var \Mini\Routing\Route
+	 */
+	protected $fallback;
 
 	/**
 	 * A look-up table of routes by their names.
@@ -61,6 +69,29 @@ class RouteCollection implements Countable, IteratorAggregate
 		foreach ($route->getMethods() as $method) {
 			$this->routes[$method][$uri] = $route;
 		}
+
+		$this->allRoutes[] = $route;
+
+		// Add the Route instance to lookup lists.
+		$this->addLookups($route);
+
+		return $route;
+	}
+
+	/**
+	 * Set a fallback route to the router.
+	 *
+	 * @param  \Mini\Routing\Route  $route
+	 * @return void
+	 * @throws \LogicException
+	 */
+	public function setFallback($route)
+	{
+		if (isset($this->fallback)) {
+			throw new LogicException('The fallback Route is already set.');
+		}
+
+		$this->fallback = $route;
 
 		$this->allRoutes[] = $route;
 
@@ -196,7 +227,16 @@ class RouteCollection implements Countable, IteratorAggregate
 			return $this->getRoutes();
 		}
 
-		return Arr::get($this->routes, $method, array());
+		$routes = Arr::get($this->routes, $method, array());
+
+		if (($method !== 'OPTIONS') && isset($this->fallback)) {
+			// An fallback Route responsds to any method excluding OPTIONS.
+			$uri = $this->fallback->getUri();
+
+			$routes[$uri] = $this->fallback;
+		}
+
+		return $routes;
 	}
 
 	/**
