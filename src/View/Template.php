@@ -279,14 +279,14 @@ class Template
 	}
 
 	/**
-	 * Compile the escaped echo statements.
+	 * Compile the echo statements.
 	 *
 	 * @param  string  $value
 	 * @return string
 	 */
 	protected function compileEchos($value)
 	{
-		// Compile the escaped echoes.
+		// First, we will compile the escaped echo statements.
 		$value = preg_replace_callback('/{{{\s*(.+?)\s*}}}(\r?\n)?/s', function($matches)
 		{
 			$whitespace = empty($matches[2]) ? '' : $matches[2] .$matches[2];
@@ -295,8 +295,18 @@ class Template
 
 		}, $value);
 
-		// Compile the regular echoes.
-		$value = preg_replace_callback('/(@)?{{\s*(.+?)\s*}}(\r?\n)?/s', function($matches)
+		return $this->compileRegularEchos($value);
+	}
+
+	/**
+	 * Compile the "regular" echo statements.
+	 *
+	 * @param  string  $value
+	 * @return string
+	 */
+	protected function compileRegularEchos($value)
+	{
+		return preg_replace_callback('/(@)?{{\s*(.+?)\s*}}(\r?\n)?/s', function($matches)
 		{
 			$whitespace = empty($matches[3]) ? '' : $matches[3] .$matches[3];
 
@@ -305,8 +315,6 @@ class Template
 				: '<?php echo ' .$this->compileEchoDefaults($matches[2]) .'; ?>' .$whitespace;
 
 		}, $value);
-
-		return $value;
 	}
 
 	/**
@@ -319,7 +327,6 @@ class Template
 	{
 		return preg_replace('/^(?=\$)(.+?)(?:\s+or\s+)(.+?)$/is', 'isset($1) ? $1 : $2', $value);
 	}
-
 
 	/**
 	 * Compile the each statements into valid PHP.
