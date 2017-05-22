@@ -660,7 +660,9 @@ class Builder
 	 */
 	public function without($relations)
 	{
-		if (is_string($relations)) $relations = func_get_args();
+		if (is_string($relations)) {
+			$relations = func_get_args();
+		}
 
 		$this->eagerLoad = array_diff_key($this->eagerLoad, array_flip($relations));
 

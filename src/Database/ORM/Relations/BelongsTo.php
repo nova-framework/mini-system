@@ -88,7 +88,7 @@ class BelongsTo extends Relation
 	 */
 	public function getRelationCountQuery(Builder $query, Builder $parent)
 	{
-		$query->select(new Expression('count(*)'));
+		$query->select(new Expression('COUNT(*)'));
 
 		$otherKey = $this->wrap($query->getModel()->getTable() .'.' .$this->otherKey);
 
@@ -232,7 +232,7 @@ class BelongsTo extends Relation
 	{
 		return $this->otherKey;
 	}
-	
+
 	/**
 	 * Get the fully qualified associated key of the relationship.
 	 *

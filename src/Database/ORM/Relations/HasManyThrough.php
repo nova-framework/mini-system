@@ -87,7 +87,7 @@ class HasManyThrough extends Relation
 	{
 		$this->setJoin($query);
 
-		$query->select(new Expression('count(*)'));
+		$query->select(new Expression('COUNT(*)'));
 
 		//
 		$key = $this->wrap($this->parent->getTable() .'.' .$this->firstKey);

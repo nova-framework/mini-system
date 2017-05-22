@@ -129,13 +129,13 @@ class BelongsToMany extends Relation
 	 */
 	public function getRelationCountQueryForSelfJoin(Builder $query, Builder $parent)
 	{
-		$query->select(new Expression('count(*)'));
+		$query->select(new Expression('COUNT(*)'));
 
 		$tablePrefix = $this->query->getQuery()->getConnection()->getTablePrefix();
 
 		$hash = 'self_'.md5(microtime(true);
 
-		$query->from($this->table .' as ' .$tablePrefix .$hash);
+		$query->from($this->table .' AS ' .$tablePrefix .$hash);
 
 		$key = $this->wrap($this->getQualifiedParentKeyName());
 
@@ -363,7 +363,7 @@ class BelongsToMany extends Relation
 		$columns = array();
 
 		foreach (array_merge($defaults, $this->pivotColumns) as $column) {
-			$columns[] = $this->table.'.'.$column.' as pivot_'.$column;
+			$columns[] = $this->table.'.'.$column.' AS pivot_'.$column;
 		}
 
 		return array_unique($columns);
