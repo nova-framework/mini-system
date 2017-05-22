@@ -77,7 +77,7 @@ class Router
 		$this->compressFiles = $config->get('assets.compress', true);
 		$this->cacheControl  = $config->get('assets.cache', array());
 
-		// The Asset Route for Plugins.
+		// Add the Asset Route for Plugins.
 		$this->route('plugins/([^/]+)/(.*)', function (Request $request, $package, $path)
 		{
 			if (! is_null($namedPath = $this->findNamedPath($package))) {
@@ -86,6 +86,39 @@ class Router
 
 			return Response::make('File Not Found', 404);
 		});
+	}
+
+	/**
+	 * Register a new Asset Route with the manager.
+	 *
+	 * @param  string  $pattern
+	 * @param  \Closure  $callback
+	 * @return void
+	 */
+	public function route($pattern, $callback)
+	{
+		$this->routes[$pattern] = $callback;
+	}
+
+	/**
+	 * Dispatch a Assets File Response.
+	 *
+	 * For proper Assets serving, the file URI should be either of the following:
+	 *
+	 * /assets/css/style.css
+	 * /plugins/blog/assets/css/style.css
+	 *
+	 * @return \Symfony\Component\HttpFoundation\Response|null
+	 */
+	public function dispatch(SymfonyRequest $request)
+	{
+		$response = $this->match($request);
+
+		if ($response instanceof SymfonyResponse) {
+			return $response;
+		} else if (! is_null($response)) {
+			return $this->serve($response, $request);
+		}
 	}
 
 	/**
@@ -114,15 +147,136 @@ class Router
 	}
 
 	/**
-	 * Register a new Asset Route with the manager.
+	 * Serve a File.
 	 *
-	 * @param  string  $pattern
-	 * @param  \Closure  $callback
-	 * @return void
+	 * @param string $path
+	 *
+	 * @return \Symfony\Component\HttpFoundation\Response
 	 */
-	public function route($pattern, $callback)
+	public function serve($path, SymfonyRequest $request)
 	{
-		$this->routes[$pattern] = $callback;
+		if (! file_exists($path)) {
+			return Response::make('File Not Found', 404);
+		} else if (! is_readable($path)) {
+			return Response::make('Unauthorized Access', 403);
+		}
+
+		// Retrieve the file content type.
+		$mimeType = $this->getMimeType($path);
+
+		// Calculate the available compression algorithms.
+		$algorithms = $this->getEncodingAlgorithms($request);
+
+		// Determine if the file could be compressed.
+		$compressable = (($mimeType == 'application/javascript') || Str::is('text/*', $mimeType));
+
+		if ($this->compressFiles && ! empty($algorithms) && $compressable) {
+			// Get the (first) encoding algorithm.
+			$algorithm = array_shift($algorithms);
+
+			// Retrieve the file content.
+			$content = file_get_contents($path);
+
+			// Encode the content using the specified algorithm.
+			$content = $this->encodeContent($content, $algorithm);
+
+			// Retrieve the Last-Modified information.
+			$timestamp = filemtime($path);
+
+			$modifyTime = Carbon::createFromTimestampUTC($timestamp);
+
+			$lastModified = $modifyTime->format('D, j M Y H:i:s') .' GMT';
+
+			// Create the custom Response instance.
+			$response = Response::make($content, 200, array(
+				'Content-Type'	 	=> $mimeType,
+				'Content-Encoding'	=> $algorithm,
+				'Last-Modified'		=> $lastModified,
+			));
+		} else {
+			// Create a Binary File Response instance.
+			$response = new BinaryFileResponse($path, 200, array(), true, 'inline', true, false);
+
+			// Set the Content type.
+			$response->headers->set('Content-Type', $mimeType);
+		}
+
+		// Setup the (browser) Cache Control.
+		$ttl	= Arr::get($this->cacheControl, 'ttl', 600);
+		$maxAge = Arr::get($this->cacheControl, 'maxAge', 10800);
+
+		$sharedMaxAge = Arr::get($this->cacheControl, 'sharedMaxAge', 600);
+
+		//
+		$response->setTtl($ttl);
+		$response->setMaxAge($maxAge);
+		$response->setSharedMaxAge($sharedMaxAge);
+
+		// Prepare against the Request instance.
+		$response->isNotModified($request);
+
+		return $response->prepare($request);
+	}
+
+	protected function encodeContent($content, $algorithm)
+	{
+		if ($algorithm == 'gzip') {
+			return gzencode($content, -1, FORCE_GZIP);
+		} else if ($algorithm == 'deflate') {
+			return gzencode($content, -1, FORCE_DEFLATE);
+		}
+
+		throw new LogicException('Unknow encoding algorithm: ' .$algorithm);
+	}
+
+	protected function getEncodingAlgorithms(SymfonyRequest $request)
+	{
+		// Get the accepted encodings from the Request instance.
+		$acceptEncoding = $request->headers->get('Accept-Encoding');
+
+		if (is_null($acceptEncoding)) {
+			// No encoding accepted?
+			return array();
+		}
+
+		// Retrieve the accepted encoding values.
+		$values = explode(',', $acceptEncoding);
+
+		// Filter the meaningful values.
+		$values = array_filter($values, function($value)
+		{
+			$value = trim($value);
+
+			return ! empty($value);
+		});
+
+		return array_values(array_intersect($values, static::$algorithms));
+	}
+
+	protected function getMimeType($path)
+	{
+		// Even the Symfony's HTTP Foundation have troubles with the CSS and JS files?
+		//
+		// Hard coding the correct mime types for presently needed file extensions.
+
+		switch ($fileExt = pathinfo($path, PATHINFO_EXTENSION)) {
+			case 'css':
+				return 'text/css';
+
+			case 'js':
+				return 'application/javascript';
+
+			case 'svg':
+				return 'image/svg+xml';
+
+			default:
+				break;
+		}
+
+		// Guess the path's Mime Type.
+		$guesser = MimeTypeGuesser::getInstance();
+
+		return $guesser->guess($path);
 	}
 
 	/**
@@ -203,164 +357,5 @@ class Router
 	public function getNamespaces()
 	{
 		return $this->hints;
-	}
-
-	/**
-	 * Dispatch a Assets File Response.
-	 *
-	 * For proper Assets serving, the file URI should be either of the following:
-	 *
-	 * /assets/css/style.css
-	 * /plugins/blog/assets/css/style.css
-	 *
-	 * @return \Symfony\Component\HttpFoundation\Response|null
-	 */
-	public function dispatch(SymfonyRequest $request)
-	{
-		$response = $this->match($request);
-
-		if ($response instanceof SymfonyResponse) {
-			return $response;
-		} else if (! is_null($response)) {
-			return $this->serve($response, $request);
-		}
-	}
-
-	/**
-	 * Serve a File.
-	 *
-	 * @param string $path
-	 *
-	 * @return \Symfony\Component\HttpFoundation\Response
-	 */
-	public function serve($path, SymfonyRequest $request)
-	{
-		if (! file_exists($path)) {
-			return Response::make('File Not Found', 404);
-		} else if (! is_readable($path)) {
-			return Response::make('Unauthorized Access', 403);
-		}
-
-		// Retrieve the file content type.
-		$mimeType = $this->getMimeType($path);
-
-		// Calculate the available compression algorithms.
-		$algorithms = $this->getEncodingAlgorithms($request);
-
-		// Determine if the file could be compressed.
-		$compressable = (($mimeType == 'application/javascript') || Str::is('text/*', $mimeType));
-
-		if ($this->compressFiles && ! empty($algorithms) && $compressable) {
-			// Get the (first) encoding algorithm.
-			$algorithm = array_shift($algorithms);
-
-			// Retrieve the file content.
-			$content = file_get_contents($path);
-
-			// Encode the content using the specified algorithm.
-			$content = $this->encodeContent($content, $algorithm);
-
-			// Retrieve the Last-Modified information.
-			$timestamp = filemtime($path);
-
-			$modifyTime = Carbon::createFromTimestampUTC($timestamp);
-
-			$lastModified = $modifyTime->format('D, j M Y H:i:s') .' GMT';
-
-			// Create the custom Response instance.
-			$response = Response::make($content, 200, array(
-				'Content-Type'	 	=> $mimeType,
-				'Content-Encoding'	=> $algorithm,
-				'Last-Modified'		=> $lastModified,
-			));
-		} else {
-			// Create a Binary File Response instance.
-			$response = new BinaryFileResponse($path, 200, array(), true, 'inline', true, false);
-
-			// Set the Content type.
-			$response->headers->set('Content-Type', $mimeType);
-		}
-
-		// Setup the (browser) Cache Control.
-		$this->setupCacheControl($response);
-
-		// Prepare against the Request instance.
-		$response->isNotModified($request);
-
-		return $response->prepare($request);
-	}
-
-	protected function setupCacheControl(SymfonyResponse $response)
-	{
-		$ttl	= Arr::get($this->cacheControl, 'ttl', 600);
-		$maxAge = Arr::get($this->cacheControl, 'maxAge', 10800);
-
-		$sharedMaxAge = Arr::get($this->cacheControl, 'sharedMaxAge', 600);
-
-		//
-		$response->setTtl($ttl);
-		$response->setMaxAge($maxAge);
-		$response->setSharedMaxAge($sharedMaxAge);
-	}
-
-	protected function encodeContent($content, $algorithm)
-	{
-		if ($algorithm == 'gzip') {
-			return gzencode($content, -1, FORCE_GZIP);
-		} else if ($algorithm == 'deflate') {
-			return gzencode($content, -1, FORCE_DEFLATE);
-		}
-
-		throw new LogicException('Unknow encoding algorithm: ' .$algorithm);
-	}
-
-	protected function getEncodingAlgorithms(SymfonyRequest $request)
-	{
-		// Get the accepted encodings from the Request instance.
-		$acceptEncoding = $request->headers->get('Accept-Encoding');
-
-		if (is_null($acceptEncoding)) {
-			// No encoding accepted?
-			return array();
-		}
-
-		// Retrieve the accepted encoding values.
-		$values = explode(',', $acceptEncoding);
-
-		// Filter the meaningful values.
-		$values = array_filter($values, function($value)
-		{
-			$value = trim($value);
-
-			return ! empty($value);
-		});
-
-		return array_values(array_intersect($values, static::$algorithms));
-	}
-
-	protected function getMimeType($path)
-	{
-		// Even the Symfony's HTTP Foundation have troubles with the CSS and JS files?
-		//
-		// Hard coding the correct mime types for presently needed file extensions.
-
-		switch ($fileExt = pathinfo($path, PATHINFO_EXTENSION)) {
-			case 'css':
-				return 'text/css';
-
-			case 'js':
-				return 'application/javascript';
-
-			case 'svg':
-				return 'image/svg+xml';
-
-			default:
-				break;
-		}
-
-		// Guess the path's Mime Type.
-		$guesser = MimeTypeGuesser::getInstance();
-
-		return $guesser->guess($path);
 	}
 }
