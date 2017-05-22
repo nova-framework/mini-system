@@ -244,21 +244,6 @@ class SessionGuard implements StatefulGuardInterface
 	}
 
 	/**
-	 * Decrypt a cookie string.
-	 *
-	 * @param string $cookie
-	 * @return string|null
-	 */
-	protected function decryptCookie($cookie)
-	{
-		try {
-			return $this->getEncrypter()->decrypt($cookie);
-		} catch (EncryptException $e) {
-			//
-		}
-	}
-
-	/**
 	 * Get the user ID from the recaller Cookie.
 	 *
 	 * @return string
@@ -466,21 +451,6 @@ class SessionGuard implements StatefulGuardInterface
 	}
 
 	/**
-	 * Encrypt a cookie string.
-	 *
-	 * @param string $cookie
-	 * @return string|null
-	 */
-	protected function encryptCookie($cookie)
-	{
-		try {
-			return $this->getEncrypter()->encrypt($cookie);
-		} catch (EncryptException $e) {
-			//
-		}
-	}
-
-	/**
 	 * Log the user out.
 	 *
 	 * @return void
@@ -576,6 +546,36 @@ class SessionGuard implements StatefulGuardInterface
 			->where($model->getKeyName(), $identifier)
 			->where($model->getRememberTokenName(), $token)
 			->first();
+	}
+
+	/**
+	 * Decrypt a cookie string.
+	 *
+	 * @param string $cookie
+	 * @return string|null
+	 */
+	protected function decryptCookie($cookie)
+	{
+		try {
+			return $this->getEncrypter()->decrypt($cookie);
+		} catch (DecryptException $e) {
+			//
+		}
+	}
+
+	/**
+	 * Encrypt a cookie string.
+	 *
+	 * @param string $cookie
+	 * @return string|null
+	 */
+	protected function encryptCookie($cookie)
+	{
+		try {
+			return $this->getEncrypter()->encrypt($cookie);
+		} catch (EncryptException $e) {
+			//
+		}
 	}
 
 	/**
@@ -721,5 +721,4 @@ class SessionGuard implements StatefulGuardInterface
 
 		return new $model;
 	}
-
 }
