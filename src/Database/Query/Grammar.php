@@ -48,7 +48,13 @@ class Grammar
 			$query->columns = array('*');
 		}
 
-		return trim($this->concatenate($this->compileComponents($query)));
+		$sql = trim($this->concatenate($this->compileComponents($query)));
+
+		if ($query->unions) {
+			$sql = '(' .$sql .') '.$this->compileUnions($query);
+		}
+
+		return $sql;
 	}
 
 	/**
@@ -535,7 +541,7 @@ class Grammar
 	{
 		$joiner = isset($union['all']) ? ' UNION ALL ' : ' UNION ';
 
-		return $joiner .$union['query']->toSql();
+		return $joiner .'(' .$union['query']->toSql() .')';
 	}
 
 	/**
@@ -655,6 +661,10 @@ class Grammar
 	 */
 	public function wrap($value)
 	{
+		if ($value instanceof Expression) {
+			return $value->get();
+		}
+
 		if (strpos(strtolower($value), ' as ') !== false) {
 			$segments = explode(' ', $value);
 
@@ -695,7 +705,9 @@ class Grammar
 	 */
 	protected function wrapValue($value)
 	{
-		return ($value !== '*') ? sprintf('`%s`', $value) : $value;
+		if ($value === '*') return $value;
+
+		return '`' .str_replace('`', '``', $value) .'`';
 	}
 
 	/**

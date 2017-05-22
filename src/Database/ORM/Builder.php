@@ -481,7 +481,9 @@ class Builder
 
 		$query = $relation->getRelationCountQuery($relation->getRelated()->newQuery(), $this);
 
-		if ($callback) call_user_func($callback, $query);
+		if ($callback) {
+			call_user_func($callback, $query);
+		}
 
 		return $this->addHasWhere($query, $relation, $operator, $count, $boolean);
 	}
@@ -609,8 +611,6 @@ class Builder
 	protected function mergeWheresToHas(Builder $hasQuery, Relation $relation)
 	{
 		$relationQuery = $relation->getBaseQuery();
-
-		$hasQuery = $hasQuery->getModel()->removeGlobalScopes($hasQuery);
 
 		$hasQuery->mergeWheres(
 			$relationQuery->wheres, $relationQuery->getBindings()

@@ -907,8 +907,7 @@ if (! function_exists('str_replace_array'))
 	 */
 	function str_replace_array($search, array $replace, $subject)
 	{
-		foreach ($replace as $value)
-		{
+		foreach ($replace as $value) {
 			$subject = preg_replace('/'.$search.'/', $value, $subject, 1);
 		}
 

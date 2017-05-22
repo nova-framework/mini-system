@@ -170,6 +170,10 @@ class SessionGuard implements StatefulGuardInterface
 			}
 		}
 
+		if (! is_null($user)) {
+			$this->events->fire('auth.online', array($user));
+		}
+
 		return $this->user = $user;
 	}
 
@@ -262,7 +266,9 @@ class SessionGuard implements StatefulGuardInterface
 	protected function getRecallerId()
 	{
 		if ($this->validRecaller($recaller = $this->getRecaller())) {
-			return reset(explode('|', $recaller));
+			$segments = explode('|', $recaller);
+
+			return reset($segments);
 		}
 	}
 

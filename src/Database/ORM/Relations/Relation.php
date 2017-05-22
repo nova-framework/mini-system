@@ -5,6 +5,7 @@ namespace Mini\Database\ORM\Relations;
 use Mini\Database\ORM\Builder;
 use Mini\Database\ORM\Collection;
 use Mini\Database\ORM\Model;
+use Mini\Database\Query\Expression;
 use Mini\Support\Arr;
 
 use Closure;
@@ -176,11 +177,13 @@ abstract class Relation
 	 */
 	public function getRelationCountQuery(Builder $query, Builder $parent)
 	{
-		$query->select(new Expression('count(*)'));
+		$query->select(new Expression('COUNT(*)'));
 
 		$key = $this->wrap($this->getQualifiedParentKeyName());
 
-		return $query->where($this->getHasCompareKey(), '=', new Expression($key));
+		$query->where($this->getHasCompareKey(), '=', new Expression($key));
+
+		return $query;
 	}
 
 	/**

@@ -334,7 +334,7 @@ class Builder
 				}
 			}, $boolean);
 		}
-		
+
 		if (func_num_args() == 2) {
 			list($value, $operator) = array($operator, '=');
 		} else if ($this->invalidOperatorAndValue($operator, $value)) {
@@ -361,7 +361,9 @@ class Builder
 
 		$this->wheres[] = compact('type', 'column', 'operator', 'value', 'boolean');
 
-		$this->bindings[] = $value;
+		if (! $value instanceof Expression) {
+			$this->addBinding($value);
+		}
 
 		return $this;
 	}
@@ -1291,7 +1293,7 @@ class Builder
 	 */
 	protected function runSelect()
 	{
-		return $this->connection->select($this->toSql(), $this->bindings);
+		return $this->connection->select($this->toSql(), $this->getBindings());
 	}
 
 	/**
@@ -1535,6 +1537,20 @@ class Builder
 	}
 
 	/**
+	 * Merge an array of where clauses and bindings.
+	 *
+	 * @param  array  $wheres
+	 * @param  array  $bindings
+	 * @return void
+	 */
+	public function mergeWheres($wheres, $bindings)
+	{
+		$this->wheres = array_merge((array) $this->wheres, (array) $wheres);
+
+		$this->bindings = array_values(array_merge($this->bindings, (array) $bindings));
+	}
+
+	/**
 	 * Create a raw Database Expression.
 	 *
 	 * @param  mixed  $value
@@ -1600,10 +1616,11 @@ class Builder
 	 * @param  array  $bindings
 	 * @return array
 	 */
-	protected function cleanBindings(array $bindings)
+	public function cleanBindings(array $bindings)
 	{
-		return array_values(array_filter($bindings, function($binding) {
-			return (! $binding instanceof Expression);
+		return array_values(array_filter($bindings, function($binding)
+		{
+			return ! $binding instanceof Expression;
 		}));
 	}
 

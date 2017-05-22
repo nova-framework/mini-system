@@ -58,9 +58,7 @@ class HasMany extends Relation
 	public function addConstraints()
 	{
 		if (static::$constraints) {
-			$value = $this->parent->getAttribute($this->localKey);
-
-			$this->query->where($this->foreignKey, '=', $value);
+			$this->query->where($this->foreignKey, '=', $this->getParentKey());
 		}
 	}
 

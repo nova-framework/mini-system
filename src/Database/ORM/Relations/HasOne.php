@@ -7,7 +7,7 @@ use Mini\Database\ORM\Collection;
 use Mini\Database\ORM\Model;
 
 
-class HasOne extends Relation
+class HasOne extends HasMany
 {
 	/**
 	 * Get the result(s) of the relationship.
