@@ -6,7 +6,7 @@ use Mini\Config\Repository as ConfigRepository;
 use Mini\Container\Container;
 use Mini\Filesystem\Filesystem;
 use Mini\Http\Request;
-use Mini\Support\Facades\Response;
+use Mini\Http\Response;
 use Mini\Support\Arr;
 use Mini\Support\Str;
 
@@ -114,11 +114,11 @@ class Router
 	{
 		$response = $this->match($request);
 
-		if ($response instanceof SymfonyResponse) {
-			return $response;
-		} else if (! is_null($response)) {
+		if (is_string($response) && ! empty($response)) {
 			return $this->serve($response, $request);
 		}
+
+		return $response;
 	}
 
 	/**
@@ -171,34 +171,12 @@ class Router
 		$compressable = (($mimeType == 'application/javascript') || Str::is('text/*', $mimeType));
 
 		if ($this->compressFiles && ! empty($algorithms) && $compressable) {
-			// Get the (first) encoding algorithm.
-			$algorithm = array_shift($algorithms);
-
-			// Retrieve the file content.
-			$content = file_get_contents($path);
-
-			// Encode the content using the specified algorithm.
-			$content = $this->encodeContent($content, $algorithm);
-
-			// Retrieve the Last-Modified information.
-			$timestamp = filemtime($path);
-
-			$modifyTime = Carbon::createFromTimestampUTC($timestamp);
-
-			$lastModified = $modifyTime->format('D, j M Y H:i:s') .' GMT';
-
-			// Create the custom Response instance.
-			$response = Response::make($content, 200, array(
-				'Content-Type'	 	=> $mimeType,
-				'Content-Encoding'	=> $algorithm,
-				'Last-Modified'		=> $lastModified,
-			));
+			$response = $this->createFileResponse($path, $mimeType, $algorithms);
 		} else {
 			// Create a Binary File Response instance.
-			$response = new BinaryFileResponse($path, 200, array(), true, 'inline', true, false);
-
-			// Set the Content type.
-			$response->headers->set('Content-Type', $mimeType);
+			$response = new BinaryFileResponse(
+				$path, 200, array('Content-Type' => $mimeType), true, 'inline', true, false
+			);
 		}
 
 		// Setup the (browser) Cache Control.
@@ -216,6 +194,34 @@ class Router
 		$response->isNotModified($request);
 
 		return $response->prepare($request);
+	}
+
+	protected function createFileResponse($path, $mimeType, $algorithms)
+	{
+		// Get the (first) encoding algorithm.
+		$algorithm = array_shift($algorithms);
+
+		// Retrieve the file content.
+		$content = file_get_contents($path);
+
+		// Encode the content using the specified algorithm.
+		$content = $this->encodeContent($content, $algorithm);
+
+		// Retrieve the Last-Modified information.
+		$timestamp = filemtime($path);
+
+		$modifyTime = Carbon::createFromTimestampUTC($timestamp);
+
+		$lastModified = $modifyTime->format('D, j M Y H:i:s') .' GMT';
+
+		// Compute the response headers.
+		$headers = array(
+			'Content-Type'	 	=> $mimeType,
+			'Content-Encoding'	=> $algorithm,
+			'Last-Modified'		=> $lastModified,
+		);
+
+		return new Response($content, 200, $headers);
 	}
 
 	protected function encodeContent($content, $algorithm)
