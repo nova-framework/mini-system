@@ -5,6 +5,7 @@ namespace Mini\Routing\Assets;
 use Mini\Config\Repository as ConfigRepository;
 use Mini\Container\Container;
 use Mini\Filesystem\Filesystem;
+use Mini\Http\Request;
 use Mini\Support\Facades\Response;
 use Mini\Support\Arr;
 use Mini\Support\Str;
@@ -77,7 +78,7 @@ class Router
 		$this->cacheControl  = $config->get('assets.cache', array());
 
 		// The Asset Route for Plugins.
-		$this->route('plugins/([^/]+)/(.*)', function ($package, $path)
+		$this->route('plugins/([^/]+)/(.*)', function (Request $request, $package, $path)
 		{
 			if (! is_null($namedPath = $this->findNamedPath($package))) {
 				return $namedPath .DS .str_replace('/', DS, $path);
@@ -93,11 +94,19 @@ class Router
 	 * @param  string  $uri
 	 * @return string|null
 	 */
-	public function match($uri)
+	public function match(Request $request)
 	{
+		if (! in_array($request->method(), array('GET', 'HEAD'))) {
+			return;
+		}
+
+		$uri = $request->path();
+
 		foreach ($this->routes as $pattern => $callback) {
 			if (preg_match('#^' .$pattern .'$#i', $uri, $matches)) {
 				$parameters = array_slice($matches, 1);
+
+				array_unshift($parameters, $request);
 
 				return call_user_func_array($callback, $parameters);
 			}
@@ -114,21 +123,6 @@ class Router
 	public function route($pattern, $callback)
 	{
 		$this->routes[$pattern] = $callback;
-	}
-
-	/**
-	 * Get the file path for a given URI.
-	 *
-	 * @param  string  $uri
-	 * @return string|null
-	 */
-	public function resolveFilePath($uri)
-	{
-		$response = $this->match($uri);
-
-		if (! $response instanceof SymfonyResponse) {
-			return $response;
-		}
 	}
 
 	/**
@@ -223,16 +217,7 @@ class Router
 	 */
 	public function dispatch(SymfonyRequest $request)
 	{
-		if (! in_array($request->method(), array('GET', 'HEAD'))) {
-			// An invalid HTTP method for Assets dispatching.
-			return;
-		}
-
-		// Get the URI from the Request instance.
-		$uri = $request->path();
-
-		// Dispatch the URI to Assets Manager and get its response.
-		$response = $this->match($uri);
+		$response = $this->match($request);
 
 		if ($response instanceof SymfonyResponse) {
 			return $response;
