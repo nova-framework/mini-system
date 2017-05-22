@@ -650,6 +650,10 @@ class Grammar
 	 */
 	public function wrapTable($table)
 	{
+		if ($table instanceof Expression) {
+			return $table->get();
+		}
+
 		return $this->wrap($this->getTablePrefix() .$table);
 	}
 
