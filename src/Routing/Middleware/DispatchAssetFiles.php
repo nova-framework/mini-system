@@ -9,7 +9,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Closure;
 
 
-class ServeAsset
+class DispatchAssetFiles
 {
 	/**
 	 * The application implementation.
