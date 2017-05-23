@@ -3,8 +3,8 @@
 namespace Mini\Bus;
 
 use Mini\Bus\Contracts\DispatcherInterface;
-use Mini\Pipeline\Pipeline;
 use Mini\Container\Container;
+use Mini\Pipeline\Pipeline;
 
 use Closure;
 use ReflectionMethod;
