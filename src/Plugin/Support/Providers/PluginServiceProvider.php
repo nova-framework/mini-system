@@ -98,17 +98,14 @@ class PluginServiceProvider extends ServiceProvider
 	 * Load the standard routes file for the plugin.
 	 *
 	 * @param  string  $path
+	 * @param  string  $middleware
 	 * @return mixed
 	 */
-	protected function loadRoutesFrom($path)
+	protected function loadRoutesFrom($path, $middleware = 'web')
 	{
 		$router = $this->app['router'];
 
-		if (is_null($this->namespace)) {
-			return require $path;
-		}
-
-		$router->group(array('namespace' => $this->namespace), function ($router) use ($path)
+		$router->group(array('middleware' => $middleware, 'namespace' => $this->namespace), function ($router) use ($path)
 		{
 			require $path;
 		});

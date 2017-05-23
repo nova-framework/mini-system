@@ -31,6 +31,13 @@ class Kernel implements KernelInterface
 	protected $router;
 
 	/**
+	 * The application's route middleware groups.
+	 *
+	 * @var array
+	 */
+	protected $middlewareGroups = array();
+
+	/**
 	 * The application's middleware stack.
 	 *
 	 * @var array
@@ -68,6 +75,10 @@ class Kernel implements KernelInterface
 		$this->app = $app;
 
 		$this->router = $router;
+
+		foreach ($this->middlewareGroups as $key => $middleware) {
+			$router->middlewareGroup($key, $middleware);
+		}
 
 		foreach($this->routeMiddleware as $name => $middleware) {
 			$this->router->middleware($name, $middleware);

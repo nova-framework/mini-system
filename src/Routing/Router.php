@@ -62,6 +62,13 @@ class Router
 	protected $middleware = array();
 
 	/**
+	 * All of the middleware groups.
+	 *
+	 * @var array
+	 */
+	protected $middlewareGroups = array();
+
+	/**
 	 * The instance of RouteCollection.
 	 *
 	 * @var \Mini\Routing\RouteCollection;
@@ -608,11 +615,13 @@ class Router
 	 */
 	public function gatherRouteMiddlewares(Route $route)
 	{
-		return array_map(function ($name)
+		$middleware = array_map(function ($name)
 		{
 			return $this->resolveMiddleware($name);
 
 		}, $route->middleware());
+
+		return Arr::flatten($middleware);
 	}
 
 	/**
@@ -622,6 +631,21 @@ class Router
 	 * @return array
 	 */
 	public function resolveMiddleware($name)
+	{
+		if (isset($this->middlewareGroups[$name])) {
+			return $this->parseMiddlewareGroup($name);
+		}
+
+		return $this->parseMiddleware($name);
+	}
+
+	/**
+	 * Parse the middleware and format it for usage.
+	 *
+	 * @param  string  $name
+	 * @return array
+	 */
+	protected function parseMiddleware($name)
 	{
 		list($name, $parameters) = array_pad(explode(':', $name, 2), 2, null);
 
@@ -647,6 +671,31 @@ class Router
 
 			return call_user_func_array($callable, $parameters);
 		};
+	}
+
+	/**
+	 * Parse the middleware group and format it for usage.
+	 *
+	 * @param  string  $name
+	 * @return array
+	 */
+	protected function parseMiddlewareGroup($name)
+	{
+		$results = array();
+
+		foreach ($this->middlewareGroups[$name] as $middleware) {
+			if (isset($this->middlewareGroups[$middleware])) {
+				$results = array_merge(
+					$results, $this->parseMiddlewareGroup($middleware)
+				);
+
+				continue;
+			}
+
+			$results[] = $this->parseMiddleware($middleware);
+		}
+
+		return $results;
 	}
 
 	/**
@@ -725,6 +774,20 @@ class Router
 	public function middleware($name, $middleware)
 	{
 		$this->middleware[$name] = $middleware;
+
+		return $this;
+	}
+
+	/**
+	 * Register a group of middleware.
+	 *
+	 * @param  string  $name
+	 * @param  array  $middleware
+	 * @return $this
+	 */
+	public function middlewareGroup($name, array $middleware)
+	{
+		$this->middlewareGroups[$name] = $middleware;
 
 		return $this;
 	}
