@@ -14,7 +14,7 @@ use Mini\Foundation\Console\ViewClearCommand;
 use Mini\Support\ServiceProvider;
 
 
-class ForgeServiceProvider extends ServiceProvider
+class ConsoleServiceProvider extends ServiceProvider
 {
 	/**
 	 * Indicates if loading of the provider is deferred.
@@ -22,6 +22,16 @@ class ForgeServiceProvider extends ServiceProvider
 	 * @var bool
 	 */
 	protected $defer = true;
+
+	/**
+	 * The service providers to be registered.
+	 *
+	 * @var array
+	 */
+	protected $providers = array(
+		'Mini\Foundation\Providers\ComposerServiceProvider',
+		'Mini\Foundation\Providers\PublisherServiceProvider',
+	);
 
 	/**
 	 * The commands to be registered.
@@ -46,6 +56,10 @@ class ForgeServiceProvider extends ServiceProvider
 	 */
 	public function register()
 	{
+		foreach($this->providers as $provider) {
+			$this->app->register($provider);
+		}
+
 		foreach (array_keys($this->commands) as $command) {
 			$method = "register{$command}Command";
 
