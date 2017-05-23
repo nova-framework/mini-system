@@ -45,13 +45,13 @@ class Router
 	public function __construct()
 	{
 		// Add the Asset Route for Plugins.
-		$this->route('plugins/([^/]+)/(.*)', function (Request $request, $package, $path)
+		$this->route('plugins/([^/]+)/(.*)', function (Request $request, $plugin, $path)
 		{
-			if (! is_null($namedPath = $this->findNamedPath($package))) {
+			if (! is_null($namedPath = $this->findNamedPath($plugin))) {
 				return $namedPath .DS .str_replace('/', DS, $path);
 			}
 
-			return Response::make('File Not Found', 404);
+			return new Response('File Not Found', 404);
 		});
 	}
 
@@ -79,7 +79,15 @@ class Router
 	 */
 	public function dispatch(SymfonyRequest $request)
 	{
-		$response = $this->match($request);
+		$response = null;
+
+		if (! is_null($route = $this->findRoute($request))) {
+			list($callback, $parameters) = $route;
+
+			array_unshift($parameters, $request);
+
+			$response = call_user_func_array($callback, $parameters);
+		}
 
 		if (is_string($response) && ! empty($response)) {
 			return $this->serve($response, $request);
@@ -94,7 +102,7 @@ class Router
 	 * @param  string  $uri
 	 * @return string|null
 	 */
-	public function match(Request $request)
+	protected function findRoute(Request $request)
 	{
 		if (! in_array($request->method(), array('GET', 'HEAD'))) {
 			return;
@@ -103,12 +111,8 @@ class Router
 		$uri = $request->path();
 
 		foreach ($this->routes as $pattern => $callback) {
-			if (preg_match('#^' .$pattern .'$#i', $uri, $matches)) {
-				$parameters = array_slice($matches, 1);
-
-				array_unshift($parameters, $request);
-
-				return call_user_func_array($callback, $parameters);
+			if (preg_match('#^' .$pattern .'$#s', $uri, $matches)) {
+				return array($callback, array_slice($matches, 1));
 			}
 		}
 	}
@@ -123,9 +127,9 @@ class Router
 	public function serve($path, SymfonyRequest $request)
 	{
 		if (! file_exists($path)) {
-			return Response::make('File Not Found', 404);
+			return new Response('File Not Found', 404);
 		} else if (! is_readable($path)) {
-			return Response::make('Unauthorized Access', 403);
+			return new Response('Unauthorized Access', 403);
 		}
 
 		// Create a Binary File Response instance.
