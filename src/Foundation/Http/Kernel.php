@@ -195,7 +195,9 @@ class Kernel implements KernelInterface
 	 */
 	protected function parseMiddleware($middleware)
 	{
-		list($name, $parameters) = array_pad(explode(':', $middleware, 2), 2, array());
+		list($name, $parameters) = array_pad(
+			array_map('trim', explode(':', $middleware, 2)), 2, array()
+		);
 
 		if (is_string($parameters)) {
 			$parameters = explode(',', $parameters);

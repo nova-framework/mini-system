@@ -647,7 +647,9 @@ class Router
 	 */
 	protected function parseMiddleware($name)
 	{
-		list($name, $parameters) = array_pad(explode(':', $name, 2), 2, null);
+		list($name, $parameters) = array_pad(
+			array_map('trim', explode(':', $name, 2)), 2, null
+		);
 
 		//
 		$callable = isset($this->middleware[$name]) ? $this->middleware[$name] : $name;

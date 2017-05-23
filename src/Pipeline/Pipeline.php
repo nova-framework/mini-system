@@ -171,7 +171,9 @@ class Pipeline implements PipelineInterface
 	 */
 	protected function parsePipeString($pipe)
 	{
-		list($name, $parameters) = array_pad(explode(':', $pipe, 2), 2, array());
+		list($name, $parameters) = array_pad(
+			array_map('trim', explode(':', $pipe, 2)), 2, array()
+		);
 
 		if (is_string($parameters)) {
 			$parameters = explode(',', $parameters);
