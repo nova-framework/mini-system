@@ -176,7 +176,7 @@ class Pipeline implements PipelineInterface
 		);
 
 		if (is_string($parameters)) {
-			$parameters = explode(',', $parameters);
+			$parameters = array_map('trim',explode(',', $parameters));
 		}
 
 		return array($name, $parameters);
