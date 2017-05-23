@@ -83,7 +83,9 @@ class Dispatcher implements DispatcherInterface
 		foreach ($reflector->getParameters() as $parameter) {
 			if (! is_null($class = $parameter->getClass())) {
 				$parameters[] = $this->container->make($class->name);
-			} else if ($parameter->isDefaultValueAvailable()) {
+			}
+			// The parameter does not have a type-hinted class.
+			else if ($parameter->isDefaultValueAvailable()) {
 				$parameters[] = $parameter->getDefaultValue();
 			} else {
 				$parameters[] = null;
