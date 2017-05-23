@@ -47,11 +47,11 @@ class Router
 		// Add the Asset Route for Plugins.
 		$this->route('plugins/([^/]+)/(.*)', function (Request $request, $plugin, $path)
 		{
-			if (! is_null($namedPath = $this->findNamedPath($plugin))) {
-				return $namedPath .DS .str_replace('/', DS, $path);
+			if (is_null($namedPath = $this->findNamedPath($plugin))) {
+				return new Response('File Not Found', 404);
 			}
 
-			return new Response('File Not Found', 404);
+			return $namedPath .DS .str_replace('/', DS, $path);
 		});
 	}
 
