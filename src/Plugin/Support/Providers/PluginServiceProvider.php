@@ -15,6 +15,47 @@ class PluginServiceProvider extends ServiceProvider
 	 */
 	protected $providers = array();
 
+	/**
+	 * The event handler mappings for the application.
+	 *
+	 * @var array
+	 */
+	protected $listen = array();
+
+	/**
+	 * The subscriber classes to register.
+	 *
+	 * @var array
+	 */
+	protected $subscribe = array();
+
+	/**
+	 * The policy mappings for the application.
+	 *
+	 * @var array
+	 */
+	protected $policies = array();
+
+
+	/**
+	 * Register the application's event listeners.
+	 *
+	 * @return void
+	 */
+	public function boot()
+	{
+		$events = $this->app['events'];
+
+		foreach ($this->listen as $event => $listeners) {
+			foreach ($listeners as $listener) {
+				$events->listen($event, $listener);
+			}
+		}
+
+		foreach ($this->subscribe as $subscriber) {
+			$events->subscribe($subscriber);
+		}
+	}
 
 	/**
 	 * Register the service provider.
@@ -26,5 +67,73 @@ class PluginServiceProvider extends ServiceProvider
 		foreach ($this->providers as $provider) {
 			$this->app->register($provider);
 		}
+	}
+
+	/**
+	 * Bootstrap the plugin from the specified file.
+	 *
+	 * @param  string  $path
+	 * @return mixed
+	 */
+	protected function bootstrapFrom($path)
+	{
+		$app = $this->app;
+
+		return require $path;
+	}
+
+	/**
+	 * Load the application routes.
+	 *
+	 * @return void
+	 */
+	protected function loadRoutes()
+	{
+		if (method_exists($this, 'map')) {
+			call_user_func(array($this, 'map'), $this->app['router']);
+		}
+	}
+
+	/**
+	 * Load the standard routes file for the plugin.
+	 *
+	 * @param  string  $path
+	 * @return mixed
+	 */
+	protected function loadRoutesFrom($path)
+	{
+		$router = $this->app['router'];
+
+		if (is_null($this->namespace)) {
+			return require $path;
+		}
+
+		$router->group(array('namespace' => $this->namespace), function ($router) use ($path)
+		{
+			require $path;
+		});
+	}
+
+	/**
+	 * Register the application's policies.
+	 *
+	 * @param  \Mini\Auth\Contracts\Access\GateInterface  $gate
+	 * @return void
+	 */
+	public function registerPolicies(Gate $gate)
+	{
+		foreach ($this->policies as $key => $value) {
+			$gate->policy($key, $value);
+		}
+	}
+
+	/**
+	 * Get the events and handlers.
+	 *
+	 * @return array
+	 */
+	public function listens()
+	{
+		return $this->listen;
 	}
 }
