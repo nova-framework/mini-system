@@ -38,7 +38,10 @@ abstract class ServiceProvider
 	 *
 	 * @return void
 	 */
-	public function boot() {}
+	public function boot()
+	{
+		//
+	}
 
 	/**
 	 * Register the service provider.
@@ -60,34 +63,44 @@ abstract class ServiceProvider
 		$namespace = $this->getPackageNamespace($package, $namespace);
 
 		//
+		$files = $this->app['files'];
+
 		$path = $path ?: $this->guessPackagePath();
 
-		// Determine the Package Config path.
+		// Register the Package Config path.
 		$config = $path .DS .'Config';
 
-		if ($this->app['files']->isDirectory($config)) {
+		if ($files->isDirectory($config)) {
 			$this->app['config']->package($package, $config, $namespace);
 		}
 
-		// Determine the Package Language path.
+		// Register the Package Language path.
 		$language = $path .DS .'Language';
 
-		if ($this->app['files']->isDirectory($language)) {
+		if ($files->isDirectory($language)) {
 			$this->app['language']->package($package, $language, $namespace);
 		}
 
-		// Determine the Package Views path.
-		$views = $path .DS .'Views';
+		// Register the Package Views path.
+		$views = $this->app['view'];
 
-		if ($this->app['files']->isDirectory($views)) {
-			$this->app['view']->addNamespace($package, $views);
+		$appView = $this->getAppViewPath($package);
+
+		if ($files->isDirectory($appView)) {
+			$views->addNamespace($namespace, $appView);
 		}
 
-		// Determine the Package Assets path.
-		$path = dirname($path) .DS .'webroot';
+		$viewPath = $path .DS .'Views';
 
-		if ($this->app['files']->isDirectory($path)) {
-			$this->app['asset.router']->package($package, $path, $namespace);
+		if ($files->isDirectory($viewPath)) {
+			$views->addNamespace($package, $viewPath);
+		}
+
+		// Register the Package Assets path.
+		$webroot = dirname($path) .DS .'webroot';
+
+		if ($files->isDirectory($webroot)) {
+			$this->app['asset.router']->package($package, $webroot, $namespace);
 		}
 	}
 
@@ -137,6 +150,17 @@ abstract class ServiceProvider
 		{
 			$forge->resolveCommands($commands);
 		});
+	}
+
+	/**
+	 * Get the application package view path.
+	 *
+	 * @param  string  $package
+	 * @return string
+	 */
+	protected function getAppViewPath($package)
+	{
+		return $this->app['path'] .str_replace('/', DS, "/Views/Plugins/{$package}");
 	}
 
 	/**

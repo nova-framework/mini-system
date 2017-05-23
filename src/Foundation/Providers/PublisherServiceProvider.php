@@ -5,8 +5,10 @@ namespace Mini\Foundation\Providers;
 use Mini\Support\ServiceProvider;
 use Mini\Foundation\Publishers\AssetPublisher;
 use Mini\Foundation\Publishers\ConfigPublisher;
+use Mini\Foundation\Publishers\ViewPublisher;
 use Mini\Foundation\Console\AssetPublishCommand;
 use Mini\Foundation\Console\ConfigPublishCommand;
+use Mini\Foundation\Console\ViewPublishCommand;
 
 
 class PublisherServiceProvider extends ServiceProvider
@@ -29,8 +31,10 @@ class PublisherServiceProvider extends ServiceProvider
 
 		$this->registerConfigPublisher();
 
+		$this->registerViewPublisher();
+
 		$this->commands(
-			'command.asset.publish', 'command.config.publish'
+			'command.asset.publish', 'command.config.publish', 'command.view.publish'
 		);
 	}
 
@@ -99,6 +103,43 @@ class PublisherServiceProvider extends ServiceProvider
 			$configPublisher = $app['config.publisher'];
 
 			return new ConfigPublishCommand($configPublisher);
+		});
+	}
+
+	/**
+	 * Register the view publisher class and command.
+	 *
+	 * @return void
+	 */
+	protected function registerViewPublisher()
+	{
+		$this->registerViewPublishCommand();
+
+		$this->app->bindShared('view.publisher', function($app)
+		{
+			$viewPath = $app['path'] .DS .'Views';
+
+			$packagePath = $app['path.base'] .DS .'plugins';
+
+			//
+			$publisher = new ViewPublisher($app['files'], $viewPath);
+
+			$publisher->setPackagePath($packagePath);
+
+			return $publisher;
+		});
+	}
+
+	/**
+	 * Register the view publish console command.
+	 *
+	 * @return void
+	 */
+	protected function registerViewPublishCommand()
+	{
+		$this->app->bindShared('command.view.publish', function($app)
+		{
+			return new ViewPublishCommand($app['view.publisher']);
 		});
 	}
 
