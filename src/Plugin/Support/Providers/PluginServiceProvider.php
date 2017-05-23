@@ -55,6 +55,8 @@ class PluginServiceProvider extends ServiceProvider
 		foreach ($this->subscribe as $subscriber) {
 			$events->subscribe($subscriber);
 		}
+
+		$this->loadRoutes();
 	}
 
 	/**
@@ -98,14 +100,14 @@ class PluginServiceProvider extends ServiceProvider
 	 * Load the standard routes file for the plugin.
 	 *
 	 * @param  string  $path
-	 * @param  string  $middleware
+	 * @param  string  $group
 	 * @return mixed
 	 */
-	protected function loadRoutesFrom($path, $middleware = 'web')
+	protected function loadRoutesFrom($path, $group = 'web')
 	{
 		$router = $this->app['router'];
 
-		$router->group(array('middleware' => $middleware, 'namespace' => $this->namespace), function ($router) use ($path)
+		$router->group(array('middleware' => $group, 'namespace' => $this->namespace), function ($router) use ($path)
 		{
 			require $path;
 		});
