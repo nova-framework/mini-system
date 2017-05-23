@@ -57,12 +57,12 @@ class Dispatcher implements DispatcherInterface
 	public function dispatch($command)
 	{
 		if (empty($this->pipes)) {
-			return $this->callHandler($command);
+			return $this->callCommandHandler($command);
 		}
 
 		return $this->pipeline->send($command)->through($this->pipes)->then(function ($command)
 		{
-			return $this->callHandler($command);
+			return $this->callCommandHandler($command);
 		});
 	}
 
@@ -70,15 +70,15 @@ class Dispatcher implements DispatcherInterface
 	 * Execute the given command handler with method's type-hinted dependencies.
 	 *
 	 * @param mixed  $command
-	 * @param string  $method
+	 * @param string  $handler
 	 * @return mixed
 	 */
-	protected function callHandler($command, $method = 'handle')
+	protected function callCommandHandler($command, $handler = 'handle')
 	{
 		$parameters = array();
 
-		//
-		$reflector = new ReflectionMethod($command, $method);
+		// Compute the command handler's call dependencies.
+		$reflector = new ReflectionMethod($command, $handler);
 
 		foreach ($reflector->getParameters() as $parameter) {
 			if (! is_null($class = $parameter->getClass())) {
@@ -90,7 +90,7 @@ class Dispatcher implements DispatcherInterface
 			}
 		}
 
-		return call_user_func_array(array($command, $method), $parameters);
+		return call_user_func_array(array($command, $handler), $parameters);
 	}
 
 	/**
