@@ -152,7 +152,8 @@ class PublisherServiceProvider extends ServiceProvider
 	{
 		return array(
 			'asset.publisher', 'command.asset.publish',
-			'config.publisher', 'command.config.publish'
+			'config.publisher', 'command.config.publish',
+			'view.publisher', 'command.view.publish'
 		);
 	}
 
