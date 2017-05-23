@@ -39,9 +39,9 @@ class SetupLanguage
 		$session = $this->app['session'];
 
 		if (! $session->has('language')) {
-			$cookie = $request->cookie(PREFIX .'language', null);
-
-			$locale = $cookie ?: $this->app['config']->get('app.locale');
+			if (is_null($locale = $request->cookie(PREFIX .'language', null))) {
+				$locale = $this->app['config']->get('app.locale');
+			}
 
 			$session->set('language', $locale);
 		} else {
@@ -52,5 +52,4 @@ class SetupLanguage
 
 		return $next($request);
 	}
-
 }
