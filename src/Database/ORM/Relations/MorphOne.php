@@ -2,18 +2,17 @@
 
 namespace Mini\Database\ORM\Relations;
 
-use Mini\Database\ORM\Relations\HasMany;
 use Mini\Database\ORM\Relations\HasOneTrait;
+use Mini\Database\ORM\Relations\MorphMany;
 use Mini\Database\ORM\Collection;
-use Mini\Database\ORM\Model;
 
 
-class HasOne extends HasMany
+class MorphOne extends MorphMany
 {
 	use HasOneTrait;
 
 	/**
-	 * Get the result(s) of the relationship.
+	 * Get the results of the relationship.
 	 *
 	 * @return mixed
 	 */
@@ -42,7 +41,7 @@ class HasOne extends HasMany
 	 * Match the eagerly loaded results to their parents.
 	 *
 	 * @param  array   $models
-	 * @param  \Nova\Database\ORM\Collection  $results
+	 * @param  \Mini\Database\ORM\Collection  $results
 	 * @param  string  $relation
 	 * @return array
 	 */
@@ -51,4 +50,3 @@ class HasOne extends HasMany
 		return $this->matchOne($models, $results, $relation);
 	}
 }
-

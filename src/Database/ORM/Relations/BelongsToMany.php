@@ -96,9 +96,7 @@ class BelongsToMany extends Relation
 		$this->setJoin();
 
 		if (static::$constraints) {
-			$foreign = $this->getForeignKey();
-
-			$this->query->where($foreign, '=', $this->parent->getKey());
+			$this->setWhere();
 		}
 	}
 
@@ -382,6 +380,20 @@ class BelongsToMany extends Relation
 		$key = $this->related->getTable() .'.' .$this->related->getKeyName();
 
 		$query->join($this->table, $key, '=', $this->getOtherKey());
+
+		return $this;
+	}
+
+	/**
+	 * Set the where clause for the relation query.
+	 *
+	 * @return $this
+	 */
+	protected function setWhere()
+	{
+		$foreign = $this->getForeignKey();
+
+		$this->query->where($foreign, '=', $this->parent->getKey());
 
 		return $this;
 	}

@@ -36,7 +36,7 @@ class BelongsTo extends Relation
 	/**
 	 * Create a new belongs to relationship instance.
 	 *
-	 * @param  \Mini\Database\ORM\Builder  $query
+	 * @param  \Mini\Database\ORM\Model  $related
 	 * @param  \Mini\Database\ORM\Model  $parent
 	 * @param  string  $foreignKey
 	 * @param  string  $otherKey

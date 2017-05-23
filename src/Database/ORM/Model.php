@@ -7,6 +7,10 @@ use Mini\Database\ORM\Relations\BelongsToMany;
 use Mini\Database\ORM\Relations\HasMany;
 use Mini\Database\ORM\Relations\HasManyThrough;
 use Mini\Database\ORM\Relations\HasOne;
+use Mini\Database\ORM\Relations\MorphMany;
+use Mini\Database\ORM\Relations\MorphOne;
+use Mini\Database\ORM\Relations\MorphTo;
+use Mini\Database\ORM\Relations\MorphToMany;
 use Mini\Database\ORM\Relations\Pivot;
 use Mini\Database\ORM\Relations\Relation;
 use Mini\Database\ORM\Builder;
@@ -138,6 +142,13 @@ class Model implements ArrayAccess, ArrayableInterface, JsonableInterface, JsonS
 	protected $with = array();
 
 	/**
+	 * The class name to be used in polymorphic relations.
+	 *
+	 * @var string
+	 */
+	protected $morphClass;
+
+	/**
 	 * Indicates if the Model exists.
 	 *
 	 * @var bool
@@ -185,6 +196,13 @@ class Model implements ArrayAccess, ArrayableInterface, JsonableInterface, JsonS
 	 * @var array
 	 */
 	protected static $mutatorCache = array();
+
+	/**
+	 * The many to many relationship methods.
+	 *
+	 * @var array
+	 */
+	public static $manyMethods = array('belongsToMany', 'morphToMany', 'morphedByMany');
 
 	/**
 	 * The array of observable events.
@@ -669,7 +687,7 @@ class Model implements ArrayAccess, ArrayableInterface, JsonableInterface, JsonS
 
 		return $this->save();
 	}
-	
+
 	/**
 	 * Update the creation and update timestamps.
 	 *
@@ -783,6 +801,14 @@ class Model implements ArrayAccess, ArrayableInterface, JsonableInterface, JsonS
 		return $instance->newQuery()->with($relations);
 	}
 
+	/**
+	 * Define a one-to-one relationship.
+	 *
+	 * @param  string  $related
+	 * @param  string  $foreignKey
+	 * @param  string  $localKey
+	 * @return \Mini\Database\ORM\Relations\HasOne
+	 */
 	public function hasOne($related, $foreignKey = null, $localKey = null)
 	{
 		$foreignKey = $foreignKey ?: $this->getForeignKey();
@@ -790,11 +816,43 @@ class Model implements ArrayAccess, ArrayableInterface, JsonableInterface, JsonS
 		$localKey = $localKey ?: $this->getKeyName();
 
 		//
-		$model = new $related;
+		$related = new $related;
 
-		return new HasOne($model, $this, $foreignKey, $localKey);
+		return new HasOne($related, $this, $foreignKey, $localKey);
 	}
 
+	/**
+	 * Define a polymorphic one-to-one relationship.
+	 *
+	 * @param  string  $related
+	 * @param  string  $name
+	 * @param  string  $type
+	 * @param  string  $id
+	 * @param  string  $localKey
+	 * @return \Mini\Database\ORM\Relations\MorphOne
+	 */
+	public function morphOne($related, $name, $type = null, $id = null, $localKey = null)
+	{
+		$related = new $related;
+
+		list($type, $id) = $this->getMorphs($name, $type, $id);
+
+		$table = $related->getTable();
+
+		$localKey = $localKey ?: $this->getKeyName();
+
+		return new MorphOne($related, $this, $table .'.' .$type, $table .'.' .$id, $localKey);
+	}
+
+	/**
+	 * Define an inverse one-to-one or many relationship.
+	 *
+	 * @param  string  $related
+	 * @param  string  $foreignKey
+	 * @param  string  $otherKey
+	 * @param  string  $relation
+	 * @return \Mini\Database\ORM\Relations\BelongsTo
+	 */
 	public function belongsTo($related, $foreignKey = null, $otherKey = null, $relation = null)
 	{
 		if (is_null($relation)) {
@@ -807,13 +865,50 @@ class Model implements ArrayAccess, ArrayableInterface, JsonableInterface, JsonS
 			$foreignKey = Str::snake($relation) .'_id';
 		}
 
-		$model = new $related;
+		$related = new $related;
 
-		$otherKey = $otherKey ?: $model->getKeyName();
+		$otherKey = $otherKey ?: $related->getKeyName();
 
-		return new BelongsTo($model, $this, $foreignKey, $otherKey, $relation);
+		return new BelongsTo($related, $this, $foreignKey, $otherKey, $relation);
 	}
 
+	/**
+	 * Define a polymorphic, inverse one-to-one or many relationship.
+	 *
+	 * @param  string  $name
+	 * @param  string  $type
+	 * @param  string  $id
+	 * @return \Mini\Database\ORM\Relations\MorphTo
+	 */
+	public function morphTo($name = null, $type = null, $id = null)
+	{
+		if (is_null($name)) {
+			list(, $caller) = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+
+			$name = Str::snake($caller['function']);
+		}
+
+		list($type, $id) = $this->getMorphs($name, $type, $id);
+
+		if (is_null($class = $this->$type)) {
+			return new MorphTo($this, $this, $id, null, $type, $name);
+		} else {
+			$related = new $class;
+
+			return new MorphTo(
+				$related, $this, $id, $related->getKeyName(), $type, $name
+			);
+		}
+	}
+
+	/**
+	 * Define a one-to-many relationship.
+	 *
+	 * @param  string  $related
+	 * @param  string  $foreignKey
+	 * @param  string  $localKey
+	 * @return \Mini\Database\ORM\Relations\HasMany
+	 */
 	public function hasMany($related, $foreignKey = null, $localKey = null)
 	{
 		$foreignKey = $foreignKey ?: $this->getForeignKey();
@@ -821,9 +916,9 @@ class Model implements ArrayAccess, ArrayableInterface, JsonableInterface, JsonS
 		$localKey = $localKey ?: $this->getKeyName();
 
 		//
-		$model = new $related;
+		$related = new $related;
 
-		return new HasMany($model, $this, $foreignKey, $localKey);
+		return new HasMany($related, $this, $foreignKey, $localKey);
 	}
 
 	/**
@@ -844,9 +939,32 @@ class Model implements ArrayAccess, ArrayableInterface, JsonableInterface, JsonS
 		$secondKey = $secondKey ?: $through->getForeignKey();
 
 		//
-		$model = new $related;
+		$related = new $related;
 
-		return new HasManyThrough($model, $this, $through, $firstKey, $secondKey);
+		return new HasManyThrough($related, $this, $through, $firstKey, $secondKey);
+	}
+
+	/**
+	 * Define a polymorphic one-to-many relationship.
+	 *
+	 * @param  string  $related
+	 * @param  string  $name
+	 * @param  string  $type
+	 * @param  string  $id
+	 * @param  string  $localKey
+	 * @return \Mini\Database\ORM\Relations\MorphMany
+	 */
+	public function morphMany($related, $name, $type = null, $id = null, $localKey = null)
+	{
+		$related = new $related;
+
+		list($type, $id) = $this->getMorphs($name, $type, $id);
+
+		$table = $related->getTable();
+
+		$localKey = $localKey ?: $this->getKeyName();
+
+		return new MorphMany($related, $this, $table .'.' .$type, $table .'.' .$id, $localKey);
 	}
 
 	/**
@@ -862,22 +980,86 @@ class Model implements ArrayAccess, ArrayableInterface, JsonableInterface, JsonS
 	public function belongsToMany($related, $table = null, $foreignKey = null, $otherKey = null, $relation = null)
 	{
 		if (is_null($relation)) {
-			list(, $caller) = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
-
-			$relation = $caller['function'];
+			$relation = $this->getBelongsToManyCaller();
 		}
 
 		$foreignKey = $foreignKey ?: $this->getForeignKey();
 
-		$model = new $related;
+		$related = new $related;
 
-		$otherKey = $otherKey ?: $model->getForeignKey();
+		$otherKey = $otherKey ?: $related->getForeignKey();
 
 		if (is_null($table)) {
 			$table = $this->joiningTable($related);
 		}
 
-		return new BelongsToMany($model, $this, $table, $foreignKey, $otherKey, $relation);
+		return new BelongsToMany($related, $this, $table, $foreignKey, $otherKey, $relation);
+	}
+
+	/**
+	 * Define a polymorphic many-to-many relationship.
+	 *
+	 * @param  string  $related
+	 * @param  string  $name
+	 * @param  string  $table
+	 * @param  string  $foreignKey
+	 * @param  string  $otherKey
+	 * @param  bool	$inverse
+	 * @return \Mini\Database\ORM\Relations\MorphToMany
+	 */
+	public function morphToMany($related, $name, $table = null, $foreignKey = null, $otherKey = null, $inverse = false)
+	{
+		$caller = $this->getBelongsToManyCaller();
+
+		$foreignKey = $foreignKey ?: $name .'_id';
+
+		$related = new $related;
+
+		$otherKey = $otherKey ?: $related->getForeignKey();
+
+		$table = $table ?: Str::plural($name);
+
+		return new MorphToMany(
+			$related, $this, $name, $table, $foreignKey, $otherKey, $caller, $inverse
+		);
+	}
+
+	/**
+	 * Define a polymorphic, inverse many-to-many relationship.
+	 *
+	 * @param  string  $related
+	 * @param  string  $name
+	 * @param  string  $table
+	 * @param  string  $foreignKey
+	 * @param  string  $otherKey
+	 * @return \Mini\Database\ORM\Relations\MorphToMany
+	 */
+	public function morphedByMany($related, $name, $table = null, $foreignKey = null, $otherKey = null)
+	{
+		$foreignKey = $foreignKey ?: $this->getForeignKey();
+
+		$otherKey = $otherKey ?: $name .'_id';
+
+		return $this->morphToMany($related, $name, $table, $foreignKey, $otherKey, true);
+	}
+
+	/**
+	 * Get the relationship name of the belongs to many.
+	 *
+	 * @return  string
+	 */
+	protected function getBelongsToManyCaller()
+	{
+		$self = __FUNCTION__;
+
+		$caller = array_first(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), function($key, $trace) use ($self)
+		{
+			$caller = $trace['function'];
+
+			return (! in_array($caller, Model::$manyMethods) && $caller != $self);
+		});
+
+		return ! is_null($caller) ? $caller['function'] : null;
 	}
 
 	/**
@@ -1377,6 +1559,33 @@ class Model implements ArrayAccess, ArrayableInterface, JsonableInterface, JsonS
 	public function getForeignKey()
 	{
 		return Str::snake(class_basename($this)) .'_id';
+	}
+
+	/**
+	 * Get the polymorphic relationship columns.
+	 *
+	 * @param  string  $name
+	 * @param  string  $type
+	 * @param  string  $id
+	 * @return array
+	 */
+	protected function getMorphs($name, $type, $id)
+	{
+		$type = $type ?: $name .'_type';
+
+		$id = $id ?: $name .'_id';
+
+		return array($type, $id);
+	}
+
+	/**
+	 * Get the class name for polymorphic relations.
+	 *
+	 * @return string
+	 */
+	public function getMorphClass()
+	{
+		return $this->morphClass ?: get_class($this);
 	}
 
 	/**
