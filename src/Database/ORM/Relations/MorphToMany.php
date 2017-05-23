@@ -3,6 +3,7 @@
 namespace Mini\Database\ORM\Relations;
 
 use Mini\Database\ORM\Relations\BelongsToMany;
+use Mini\Database\ORM\Relations\MorphPivot;
 use Mini\Database\ORM\Builder;
 use Mini\Database\ORM\Model;
 
@@ -58,6 +59,19 @@ class MorphToMany extends BelongsToMany
 	}
 
 	/**
+	 * Set the constraints for an eager load of the relation.
+	 *
+	 * @param  array  $models
+	 * @return void
+	 */
+	public function addEagerConstraints(array $models)
+	{
+		parent::addEagerConstraints($models);
+
+		$this->query->where($this->table.'.'.$this->morphType, $this->morphClass);
+	}
+
+	/**
 	 * Set the where clause for the relation query.
 	 *
 	 * @return $this
@@ -83,19 +97,6 @@ class MorphToMany extends BelongsToMany
 		$query = parent::getRelationCountQuery($query, $parent);
 
 		return $query->where($this->table.'.'.$this->morphType, $this->morphClass);
-	}
-
-	/**
-	 * Set the constraints for an eager load of the relation.
-	 *
-	 * @param  array  $models
-	 * @return void
-	 */
-	public function addEagerConstraints(array $models)
-	{
-		parent::addEagerConstraints($models);
-
-		$this->query->where($this->table.'.'.$this->morphType, $this->morphClass);
 	}
 
 	/**
@@ -136,8 +137,8 @@ class MorphToMany extends BelongsToMany
 		$pivot = new MorphPivot($this->parent, $attributes, $this->table, $exists);
 
 		$pivot->setPivotKeys($this->foreignKey, $this->otherKey)
-			  ->setMorphType($this->morphType)
-			  ->setMorphClass($this->morphClass);
+			->setMorphType($this->morphType)
+			->setMorphClass($this->morphClass);
 
 		return $pivot;
 	}

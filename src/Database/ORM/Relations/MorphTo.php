@@ -59,7 +59,9 @@ class MorphTo extends BelongsTo
 	 */
 	public function addEagerConstraints(array $models)
 	{
-		$this->buildDictionary($this->models = Collection::make($models));
+		$this->models = Collection::make($models);
+
+		$this->buildDictionary($this->models);
 	}
 
 	/**
@@ -71,9 +73,7 @@ class MorphTo extends BelongsTo
 	protected function buildDictionary(Collection $models)
 	{
 		foreach ($models as $model) {
-			if ($model->{$this->morphType}) {
-				$type = $model->{$this->morphType};
-
+			if (! is_null($type = $model->{$this->morphType})) {
 				$key = $model->{$this->foreignKey};
 
 				$this->dictionary[$type][$key][] = $model;
@@ -153,15 +153,11 @@ class MorphTo extends BelongsTo
 	 */
 	protected function getResultsByType($type)
 	{
-		$instance = $this->createModelByType($type);
+		$keys = $this->gatherKeysByType($type)->all();
 
-		$key = $instance->getKeyName();
+		$model = $this->createModelByType($type);
 
-		$query = $instance->newQuery();
-
-		$query = $this->useWithTrashed($query);
-
-		return $query->whereIn($key, $this->gatherKeysByType($type)->all())->get();
+		return $model->newQuery()->whereIn($model->getKeyName(), $keys)->get();
 	}
 
 	/**

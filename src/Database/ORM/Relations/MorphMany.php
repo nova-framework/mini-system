@@ -60,9 +60,9 @@ class MorphMany extends HasMany
 	 */
 	public function addConstraints()
 	{
-		if (static::$constraints) {
-			parent::addConstraints();
+		parent::addConstraints();
 
+		if (static::$constraints) {
 			$this->query->where($this->morphType, $this->morphClass);
 		}
 	}
