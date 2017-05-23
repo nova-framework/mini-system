@@ -126,10 +126,8 @@ class Router
 	 */
 	public function serve($path, SymfonyRequest $request)
 	{
-		if (! file_exists($path)) {
+		if (! is_file($path) || ! is_readable($path)) {
 			return new Response('File Not Found', 404);
-		} else if (! is_readable($path)) {
-			return new Response('Unauthorized Access', 403);
 		}
 
 		// Create a Binary File Response instance.
@@ -146,7 +144,7 @@ class Router
 		$response->setMaxAge(10800);
 		$response->setSharedMaxAge(600);
 
-		// Prepare against the Request instance.
+		// Prepare the Response against the Request instance.
 		$response->isNotModified($request);
 
 		return $response->prepare($request);
