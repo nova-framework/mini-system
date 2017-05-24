@@ -2,6 +2,7 @@
 
 namespace Mini\Database;
 
+use Mini\Database\Contracts\ConnectionResolverInterface;
 use Mini\Database\Connection;
 
 

@@ -8,6 +8,8 @@
 
 namespace Mini\Database;
 
+use Mini\Database\Contracts\ConnectionInterface;
+use Mini\Database\Contracts\ConnectorInterface;
 use Mini\Database\Connector;
 use Mini\Database\Query\Expression;
 use Mini\Database\Query\Builder as QueryBuilder;
@@ -19,13 +21,13 @@ use PDO;
 use DateTimeInterface;
 
 
-class Connection
+class Connection implements ConnectionInterface
 {
 
 	/**
 	 * The Connector instance.
 	 *
-	 * @var
+	 * @var \Mini\Database\Contracts\ConnectorInterface
 	 */
 	protected $connector;
 
@@ -211,7 +213,7 @@ class Connection
 	 * @param  array   $bindings
 	 * @return array
 	 */
-	public function select($query, array $bindings = array())
+	public function select($query, $bindings = array())
 	{
 		return $this->run($query, $bindings, function($me, $query, $bindings)
 		{
@@ -235,7 +237,7 @@ class Connection
 	 * @param  array   $bindings
 	 * @return bool
 	 */
-	public function insert($query, array $bindings = array())
+	public function insert($query, $bindings = array())
 	{
 		return $this->statement($query, $bindings);
 	}
@@ -247,7 +249,7 @@ class Connection
 	 * @param  array   $bindings
 	 * @return int
 	 */
-	public function update($query, array $bindings = array())
+	public function update($query, $bindings = array())
 	{
 		return $this->affectingStatement($query, $bindings);
 	}
@@ -259,7 +261,7 @@ class Connection
 	 * @param  array   $bindings
 	 * @return int
 	 */
-	public function delete($query, array $bindings = array())
+	public function delete($query, $bindings = array())
 	{
 		return $this->affectingStatement($query, $bindings);
 	}
@@ -271,7 +273,7 @@ class Connection
 	 * @param  array   $bindings
 	 * @return bool
 	 */
-	public function statement($query, array $bindings = array())
+	public function statement($query, $bindings = array())
 	{
 		return $this->run($query, $bindings, function($me, $query, $bindings)
 		{
@@ -293,7 +295,7 @@ class Connection
 	 * @param  array   $bindings
 	 * @return int
 	 */
-	public function affectingStatement($query, array $bindings = array())
+	public function affectingStatement($query, $bindings = array())
 	{
 		return $this->run($query, $bindings, function($me, $query, $bindings)
 		{

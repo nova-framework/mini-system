@@ -8,10 +8,12 @@
 
 namespace Mini\Database;
 
+use Mini\Database\Contracts\ConnectorInterface;
+
 use PDO;
 
 
-class Connector
+class Connector implements ConnectorInterface
 {
 	/**
 	 * The default PDO connection options.

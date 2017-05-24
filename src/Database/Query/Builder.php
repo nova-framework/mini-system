@@ -8,7 +8,7 @@
 
 namespace Mini\Database\Query;
 
-use Mini\Database\Connection;
+use Mini\Database\Contracts\ConnectionInterface;
 use Mini\Database\Query\Expression;
 use Mini\Database\Query\Grammar;
 use Mini\Database\Query\JoinClause;
@@ -24,7 +24,7 @@ class Builder
 	/**
 	 * The Database Connection instance.
 	 *
-	 * @var \Mini\Database\Connection
+	 * @var \Mini\Database\Contracts\ConnectionInterface
 	 */
 	protected $connection;
 
@@ -142,7 +142,7 @@ class Builder
 	 *
 	 * @return void
 	 */
-	public function __construct(Connection $connection, Grammar $grammar)
+	public function __construct(ConnectionInterface $connection, Grammar $grammar)
 	{
 		$this->connection = $connection;
 
@@ -1627,7 +1627,7 @@ class Builder
 	/**
 	 * Get the Database Connection instance.
 	 *
-	 * @return \Mini\Database\Connection
+	 * @return \Mini\Database\Contracts\ConnectionInterface
 	 */
 	public function getConnection()
 	{
