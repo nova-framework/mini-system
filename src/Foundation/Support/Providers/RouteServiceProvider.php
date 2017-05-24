@@ -19,9 +19,10 @@ class RouteServiceProvider extends ServiceProvider
 	/**
 	 * Bootstrap any application services.
 	 *
+	 * @param  \Mini\Routing\Router  $router
 	 * @return void
 	 */
-	public function boot()
+	public function boot(Router $router)
 	{
 		$this->loadRoutes();
 	}

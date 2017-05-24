@@ -8,6 +8,7 @@ use ArrayAccess;
 use Closure;
 use InvalidArgumentException;
 use ReflectionClass;
+use ReflectionMethod;
 use ReflectionParameter;
 
 

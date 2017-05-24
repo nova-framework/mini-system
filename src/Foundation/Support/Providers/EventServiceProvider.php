@@ -3,7 +3,6 @@
 namespace Mini\Foundation\Support\Providers;
 
 use Mini\Events\Dispatcher;
-
 use Mini\Support\ServiceProvider;
 
 
@@ -27,12 +26,11 @@ class EventServiceProvider extends ServiceProvider
 	/**
 	 * Register the application's event listeners.
 	 *
+	 * @param  \Mini\Events\Dispatcher  $events
 	 * @return void
 	 */
-	public function boot()
+	public function boot(Dispatcher $events)
 	{
-		$events = $this->app['events'];
-
 		foreach ($this->listen as $event => $listeners) {
 			foreach ($listeners as $listener) {
 				$events->listen($event, $listener);

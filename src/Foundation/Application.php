@@ -11,6 +11,7 @@ use Mini\Foundation\ProviderRepository;
 use Mini\Http\Request;
 use Mini\Routing\RoutingServiceProvider;
 use Mini\Support\Arr;
+use Mini\Support\ServiceProvider;
 
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
@@ -267,7 +268,7 @@ class Application extends Container
 		$this->markAsRegistered($provider);
 
 		if ($this->booted) {
-			$provider->boot();
+			$this->bootProvider($provider);
 		}
 
 		return $provider;
@@ -361,10 +362,10 @@ class Application extends Container
 
 		$this->register($instance = new $provider($this));
 
-		if ( ! $this->booted) {
+		if (! $this->booted) {
 			$this->booting(function() use ($instance)
 			{
-				$instance->boot();
+				$this->bootProvider($instance);
 			});
 		}
 	}
@@ -458,7 +459,7 @@ class Application extends Container
 
 		array_walk($this->serviceProviders, function($provider)
 		{
-			$provider->boot();
+			$this->bootProvider($provider);
 		});
 
 		// Boot the Application.
@@ -467,6 +468,19 @@ class Application extends Container
 		$this->booted = true;
 
 		$this->fireAppCallbacks($this->bootedCallbacks);
+	}
+
+	/**
+	 * Boot the given service provider.
+	 *
+	 * @param  \Mini\Support\ServiceProvider  $provider
+	 * @return mixed
+	 */
+	protected function bootProvider(ServiceProvider $provider)
+	{
+		if (method_exists($provider, 'boot')) {
+			return $this->call(array($provider, 'boot'));
+		}
 	}
 
 	/**
