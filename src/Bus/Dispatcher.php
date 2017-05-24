@@ -75,7 +75,7 @@ class Dispatcher implements DispatcherInterface
 				return $this->container->call(array($command, 'handle'));
 			}
 
-			$callback = $this->resolveHandlerCallback($command);
+			$callback = $this->getHandlerCallback($command);
 
 			return $this->container->call($callback, array($command));
 		});
@@ -88,7 +88,7 @@ class Dispatcher implements DispatcherInterface
 	 *
 	 * @return mixed
 	 */
-	protected function resolveHandlerCallback($command)
+	protected function getHandlerCallback($command)
 	{
 		$name = get_class($command);
 
