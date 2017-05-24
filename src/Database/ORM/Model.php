@@ -1289,6 +1289,18 @@ class Model implements ArrayAccess, ArrayableInterface, JsonableInterface, JsonS
 	}
 
 	/**
+	 * Get the model's original attribute values.
+	 *
+	 * @param  string  $key
+	 * @param  mixed   $default
+	 * @return array
+	 */
+	public function getOriginal($key = null, $default = null)
+	{
+		return Arr::get($this->original, $key, $default);
+	}
+
+	/**
 	 * Sync the original attributes with the current.
 	 *
 	 * @return Model
