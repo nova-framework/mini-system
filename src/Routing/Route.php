@@ -90,7 +90,7 @@ class Route
 			return $this->regex;
 		}
 
-		list($this->regex, $this->variables) = RouteCompiler::compile($this->uri, $this->wheres);
+		list ($this->regex, $this->variables) = RouteCompiler::compile($this->uri, $this->wheres);
 
 		return $this->regex;
 	}
