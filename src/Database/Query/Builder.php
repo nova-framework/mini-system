@@ -528,9 +528,7 @@ class Builder
 
 		$query = $this->newQuery();
 
-		// Similar to the sub-select clause, we will create a new query instance so
-		// the developer may cleanly specify the entire exists query and we will
-		// compile the whole thing in the grammar and insert it into the SQL.
+		//
 		call_user_func($callback, $query);
 
 		$this->wheres[] = compact('type', 'operator', 'query', 'boolean');
@@ -1174,9 +1172,6 @@ class Builder
 	 */
 	public function buildRawPaginator($paginator, $results, $perPage)
 	{
-		// For queries which have a group by, we will actually retrieve the entire set
-		// of rows from the table and "slice" them via PHP. This is inefficient and
-		// the developer must be aware of this behavior; however, it's an option.
 		$start = ($paginator->getCurrentPage() - 1) * $perPage;
 
 		$sliced = array_slice($results, $start, $perPage);
@@ -1196,9 +1191,6 @@ class Builder
 	{
 		$total = $this->getPaginationCount();
 
-		// Once we have the total number of records to be paginated, we can grab the
-		// current page and the result array. Then we are ready to create a brand
-		// new Paginator instances for the results which will create the links.
 		$page = $paginator->getCurrentPage($total);
 
 		$results = $this->forPage($page, $perPage)->get($columns);

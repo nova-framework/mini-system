@@ -44,6 +44,7 @@ class Dispatcher implements DispatcherInterface
 	 */
 	protected $firing = array();
 
+
 	/**
 	 * Create a new event dispatcher instance.
 	 *
