@@ -3,6 +3,7 @@
 namespace Mini\Bus;
 
 use Mini\Bus\Contracts\DispatcherInterface;
+use Mini\Bus\Contracts\SelfHandlingInterface;
 use Mini\Container\Container;
 use Mini\Pipeline\Pipeline;
 
@@ -70,11 +71,11 @@ class Dispatcher implements DispatcherInterface
 	{
 		return $this->pipeline->send($command)->through($this->pipes)->then(function ($command)
 		{
-			if (method_exists($command, 'handle')) {
+			if ($command instanceof SelfHandlingInterface)) {
 				return $this->container->call(array($command, 'handle'));
 			}
 
-			$callback = $this->resolveHandler($command);
+			$callback = $this->resolveHandlerCallback($command);
 
 			return $this->container->call($callback, array($command));
 		});
@@ -87,17 +88,16 @@ class Dispatcher implements DispatcherInterface
 	 *
 	 * @return mixed
 	 */
-	protected function resolveHandler($command)
+	protected function resolveHandlerCallback($command)
 	{
-		$handler = null;
-
-		//
 		$name = get_class($command);
 
 		if (isset($this->mappings[$name])) {
 			$handler = $this->mappings[$name];
 		} else if (isset($this->mapper)) {
 			$handler = call_user_func($this->mapper, $command);
+		} else {
+			$handler = null;
 		}
 
 		if (is_null($handler)) {
