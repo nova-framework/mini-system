@@ -18,7 +18,7 @@ class TemplateEngine extends PhpEngine
 	 *
 	 * @var \Nova\View\Template
 	 */
-	protected $compiler;
+	protected $template;
 
 	/**
 	 * A stack of the last compiled templates.

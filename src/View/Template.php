@@ -57,20 +57,6 @@ class Template
 	protected $footer = array();
 
 	/**
-	 * Placeholder to temporary mark the position of verbatim blocks.
-	 *
-	 * @var string
-	 */
-	protected $verbatimPlaceholder = '@__verbatim__@';
-
-	/**
-	 * Array to temporary store the verbatim blocks found in the template.
-	 *
-	 * @var array
-	 */
-	protected $verbatimBlocks = array();
-
-	/**
 	 * Counter to keep track of nested forelse statements.
 	 *
 	 * @var int
@@ -90,17 +76,6 @@ class Template
 		$this->files = $files;
 
 		$this->cachePath = $cachePath;
-	}
-
-	/**
-	* Get the path to the compiled version of a view.
-	*
-	* @param  string  $path
-	* @return string
-	*/
-	public function getCompiledPath($path)
-	{
-		return $this->cachePath .DS .sha1($path) .'.php';
 	}
 
 	/**
@@ -127,6 +102,38 @@ class Template
 	}
 
 	/**
+	* Get the path to the compiled version of a view.
+	*
+	* @param  string  $path
+	* @return string
+	*/
+	public function getCompiledPath($path)
+	{
+		return $this->cachePath .DS .sha1($path) .'.php';
+	}
+
+	/**
+	 * Get the path currently being compiled.
+	 *
+	 * @return string
+	 */
+	public function getPath()
+	{
+		return $this->path;
+	}
+
+	/**
+	 * Set the path currently being compiled.
+	 *
+	 * @param  string  $path
+	 * @return void
+	 */
+	public function setPath($path)
+	{
+		$this->path = $path;
+	}
+
+	/**
 	 * Compile the view at the given path.
 	 *
 	 * @param  string  $path
@@ -134,6 +141,8 @@ class Template
 	 */
 	public function compile($path = null)
 	{
+		$this->footer = array();
+
 		if (! is_null($path)) {
 			$this->setPath($path);
 		}
@@ -141,7 +150,9 @@ class Template
 		$contents = $this->compileString($this->files->get($path));
 
 		if ( ! is_null($this->cachePath)) {
-			$this->files->put($this->getCompiledPath($this->getPath()), $contents);
+			$compiled = $this->getCompiledPath($this->getPath());
+
+			$this->files->put($compiled, $contents);
 		}
 	}
 
@@ -155,59 +166,14 @@ class Template
 	{
 		$result = '';
 
-		if (strpos($value, '@verbatim') !== false) {
-			$value = $this->storeVerbatimBlocks($value);
-		}
-
-		$this->footer = array();
-
 		foreach (token_get_all($value) as $token) {
 			$result .= is_array($token) ? $this->parseToken($token) : $token;
 		}
 
-		if (! empty($this->verbatimBlocks)) {
-			$result = $this->restoreVerbatimBlocks($result);
-		}
-
 		if (count($this->footer) > 0) {
-			$result = ltrim($result, PHP_EOL) .PHP_EOL .implode(PHP_EOL, array_reverse($this->footer));
+			$result = ltrim($result, PHP_EOL)
+							.PHP_EOL .implode(PHP_EOL, array_reverse($this->footer));
 		}
-
-		return $result;
-	}
-
-	/**
-	 * Store the verbatim blocks and replace them with a temporary placeholder.
-	 *
-	 * @param  string  $value
-	 * @return string
-	 */
-	protected function storeVerbatimBlocks($value)
-	{
-		return preg_replace_callback('/(?<!@)@verbatim(.*?)@endverbatim/s', function ($matches)
-		{
-			$this->verbatimBlocks[] = $matches[1];
-
-			return $this->verbatimPlaceholder;
-
-		}, $value);
-	}
-
-	/**
-	 * Replace the raw placeholders with the original code stored in the raw blocks.
-	 *
-	 * @param  string  $result
-	 * @return string
-	 */
-	protected function restoreVerbatimBlocks($result)
-	{
-		$result = preg_replace_callback('/' .preg_quote($this->verbatimPlaceholder) .'/', function ()
-		{
-			return array_shift($this->verbatimBlocks);
-
-		}, $result);
-
-		$this->verbatimBlocks = array();
 
 		return $result;
 	}
@@ -249,25 +215,6 @@ class Template
 	}
 
 	/**
-	 * Compile Template Statements that start with "@"
-	 *
-	 * @param  string  $value
-	 * @return mixed
-	 */
-	protected function compileStatements($value)
-	{
-		return preg_replace_callback('/\B@(\w+)([ \t]*)(\(((?>[^()]+)|(?3))*\))?/x', function($match)
-		{
-			if (method_exists($this, $method = 'compile' .ucfirst($match[1]))) {
-				$match[0] = call_user_func(array($this, $method), Arr::get($match, 3));
-			}
-
-			return isset($match[3]) ? $match[0] : $match[0] .$match[2];
-
-		}, $value);
-	}
-
-	/**
 	 * Compile Template comments into valid PHP.
 	 *
 	 * @param  string  $value
@@ -296,6 +243,25 @@ class Template
 		}, $value);
 
 		return $this->compileRegularEchos($value);
+	}
+
+	/**
+	 * Compile Template Statements that start with "@"
+	 *
+	 * @param  string  $value
+	 * @return mixed
+	 */
+	protected function compileStatements($value)
+	{
+		return preg_replace_callback('/\B@(\w+)([ \t]*)(\(((?>[^()]+)|(?3))*\))?/x', function($match)
+		{
+			if (method_exists($this, $method = 'compile' .ucfirst($match[1]))) {
+				$match[0] = call_user_func(array($this, $method), Arr::get($match, 3));
+			}
+
+			return isset($match[3]) ? $match[0] : $match[0] .$match[2];
+
+		}, $value);
 	}
 
 	/**
@@ -771,26 +737,5 @@ class Template
 	public function createPlainMatcher($function)
 	{
 		return '/(?<!\w)(\s*)@' .$function .'(\s*)/';
-	}
-
-	/**
-	 * Get the path currently being compiled.
-	 *
-	 * @return string
-	 */
-	public function getPath()
-	{
-		return $this->path;
-	}
-
-	/**
-	 * Set the path currently being compiled.
-	 *
-	 * @param  string  $path
-	 * @return void
-	 */
-	public function setPath($path)
-	{
-		$this->path = $path;
 	}
 }
