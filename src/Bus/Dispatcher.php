@@ -7,8 +7,6 @@ use Mini\Container\Container;
 use Mini\Pipeline\Pipeline;
 
 use Closure;
-use ReflectionMethod;
-use RuntimeException;
 
 
 class Dispatcher implements DispatcherInterface
@@ -34,6 +32,20 @@ class Dispatcher implements DispatcherInterface
 	 */
 	protected $pipes = array();
 
+	/**
+	 * All of the command-to-handler mappings.
+	 *
+	 * @var array
+	 */
+	protected $mappings = array();
+
+	/**
+	 * The fallback mapping Closure.
+	 *
+	 * @var \Closure
+	 */
+	protected $mapper;
+
 
 	/**
 	 * Create a new command dispatcher instance.
@@ -56,43 +68,71 @@ class Dispatcher implements DispatcherInterface
 	 */
 	public function dispatch($command)
 	{
-		if (empty($this->pipes)) {
-			return $this->callCommandHandler($command);
-		}
-
 		return $this->pipeline->send($command)->through($this->pipes)->then(function ($command)
 		{
-			return $this->callCommandHandler($command);
+			if (method_exists($command, 'handle')) {
+				return $this->container->call(array($command, 'handle'));
+			}
+
+			$callback = $this->resolveHandler($command);
+
+			return $this->container->call($callback, array($command));
 		});
 	}
 
 	/**
-	 * Execute the given command handler with method's type-hinted dependencies.
+	 * Get the handler instance for the given command.
 	 *
-	 * @param mixed  $command
-	 * @param string  $handler
+	 * @param mixed $command
+	 *
 	 * @return mixed
 	 */
-	protected function callCommandHandler($command, $handler = 'handle')
+	protected function resolveHandler($command)
 	{
-		$parameters = array();
+		$handler = null;
 
-		// Compute the command handler's call dependencies.
-		$reflector = new ReflectionMethod($command, $handler);
+		//
+		$name = get_class($command);
 
-		foreach ($reflector->getParameters() as $parameter) {
-			if (! is_null($class = $parameter->getClass())) {
-				$parameters[] = $this->container->make($class->name);
-			}
-			// The parameter does not have a type-hinted class.
-			else if ($parameter->isDefaultValueAvailable()) {
-				$parameters[] = $parameter->getDefaultValue();
-			} else {
-				$parameters[] = null;
-			}
+		if (isset($this->mappings[$name])) {
+			$handler = $this->mappings[$name];
+		} else if (isset($this->mapper)) {
+			$handler = call_user_func($this->mapper, $command);
 		}
 
-		return call_user_func_array(array($command, $handler), $parameters);
+		if (is_null($handler)) {
+			throw new InvalidArgumentException("No handler registered for command [{$name}]");
+		}
+
+		list ($className, $method) = array_pad(explode('@', $handler, 2), 2, 'handle');
+
+		return array(
+			$this->container->make($className), $method
+		);
+	}
+
+	/**
+	 * Register command-to-handler mappings.
+	 *
+	 * @param array $commands
+	 *
+	 * @return void
+	 */
+	public function maps(array $commands)
+	{
+		$this->mappings = array_merge($this->mappings, $commands);
+	}
+
+	/**
+	 * Register a fallback mapper callback.
+	 *
+	 * @param \Closure $mapper
+	 *
+	 * @return void
+	 */
+	public function mapUsing(Closure $mapper)
+	{
+		$this->mapper = $mapper;
 	}
 
 	/**

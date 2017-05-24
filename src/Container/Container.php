@@ -341,6 +341,121 @@ class Container implements ArrayAccess
 	}
 
 	/**
+	 * Call the given Closure / class@method and inject its dependencies.
+	 *
+	 * @param  callable|string  $callback
+	 * @param  array  $parameters
+	 * @param  string|null  $defaultMethod
+	 * @return mixed
+	 */
+	public function call($callback, array $parameters = array(), $defaultMethod = null)
+	{
+		if ($this->isCallableWithAtSign($callback) || $defaultMethod) {
+			return $this->callClass($callback, $parameters, $defaultMethod);
+		}
+
+		$dependencies = $this->getMethodDependencies($callback, $parameters);
+
+		return call_user_func_array($callback, $dependencies);
+	}
+
+	/**
+	 * Determine if the given string is in Class@method syntax.
+	 *
+	 * @param  mixed  $callback
+	 * @return bool
+	 */
+	protected function isCallableWithAtSign($callback)
+	{
+		if (! is_string($callback)) {
+			return false;
+		}
+
+		return (strpos($callback, '@') !== false);
+	}
+
+	/**
+	 * Get all dependencies for a given method.
+	 *
+	 * @param  callable|string  $callback
+	 * @param  array  $parameters
+	 * @return array
+	 */
+	protected function getMethodDependencies($callback, array $parameters = array())
+	{
+		$dependencies = array();
+
+		foreach ($this->getCallReflector($callback)->getParameters() as $key => $parameter) {
+			$this->addDependencyForCallParameter($parameter, $parameters, $dependencies);
+		}
+
+		return array_merge($dependencies, $parameters);
+	}
+
+	/**
+	 * Get the proper reflection instance for the given callback.
+	 *
+	 * @param  callable|string  $callback
+	 * @return \ReflectionFunctionAbstract
+	 */
+	protected function getCallReflector($callback)
+	{
+		if (is_string($callback) && strpos($callback, '::') !== false) {
+			$callback = explode('::', $callback);
+		}
+
+		if (is_array($callback)) {
+			return new ReflectionMethod($callback[0], $callback[1]);
+		}
+
+		return new ReflectionFunction($callback);
+	}
+
+	/**
+	 * Get the dependency for the given call parameter.
+	 *
+	 * @param  \ReflectionParameter  $parameter
+	 * @param  array  $parameters
+	 * @param  array  $dependencies
+	 * @return mixed
+	 */
+	protected function addDependencyForCallParameter(ReflectionParameter $parameter, array &$parameters, &$dependencies)
+	{
+		$name = $parameter->getName();
+
+		if (array_key_exists($name, $parameters)) {
+			$dependencies[] = $parameters[$name];
+
+			unset($parameters[$name]);
+		} else if (! is_null($class = $parameter->getClass())) {
+			$dependencies[] = $this->make($class->getName());
+		} else if ($parameter->isDefaultValueAvailable()) {
+			$dependencies[] = $parameter->getDefaultValue();
+		}
+	}
+
+	/**
+	 * Call a string reference to a class using Class@method syntax.
+	 *
+	 * @param  string  $target
+	 * @param  array  $parameters
+	 * @param  string|null  $defaultMethod
+	 * @return mixed
+	 */
+	protected function callClass($target, array $parameters = array(), $defaultMethod = null)
+	{
+		$segments = explode('@', $target);
+
+		$method = (count($segments) == 2) ? $segments[1] : $defaultMethod;
+
+		if (is_null($method)) {
+			throw new InvalidArgumentException('Method not provided.');
+		}
+
+		return $this->call([$this->make($segments[0]), $method], $parameters);
+	}
+
+	/**
 	 * Resolve a given type to an instance.
 	 *
 	 * @param  string  $abstract
