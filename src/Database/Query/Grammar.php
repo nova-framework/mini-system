@@ -10,17 +10,11 @@ namespace Mini\Database\Query;
 
 use Mini\Database\Query\Builder;
 use Mini\Database\Query\Expression;
+use Mini\Database\Grammar as BaseGrammar;
 
 
-class Grammar
+class Grammar extends BaseGrammar
 {
-	/**
-	 * The grammar table prefix.
-	 *
-	 * @var string
-	 */
-	protected $tablePrefix = '';
-
 	protected $selectComponents = array(
 		'aggregate',
 		'columns',
@@ -643,78 +637,6 @@ class Grammar
 	}
 
 	/**
-	 * Wrap a table in keyword identifiers.
-	 *
-	 * @param  string  $table
-	 * @return string
-	 */
-	public function wrapTable($table)
-	{
-		if ($table instanceof Expression) {
-			return $table->get();
-		}
-
-		return $this->wrap($this->getTablePrefix() .$table);
-	}
-
-	/**
-	 * Wrap a value in keyword identifiers.
-	 *
-	 * @param  string  $value
-	 * @return string
-	 */
-	public function wrap($value)
-	{
-		if ($value instanceof Expression) {
-			return $value->get();
-		}
-
-		if (strpos(strtolower($value), ' as ') !== false) {
-			$segments = explode(' ', $value);
-
-			return $this->wrap($segments[0]) .' AS ' .$this->wrap($segments[2]);
-		}
-
-		$wrapped = array();
-
-		$segments = explode('.', $value);
-
-		foreach ($segments as $key => $segment) {
-			if (($key == 0) && (count($segments) > 1)) {
-				$wrapped[] = $this->wrapTable($segment);
-			} else {
-				$wrapped[] = $this->wrapValue($segment);
-			}
-		}
-
-		return implode('.', $wrapped);
-	}
-
-	/**
-	 * Wrap an array of values.
-	 *
-	 * @param  array  $values
-	 * @return array
-	 */
-	public function wrapArray(array $values)
-	{
-		return array_map(array($this, 'wrap'), $values);
-	}
-
-	/**
-	 * Wrap a single string in keyword identifiers.
-	 *
-	 * @param  string  $value
-	 * @return string
-	 */
-	protected function wrapValue($value)
-	{
-		if ($value === '*') return $value;
-
-		return '`' .str_replace('`', '``', $value) .'`';
-	}
-
-	/**
 	 * Concatenate an array of segments, removing empties.
 	 *
 	 * @param  array   $segments
@@ -738,71 +660,4 @@ class Grammar
 	{
 		return preg_replace('/AND |OR /', '', $value, 1);
 	}
-
-	/**
-	 * Create query parameter place-holders for an array.
-	 *
-	 * @param  array   $values
-	 * @return string
-	 */
-	public function parameterize(array $values)
-	{
-		return implode(', ', array_map(array($this, 'parameter'), $values));
-	}
-
-	/**
-	 * Get the appropriate query parameter place-holder for a value.
-	 *
-	 * @param  mixed   $value
-	 * @return string
-	 */
-	public function parameter($value)
-	{
-		return ($value instanceof Expression) ? $value->get() : '?';
-	}
-
-	/**
-	 * Convert an array of column names into a delimited string.
-	 *
-	 * @param  array   $columns
-	 * @return string
-	 */
-	public function columnize(array $columns)
-	{
-		return implode(', ', array_map(array($this, 'wrap'), $columns));
-	}
-
-	/**
-	 * Get the format for database stored dates.
-	 *
-	 * @return string
-	 */
-	public function getDateFormat()
-	{
-		return 'Y-m-d H:i:s';
-	}
-
-	/**
-	 * Get the grammar's table prefix.
-	 *
-	 * @return string
-	 */
-	public function getTablePrefix()
-	{
-		return $this->tablePrefix;
-	}
-
-	/**
-	 * Set the grammar's table prefix.
-	 *
-	 * @param  string  $prefix
-	 * @return $this
-	 */
-	public function setTablePrefix($prefix)
-	{
-		$this->tablePrefix = $prefix;
-
-		return $this;
-	}
-
 }

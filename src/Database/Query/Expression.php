@@ -33,7 +33,7 @@ class Expression
 	 *
 	 * @return string
 	 */
-	public function get()
+	public function getValue()
 	{
 		return $this->value;
 	}
