@@ -598,7 +598,7 @@ class Router
 
 		foreach ($reflector->getParameters() as $key => $parameter) {
 			if (! is_null($class = $parameter->getClass())) {
-				$instance = $this->container->make($class->name);
+				$instance = $this->container->make($class->getName());
 
 				array_splice($parameters, $key, 0, array($instance));
 			}
