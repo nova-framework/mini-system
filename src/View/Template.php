@@ -291,7 +291,7 @@ class Template
 		{
 			$whitespace = empty($matches[2]) ? '' : $matches[2] .$matches[2];
 
-			return '<?php echo e(' .$this->compileEchoDefaults($matches[1]) .'); ?>' .$whitespace;
+			return '<?= e(' .$this->compileEchoDefaults($matches[1]) .'); ?>' .$whitespace;
 
 		}, $value);
 
@@ -312,7 +312,7 @@ class Template
 
 			return ! empty($matches[1])
 				? substr($matches[0], 1)
-				: '<?php echo ' .$this->compileEchoDefaults($matches[2]) .'; ?>' .$whitespace;
+				: '<?= ' .$this->compileEchoDefaults($matches[2]) .'; ?>' .$whitespace;
 
 		}, $value);
 	}
@@ -336,7 +336,7 @@ class Template
 	 */
 	protected function compileEach($expression)
 	{
-		return "<?php echo \$__env->renderEach{$expression}; ?>";
+		return "<?= \$__env->renderEach{$expression}; ?>";
 	}
 
 	/**
@@ -347,7 +347,7 @@ class Template
 	 */
 	protected function compileYield($expression)
 	{
-		return "<?php echo \$__env->yieldContent{$expression}; ?>";
+		return "<?= \$__env->yieldContent{$expression}; ?>";
 	}
 
 	/**
@@ -358,7 +358,7 @@ class Template
 	 */
 	protected function compileShow($expression)
 	{
-		return "<?php echo \$__env->yieldSection(); ?>";
+		return "<?= \$__env->yieldSection(); ?>";
 	}
 
 	/**
@@ -469,28 +469,6 @@ class Template
 	protected function compileForeach($expression)
 	{
 		return "<?php foreach{$expression}: ?>";
-	}
-
-	/**
-	 * Compile the break statements into valid PHP.
-	 *
-	 * @param  string  $expression
-	 * @return string
-	 */
-	protected function compileBreak($expression)
-	{
-		return $expression ? "<?php if{$expression} break; ?>" : '<?php break; ?>';
-	}
-
-	/**
-	 * Compile the continue statements into valid PHP.
-	 *
-	 * @param  string  $expression
-	 * @return string
-	 */
-	protected function compileContinue($expression)
-	{
-		return $expression ? "<?php if{$expression} continue; ?>" : '<?php continue; ?>';
 	}
 
 	/**
@@ -630,17 +608,6 @@ class Template
 	}
 
 	/**
-	 * Compile the unset statements into valid PHP.
-	 *
-	 * @param  string  $expression
-	 * @return string
-	 */
-	protected function compileUnset($expression)
-	{
-		return "<?php unset{$expression}; ?>";
-	}
-
-	/**
 	 * Compile the can statements into valid PHP.
 	 *
 	 * @param  string  $expression
@@ -694,7 +661,7 @@ class Template
 	{
 		$expression = $this->stripParentheses($expression);
 
-		$data = "<?php echo \$__env->make($expression, array_except(get_defined_vars(), array('__data', '__path')))->render(); ?>";
+		$data = "<?= \$__env->make($expression, array_except(get_defined_vars(), array('__data', '__path')))->render(); ?>";
 
 		$this->footer[] = $data;
 
@@ -711,7 +678,7 @@ class Template
 	{
 		$expression = $this->stripParentheses($expression);
 
-		return "<?php echo \$__env->make($expression, array_except(get_defined_vars(), array('__data', '__path')))->render(); ?>";
+		return "<?= \$__env->make($expression, array_except(get_defined_vars(), array('__data', '__path')))->render(); ?>";
 	}
 
 	/**
@@ -722,7 +689,7 @@ class Template
 	 */
 	protected function compileStack($expression)
 	{
-		return "<?php echo \$__env->yieldContent{$expression}; ?>";
+		return "<?= \$__env->yieldContent{$expression}; ?>";
 	}
 
 	/**
