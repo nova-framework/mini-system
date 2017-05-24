@@ -8,6 +8,7 @@ use Mini\Container\Container;
 use Mini\Pipeline\Pipeline;
 
 use Closure;
+use InvalidArgumentException;
 
 
 class Dispatcher implements DispatcherInterface
@@ -95,14 +96,10 @@ class Dispatcher implements DispatcherInterface
 		} else if (isset($this->mapper)) {
 			$handler = call_user_func($this->mapper, $command);
 		} else {
-			$handler = null;
+			throw new InvalidArgumentException("No handler registered for command [{$name}]");
 		}
 
-		if (! is_null($handler)) {
-			return $this->container->call($handler, array($command), 'handle');
-		}
-
-		throw new InvalidArgumentException("No handler registered for command [{$name}]");
+		return $this->container->call($handler, array($command), 'handle');
 	}
 
 	/**
