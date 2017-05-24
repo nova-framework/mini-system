@@ -444,15 +444,13 @@ class Container implements ArrayAccess
 	 */
 	protected function callClass($target, array $parameters = array(), $defaultMethod = null)
 	{
-		$segments = explode('@', $target);
-
-		$method = (count($segments) == 2) ? $segments[1] : $defaultMethod;
+		list ($className, $method) = array_pad(explode('@', $target, 2), 2, $defaultMethod);
 
 		if (is_null($method)) {
 			throw new InvalidArgumentException('Method not provided.');
 		}
 
-		return $this->call([$this->make($segments[0]), $method], $parameters);
+		return $this->call(array($this->make($className), $method), $parameters);
 	}
 
 	/**

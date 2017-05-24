@@ -75,20 +75,18 @@ class Dispatcher implements DispatcherInterface
 				return $this->container->call(array($command, 'handle'));
 			}
 
-			$callback = $this->getHandlerCallback($command);
-
-			return $this->container->call($callback, array($command));
+			return $this->callHandler($command);
 		});
 	}
 
 	/**
-	 * Get the handler instance for the given command.
+	 * Get the handler callback for the given command.
 	 *
 	 * @param mixed $command
 	 *
 	 * @return mixed
 	 */
-	protected function getHandlerCallback($command)
+	protected function callHandler($command)
 	{
 		$name = get_class($command);
 
@@ -100,15 +98,11 @@ class Dispatcher implements DispatcherInterface
 			$handler = null;
 		}
 
-		if (is_null($handler)) {
-			throw new InvalidArgumentException("No handler registered for command [{$name}]");
+		if (! is_null($handler)) {
+			return $this->container->call($handler, array($command), 'handle');
 		}
 
-		list ($className, $method) = array_pad(explode('@', $handler, 2), 2, 'handle');
-
-		return array(
-			$this->container->make($className), $method
-		);
+		throw new InvalidArgumentException("No handler registered for command [{$name}]");
 	}
 
 	/**
