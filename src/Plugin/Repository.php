@@ -222,9 +222,6 @@ class Repository
 					$slug = Str::lower($basename);
 				}
 
-				// Get the Plugin options from configuration.
-				$options = $this->config->get('plugins.options.' .$slug, array());
-
 				$properties['name'] = $name;
 				$properties['slug'] = $slug;
 
@@ -232,8 +229,12 @@ class Repository
 
 				$properties['basename'] = $basename;
 
-				$properties['enabled']	= isset($options['enabled']) ? $options['enabled'] : true;
-				$properties['order']	= isset($options['order'])   ? $options['order']   : 9001;
+				// Get the Plugin options from configuration.
+				$options = $this->config->get('plugins.options.' .$slug, array());
+
+				$properties['enabled'] = Arr::get($options, 'enabled', true);
+
+				$properties['order'] = Arr::get($options, 'order', 9001);
 
 				return $properties;
 			});
