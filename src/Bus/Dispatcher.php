@@ -79,16 +79,18 @@ class Dispatcher implements DispatcherInterface
 
 			list ($handler, $method) = $this->resolveHandler($command);
 
+			$instance = $this->container->make($instance);
+
 			if ($afterResolving) {
-				call_user_func($afterResolving, $handler);
+				call_user_func($afterResolving, $instance);
 			}
 
-			return call_user_func(array($handler, $method), $command);
+			return call_user_func(array($instance, $method), $command);
 		});
 	}
 
 	/**
-	 * Get the handler instance and the associated method name.
+	 * Get the handler and the associated method name.
 	 *
 	 * @param mixed $command
 	 *
@@ -96,25 +98,23 @@ class Dispatcher implements DispatcherInterface
 	 */
 	protected function resolveHandler($command)
 	{
-		$name = get_class($command);
+		$className = get_class($command);
 
-		if (isset($this->mappings[$name])) {
-			$handler = $this->mappings[$name];
+		if (isset($this->mappings[$className])) {
+			$handler = $this->mappings[$className];
 		} else if (isset($this->mapper)) {
 			$handler = call_user_func($this->mapper, $command);
 		} else {
-			$handler = preg_replace('/^(.+)\\\\Commands\\\\(.+)$/s', '$1\\\\Handlers\Commands\\\\$2Handler', $name);
+			$handler = preg_replace(
+				'/^(.+)\\\\Commands\\\\(.+)$/s', '$1\\\\Handlers\Commands\\\\$2Handler', $className
+			);
 
 			if (! class_exists($handler)) {
-				throw new InvalidArgumentException("No handler found for command [{$name}]");
+				throw new InvalidArgumentException("No handler found for command [{$className}]");
 			}
 		}
 
-		list ($className, $method) = array_pad(explode('@', $handler, 2), 2, 'handle');
-
-		return array(
-			$this->container->make($className), $method
-		);
+		return array_pad(explode('@', $handler, 2), 2, 'handle');
 	}
 
 	/**
