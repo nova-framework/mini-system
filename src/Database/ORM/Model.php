@@ -281,6 +281,24 @@ class Model implements ArrayAccess, ArrayableInterface, JsonableInterface, JsonS
 				static::$mutatorCache[$class][] = $attribute;
 			}
 		}
+
+		static::bootTraits();
+	}
+
+	/**
+	 * Boot all of the bootable traits on the model.
+	 *
+	 * @return void
+	 */
+	protected static function bootTraits()
+	{
+		$calledClass = get_called_class();
+
+		foreach (class_uses_recursive($calledClass) as $trait) {
+			if (method_exists($calledClass, $method = 'boot' .class_basename($trait))) {
+				forward_static_call(array($calledClass, $method));
+			}
+		}
 	}
 
 	/**

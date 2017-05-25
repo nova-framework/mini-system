@@ -557,9 +557,9 @@ if (! function_exists('class_uses_recursive'))
 	 */
 	function class_uses_recursive($class)
 	{
-		$results = [];
+		$results = array();
 
-		foreach (array_merge([$class => $class], class_parents($class)) as $class) {
+		foreach (array_merge(array($class => $class), class_parents($class)) as $class) {
 			$results += trait_uses_recursive($class);
 		}
 
@@ -955,8 +955,7 @@ if (! function_exists('trait_uses_recursive'))
 	{
 		$traits = class_uses($trait);
 
-		foreach ($traits as $trait)
-		{
+		foreach ($traits as $trait) {
 			$traits += trait_uses_recursive($trait);
 		}
 
