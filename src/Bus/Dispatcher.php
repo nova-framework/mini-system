@@ -66,28 +66,35 @@ class Dispatcher implements DispatcherInterface
 	 * Dispatch a command to its appropriate handler.
 	 *
 	 * @param  mixed  $command
+	 * @param \Closure|null $afterResolving
 	 * @return mixed
 	 */
-	public function dispatch($command)
+	public function dispatch($command, Closure $afterResolving = null)
 	{
-		return $this->pipeline->send($command)->through($this->pipes)->then(function ($command)
+		return $this->pipeline->send($command)->through($this->pipes)->then(function ($command) use ($afterResolving)
 		{
 			if ($command instanceof SelfHandlingInterface)) {
 				return $this->container->call(array($command, 'handle'));
 			}
 
-			return $this->callHandler($command);
+			list ($handler, $method) = $this->resolveHandler($command);
+
+			if ($afterResolving) {
+				call_user_func($afterResolving, $handler);
+			}
+
+			return call_user_func(array($handler, $method), $command);
 		});
 	}
 
 	/**
-	 * Get the handler callback for the given command.
+	 * Get the handler instance and the associated method name.
 	 *
 	 * @param mixed $command
 	 *
 	 * @return mixed
 	 */
-	protected function callHandler($command)
+	protected function resolveHandler($command)
 	{
 		$name = get_class($command);
 
@@ -96,10 +103,18 @@ class Dispatcher implements DispatcherInterface
 		} else if (isset($this->mapper)) {
 			$handler = call_user_func($this->mapper, $command);
 		} else {
-			throw new InvalidArgumentException("No handler registered for command [{$name}]");
+			$handler = preg_replace('/^(.+)\\\\Commands\\\\(.+)$/s', '$1\\\\Handlers\Commands\\\\$2Handler', $name);
+
+			if (! class_exists($handler)) {
+				throw new InvalidArgumentException("No handler found for command [{$name}]");
+			}
 		}
 
-		return $this->container->call($handler, array($command), 'handle');
+		list ($className, $method) = array_pad(explode('@', $handler, 2), 2, 'handle');
+
+		return array(
+			$this->container->make($className), $method
+		);
 	}
 
 	/**
