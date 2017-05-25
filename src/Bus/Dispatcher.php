@@ -77,7 +77,7 @@ class Dispatcher implements DispatcherInterface
 				return $this->container->call(array($command, 'handle'));
 			}
 
-			list ($handler, $method) = $this->resolveHandler($command);
+			list ($handler, $method) = $this->resolveHandlerAndMethod($command);
 
 			$instance = $this->container->make($instance);
 
@@ -96,7 +96,7 @@ class Dispatcher implements DispatcherInterface
 	 *
 	 * @return mixed
 	 */
-	protected function resolveHandler($command)
+	protected function resolveHandlerAndMethod($command)
 	{
 		$className = get_class($command);
 
@@ -105,6 +105,9 @@ class Dispatcher implements DispatcherInterface
 		} else if (isset($this->mapper)) {
 			$handler = call_user_func($this->mapper, $command);
 		} else {
+			// We will do a convenience guess, trying to find the handler on its usual place.
+			// For example: 'App\Commands\CreateUser' -> 'App\Handlers\Commands\CreateUserHandler'
+
 			$handler = preg_replace(
 				'/^(.+)\\\\Commands\\\\(.+)$/s', '$1\\\\Handlers\Commands\\\\$2Handler', $className
 			);
