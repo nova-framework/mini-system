@@ -7,6 +7,7 @@ use Mini\Filesystem\Filesystem;
 use Mini\Foundation\Application;
 use Mini\Plugin\Repository;
 use Mini\Support\Collection;
+use Mini\Support\Arr;
 use Mini\Support\Str;
 
 
@@ -46,7 +47,11 @@ class PluginManager
 
 		$plugins->each(function($properties)
 		{
-			$this->registerServiceProvider($properties);
+			$enabled = Arr::get($properties,'enabled', true);
+
+			if ($enabled) {
+				$this->registerServiceProvider($properties);
+			}
 		});
 	}
 

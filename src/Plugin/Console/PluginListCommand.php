@@ -32,7 +32,7 @@ class PluginListCommand extends Command
 	 *
 	 * @var array
 	 */
-	protected $headers = ['Package', 'Slug', 'Location'];
+	protected $headers = ['Package', 'Slug', 'Order', 'Location', 'Status'];
 
 	/**
 	 * Create a new command instance.
@@ -95,10 +95,14 @@ class PluginListCommand extends Command
 			$location = 'Vendor';
 		}
 
+		$enabled = $this->plugins->isEnabled($plugin['slug']);
+
 		return array(
-			'name'	 => $plugin['name'],
-			'slug'	 => $plugin['slug'],
-			'location' => $location,
+			'name'	 	=> $plugin['name'],
+			'slug'	 	=> $plugin['slug'],
+			'order'		=> $plugin['order'],
+			'location'	=> $location,
+			'status'	=> $enabled ? 'Enabled' : 'Disabled',
 		);
 	}
 

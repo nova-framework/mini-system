@@ -31,7 +31,7 @@ class PluginServiceProvider extends ServiceProvider
 	{
 		$this->app->bindShared('plugins', function ($app)
 		{
-			$repository = new Repository($app['files']);
+			$repository = new Repository($app['config'], $app['files']);
 
 			return new PluginManager($app, $repository);
 		});
