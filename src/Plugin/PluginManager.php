@@ -2,12 +2,8 @@
 
 namespace Mini\Plugin;
 
-use Mini\Filesystem\FileNotFoundException;
-use Mini\Filesystem\Filesystem;
 use Mini\Foundation\Application;
 use Mini\Plugin\Repository;
-use Mini\Support\Collection;
-use Mini\Support\Arr;
 use Mini\Support\Str;
 
 
@@ -43,15 +39,11 @@ class PluginManager
 	 */
 	public function register()
 	{
-		$plugins = $this->repository->all();
+		$plugins = $this->repository->enabled();
 
 		$plugins->each(function($properties)
 		{
-			$enabled = Arr::get($properties,'enabled', true);
-
-			if ($enabled) {
-				$this->registerServiceProvider($properties);
-			}
+			$this->registerServiceProvider($properties);
 		});
 	}
 
