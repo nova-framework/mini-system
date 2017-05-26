@@ -6,7 +6,7 @@ use Mini\Console\Command;
 use Mini\Console\ConfirmableTrait;
 use Mini\Filesystem\Filesystem;
 use Mini\Database\Migrations\Migrator;
-use Mini\Plugin\Traits\MigrationTrait;
+use Mini\Plugin\Console\MigrationTrait;
 use Mini\Plugin\PluginManager;
 use Mini\Support\Str;
 
