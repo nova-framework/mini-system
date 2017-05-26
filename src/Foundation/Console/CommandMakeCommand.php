@@ -30,6 +30,7 @@ class CommandMakeCommand extends GeneratorCommand
 	 */
 	protected $type = 'Command';
 
+
 	/**
 	 * Execute the command.
 	 *

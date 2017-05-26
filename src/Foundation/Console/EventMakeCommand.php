@@ -30,6 +30,19 @@ class EventMakeCommand extends GeneratorCommand
 
 
 	/**
+	 * Execute the command.
+	 *
+	 * @return void
+	 */
+	public function fire()
+	{
+		$this->ensureExistsBaseClass();
+
+		//
+		parent::fire();
+	}
+
+	/**
 	 * Determine if the class already exists.
 	 *
 	 * @param  string  $rawName
@@ -59,5 +72,33 @@ class EventMakeCommand extends GeneratorCommand
 	protected function getDefaultNamespace($rootNamespace)
 	{
 		return $rootNamespace .'\Events';
+	}
+
+	/**
+	 * Ensure that exists the base class \App\Events\Event
+	 *
+	 * @return void
+	 */
+	protected function ensureExistsBaseClass()
+	{
+		$path = $this->getPath('Events\Event');
+
+		if ($this->files->exists($path)) {
+			return;
+		}
+
+		$rootNamespace = $this->container->getNamespace();
+
+		$content = "<?php
+namespace {$rootNamespace}Events;
+
+
+abstract class Event
+{
+	//
+}
+";
+
+		$this->files->put($path, $content);
 	}
 }
