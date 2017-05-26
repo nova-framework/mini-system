@@ -3,7 +3,7 @@
 namespace Mini\Plugin\Providers;
 
 use Mini\Plugin\Console\PluginListCommand;
-use Mini\Plugin\Console\MakePluginCommand;
+use Mini\Plugin\Console\PluginMakeCommand;
 use Mini\Support\ServiceProvider;
 
 
@@ -17,7 +17,7 @@ class ConsoleServiceProvider extends ServiceProvider
 	{
 		$this->registerPluginListCommand();
 
-		$this->registerMakePluginCommand();
+		$this->registerPluginMakeCommand();
 	}
 
 	/**
@@ -36,11 +36,11 @@ class ConsoleServiceProvider extends ServiceProvider
 	/**
 	 * Register the make:plugin command.
 	 */
-	private function registerMakePluginCommand()
+	private function registerPluginMakeCommand()
 	{
 		$this->app->bindShared('command.make.plugin', function ($app)
 		{
-			return new MakePluginCommand($app['files'], $app['plugins']);
+			return new PluginMakeCommand($app['files'], $app['plugins']);
 		});
 
 		$this->commands('command.make.plugin');
