@@ -113,9 +113,9 @@ class ModelMakeCommand extends Command
 		$path = $this->input->getOption('path');
 
 		if (is_null($path)) {
-			return $this->nova['path'] .DS .'Models';
+			return $this->container['path'] .DS .'Models';
 		} else {
-			return $this->nova['path.base'] .DS .$path;
+			return $this->container['path.base'] .DS .$path;
 		}
 	}
 
