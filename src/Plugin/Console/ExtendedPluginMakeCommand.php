@@ -35,6 +35,7 @@ class ExtendedPluginMakeCommand extends PluginMakeCommand
 		'src/Database/Seeds/',
 		'src/Language/',
 		'src/Models/',
+		'src/Policies/',
 		'src/Providers/',
 		'src/Views/',
 		'webroot/'
