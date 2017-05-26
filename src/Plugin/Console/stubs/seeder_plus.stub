@@ -1,9 +1,9 @@
 <?php
 
-namespace {{path}}\{{namespace}};
+namespace {{namespace}}\Database\Seeds;
 
-use Mini\Database\Seeder;
 use Mini\Database\ORM\Model;
+use Mini\Database\Seeder;
 
 
 class {{className}} extends Seeder

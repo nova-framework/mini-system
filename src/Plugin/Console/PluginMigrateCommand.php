@@ -138,7 +138,7 @@ class PluginMigrateCommand extends Command
 	{
 		$path = $this->plugins->getPluginPath($slug);
 
-		return $path .'Database' .DS .'Migrations' .DS;
+		return $path .'src' .DS .'Database' .DS .'Migrations' .DS;
 	}
 
 	/**

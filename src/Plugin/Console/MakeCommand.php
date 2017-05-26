@@ -245,7 +245,7 @@ class MakeCommand extends CommandGenerator
 		$name = ltrim($name, '\/');
 		$name = rtrim($name, '\/');
 
-		return $this->pluginsPath .DS .$this->pluginsInfo->get('basename') .DS .$folder .DS .$name;
+		return $this->pluginsPath .DS .$this->pluginsInfo->get('basename')  .DS .'src' .DS .$folder .DS .$name;
 	}
 
 	/**
