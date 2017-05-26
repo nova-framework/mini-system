@@ -1,6 +1,6 @@
 <?php
 
-namespace Mini\Plugin\Providers;
+namespace Mini\Plugin;
 
 use Mini\Plugin\Console\PluginListCommand;
 use Mini\Plugin\Console\PluginMigrateCommand;

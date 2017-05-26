@@ -1,6 +1,6 @@
 <?php
 
-namespace Mini\Routing\Providers;
+namespace Mini\Routing;
 
 use Mini\Routing\Console\ControllerMakeCommand;
 use Mini\Routing\Console\MiddlewareMakeCommand;
