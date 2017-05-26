@@ -36,6 +36,9 @@ class PluginMakeCommand extends Command
 	protected $pluginFolders = array(
 		'src/',
 		'src/Config/',
+        'src/Database/',
+        'src/Database/Migrations/',
+        'src/Database/Seeds/',
 		'src/Language/',
 		'src/Providers/',
 		'webroot/'
@@ -48,6 +51,7 @@ class PluginMakeCommand extends Command
 	 */
 	protected $pluginFiles = array(
 		'src/Config/Config.php',
+		'src/Database/Seeds/DatabaseSeeder.php',
 		'src/Providers/PluginServiceProvider.php',
 		'README.md',
 		'composer.json'
@@ -60,6 +64,7 @@ class PluginMakeCommand extends Command
 	 */
 	protected $pluginStubs = array(
 		'config',
+		'seeder',
 		'plugin-service-provider',
 		'readme',
 		'composer'
