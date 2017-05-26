@@ -36,9 +36,9 @@ class PluginMakeCommand extends Command
 	protected $pluginFolders = array(
 		'src/',
 		'src/Config/',
-        'src/Database/',
-        'src/Database/Migrations/',
-        'src/Database/Seeds/',
+		'src/Database/',
+		'src/Database/Migrations/',
+		'src/Database/Seeds/',
 		'src/Language/',
 		'src/Providers/',
 		'webroot/'
