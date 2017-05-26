@@ -14,6 +14,7 @@ use Mini\Plugin\Console\ControllerMakeCommand;
 use Mini\Plugin\Console\MiddlewareMakeCommand;
 use Mini\Plugin\Console\MigrationMakeCommand;
 use Mini\Plugin\Console\ModelMakeCommand;
+use Mini\Plugin\Console\PolicyMakeCommand;
 use Mini\Plugin\Console\SeederMakeCommand;
 
 use Mini\Support\ServiceProvider;
@@ -38,6 +39,7 @@ class ConsoleServiceProvider extends ServiceProvider
 			'ControllerMake',
 			'MiddlewareMake',
 			'ModelMake',
+			'PolicyMake',
 			'MigrationMake',
 			'SeederMake',
 		);
@@ -170,6 +172,19 @@ class ConsoleServiceProvider extends ServiceProvider
 		});
 
 		$this->commands('command.make.plugin.model');
+	}
+
+	/**
+	 * Register the make:plugin:policy command.
+	 */
+	private function registerPolicyMakeCommand()
+	{
+		$this->app->bindShared('command.make.plugin.policy', function ($app)
+		{
+			return new PolicyMakeCommand($app['files'], $app['plugins']);
+		});
+
+		$this->commands('command.make.plugin.policy');
 	}
 
 	/**
