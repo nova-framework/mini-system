@@ -55,7 +55,7 @@ class CacheTableCommand extends Command
 
 		$this->info('Migration created successfully!');
 
-		$this->call('dump-autoload');
+		$this->call('optimize');
 	}
 
 	/**
@@ -67,9 +67,9 @@ class CacheTableCommand extends Command
 	{
 		$name = 'create_cache_table';
 
-		$path = $this->nova['path'] .DS .'database' .DS .'migrations';
+		$path = $this->container['path'] .DS .'Database' .DS .'Migrations';
 
-		return $this->nova['migration.creator']->create($name, $path);
+		return $this->container['migration.creator']->create($name, $path);
 	}
 
 }
