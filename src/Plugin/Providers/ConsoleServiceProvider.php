@@ -3,7 +3,19 @@
 namespace Mini\Plugin\Providers;
 
 use Mini\Plugin\Console\PluginListCommand;
+use Mini\Plugin\Console\PluginMigrateCommand;
+use Mini\Plugin\Console\PluginMigrateRefreshCommand;
+use Mini\Plugin\Console\PluginMigrateResetCommand;
+use Mini\Plugin\Console\PluginMigrateRollbackCommand;
+use Mini\Plugin\Console\PluginSeedCommand;
+
+use Mini\Plugin\Console\ControllerMakeCommand;
+use Mini\Plugin\Console\MiddlewareMakeCommand;
+use Mini\Plugin\Console\MigrationMakeCommand;
+use Mini\Plugin\Console\ModelMakeCommand;
 use Mini\Plugin\Console\PluginMakeCommand;
+use Mini\Plugin\Console\SeederMakeCommand;
+
 use Mini\Support\ServiceProvider;
 
 
@@ -15,13 +27,28 @@ class ConsoleServiceProvider extends ServiceProvider
 	 */
 	public function register()
 	{
-		$this->registerPluginListCommand();
+		$commands = array(
+			'PluginList',
+			'PluginMigrate',
+			'PluginMigrateRefresh',
+			'PluginMigrateReset',
+			'PluginMigrateRollback',
+			'PluginSeed',
+			'PluginMake',
+			'ControllerMake',
+			'MiddlewareMake',
+			'ModelMake',
+			'MigrationMake',
+			'SeederMake',
+		);
 
-		$this->registerPluginMakeCommand();
+		foreach ($commands as $command) {
+			$this->{'register' .$command .'Command'}();
+		}
 	}
 
 	/**
-	 * Register the module:list command.
+	 * Register the plugin:list command.
 	 */
 	protected function registerPluginListCommand()
 	{
@@ -31,6 +58,66 @@ class ConsoleServiceProvider extends ServiceProvider
 		});
 
 		$this->commands('command.plugin.list');
+	}
+
+	/**
+	 * Register the plugin:migrate command.
+	 */
+	protected function registerPluginMigrateCommand()
+	{
+		$this->app->singleton('command.plugin.migrate', function ($app) {
+			return new PluginMigrateCommand($app['migrator'], $app['plugins']);
+		});
+
+		$this->commands('command.plugin.migrate');
+	}
+
+	/**
+	 * Register the plugin:migrate:refresh command.
+	 */
+	protected function registerPluginMigrateRefreshCommand()
+	{
+		$this->app->singleton('command.plugin.migrate.refresh', function ($app) {
+			return new PluginMigrateRefreshCommand($app['plugins']);
+		});
+
+		$this->commands('command.plugin.migrate.refresh');
+	}
+
+	/**
+	 * Register the plugin:migrate:reset command.
+	 */
+	protected function registerPluginMigrateResetCommand()
+	{
+		$this->app->singleton('command.plugin.migrate.reset', function ($app) {
+			return new PluginMigrateResetCommand($app['plugins'], $app['files'], $app['migrator']);
+		});
+
+		$this->commands('command.plugin.migrate.reset');
+	}
+
+	/**
+	 * Register the plugin:migrate:rollback command.
+	 */
+	protected function registerPluginMigrateRollbackCommand()
+	{
+		$this->app->singleton('command.plugin.migrate.rollback', function ($app) {
+			return new PluginMigrateRollbackCommand($app['migrator'], $app['plugins']);
+		});
+
+		$this->commands('command.plugin.migrate.rollback');
+	}
+
+	/**
+	 * Register the plugin:seed command.
+	 */
+	protected function registerPluginSeedCommand()
+	{
+		$this->app->singleton('command.plugin.seed', function ($app) {
+			return new PluginSeedCommand($app['plugins']);
+		});
+
+		$this->commands('command.plugin.seed');
 	}
 
 	/**
@@ -46,4 +133,68 @@ class ConsoleServiceProvider extends ServiceProvider
 		$this->commands('command.make.plugin');
 	}
 
+	/**
+	 * Register the make:plugin:controller command.
+	 */
+	private function registerControllerMakeCommand()
+	{
+		$this->app->bindShared('command.make.plugin.controller', function ($app)
+		{
+			return new ControllerMakeCommand($app['files'], $app['plugins']);
+		});
+
+		$this->commands('command.make.plugin.controller');
+	}
+
+	/**
+	 * Register the make:plugin:middleware command.
+	 */
+	private function registerMiddlewareMakeCommand()
+	{
+		$this->app->bindShared('command.make.plugin.middleware', function ($app)
+		{
+			return new MiddlewareMakeCommand($app['files'], $app['plugins']);
+		});
+
+		$this->commands('command.make.plugin.middleware');
+	}
+
+	/**
+	 * Register the make:plugin:model command.
+	 */
+	private function registerModelMakeCommand()
+	{
+		$this->app->bindShared('command.make.plugin.model', function ($app)
+		{
+			return new ModelMakeCommand($app['files'], $app['plugins']);
+		});
+
+		$this->commands('command.make.plugin.model');
+	}
+
+	/**
+	 * Register the make:plugin:migration command.
+	 */
+	private function registerMigrationMakeCommand()
+	{
+		$this->app->bindShared('command.make.plugin.migration', function ($app)
+		{
+			return new MigrationMakeCommand($app['files'], $app['plugins']);
+		});
+
+		$this->commands('command.make.plugin.migration');
+	}
+
+	/**
+	 * Register the make:plugin:seeder command.
+	 */
+	private function registerSeederMakeCommand()
+	{
+		$this->app->bindShared('command.make.plugin.seeder', function ($app)
+		{
+			return new SeederMakeCommand($app['files'], $app['plugins']);
+		});
+
+		$this->commands('command.make.plugin.seeder');
+	}
 }

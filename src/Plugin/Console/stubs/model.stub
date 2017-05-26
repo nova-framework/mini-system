@@ -1,0 +1,11 @@
+<?php
+
+namespace {{namespace}};
+
+use Mini\Database\ORM\Model as BaseModel;
+
+
+class {{className}} extends BaseModel
+{
+    //
+}

@@ -1,0 +1,31 @@
+<?php
+
+namespace {{namespace}};
+
+use Nova\Bus\Contracts\SelfHandlingInterface;
+
+use {{rootNamespace}}Commands\Command;
+
+
+class {{className}} extends Command implements SelfHandlingInterface
+{
+    /**
+     * Create a new command instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        //
+    }
+
+    /**
+     * Execute the command.
+     *
+     * @return void
+     */
+    public function handle()
+    {
+        //
+    }
+}

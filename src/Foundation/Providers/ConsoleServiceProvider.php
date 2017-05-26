@@ -7,9 +7,18 @@ use Mini\Foundation\Console\DownCommand;
 use Mini\Foundation\Console\ServeCommand;
 use Mini\Foundation\Console\OptimizeCommand;
 use Mini\Foundation\Console\RouteListCommand;
-use Mini\Foundation\Console\KeyGenerateCommand;
-use Mini\Foundation\Console\EnvironmentCommand;
+use Mini\Foundation\Console\EventMakeCommand;
+use Mini\Foundation\Console\ModelMakeCommand;
 use Mini\Foundation\Console\ViewClearCommand;
+use Mini\Foundation\Console\PolicyMakeCommand;
+use Mini\Foundation\Console\CommandMakeCommand;
+use Mini\Foundation\Console\ConsoleMakeCommand;
+use Mini\Foundation\Console\EnvironmentCommand;
+use Mini\Foundation\Console\KeyGenerateCommand;
+use Mini\Foundation\Console\ListenerMakeCommand;
+use Mini\Foundation\Console\ProviderMakeCommand;
+use Mini\Foundation\Console\HandlerEventCommand;
+use Mini\Foundation\Console\HandlerCommandCommand;
 
 use Mini\Support\ServiceProvider;
 
@@ -39,14 +48,23 @@ class ConsoleServiceProvider extends ServiceProvider
 	 * @var array
 	 */
 	protected $commands = array(
-		'Down'			=> 'command.down',
-		'Environment'	=> 'command.environment',
-		'KeyGenerate'	=> 'command.key.generate',
-		'Optimize'		=> 'command.optimize',
-		'RouteList'		=> 'command.route.list',
-		'Serve'			=> 'command.serve',
-		'Up'			=> 'command.up',
-		'ViewClear'		=> 'command.view.clear'
+		'CommandMake'		=> 'command.command.make',
+		'ConsoleMake'		=> 'command.console.make',
+		'EventMake'			=> 'command.event.make',
+		'Down'				=> 'command.down',
+		'Environment'		=> 'command.environment',
+		'HandlerCommand'	=> 'command.handler.command',
+		'HandlerEvent'		=> 'command.handler.event',
+		'KeyGenerate'		=> 'command.key.generate',
+		'ListenerMake'		=> 'command.listener.make',
+		'ModelMake'			=> 'command.model.make',
+		'Optimize'			=> 'command.optimize',
+		'PolicyMake'		=> 'command.policy.make',
+		'ProviderMake'		=> 'command.provider.make',
+		'RouteList'			=> 'command.route.list',
+		'Serve'				=> 'command.serve',
+		'Up'				=> 'command.up',
+		'ViewClear'			=> 'command.view.clear'
 	);
 
 	/**
@@ -67,6 +85,42 @@ class ConsoleServiceProvider extends ServiceProvider
 		}
 
 		$this->commands(array_values($this->commands));
+	}
+
+	/**
+	 * Register the command.
+	 *
+	 * @return void
+	 */
+	protected function registerCommandMakeCommand()
+	{
+		$this->app->singleton('command.command.make', function ($app) {
+			return new CommandMakeCommand($app['files']);
+		});
+	}
+
+	/**
+	 * Register the command.
+	 *
+	 * @return void
+	 */
+	protected function registerConsoleMakeCommand()
+	{
+		$this->app->singleton('command.console.make', function ($app) {
+			return new ConsoleMakeCommand($app['files']);
+		});
+	}
+
+	/**
+	 * Register the command.
+	 *
+	 * @return void
+	 */
+	protected function registerEventMakeCommand()
+	{
+		$this->app->singleton('command.event.make', function ($app) {
+			return new EventMakeCommand($app['files']);
+		});
 	}
 
 	/**
@@ -100,11 +154,59 @@ class ConsoleServiceProvider extends ServiceProvider
 	 *
 	 * @return void
 	 */
+	protected function registerHandlerCommandCommand()
+	{
+		$this->app->singleton('command.handler.command', function ($app) {
+			return new HandlerCommandCommand($app['files']);
+		});
+	}
+
+	/**
+	 * Register the command.
+	 *
+	 * @return void
+	 */
+	protected function registerHandlerEventCommand()
+	{
+		$this->app->singleton('command.handler.event', function ($app) {
+			return new HandlerEventCommand($app['files']);
+		});
+	}
+
+	/**
+	 * Register the command.
+	 *
+	 * @return void
+	 */
 	protected function registerKeyGenerateCommand()
 	{
 		$this->app->singleton('command.key.generate', function ($app)
 		{
 			return new KeyGenerateCommand($app['files']);
+		});
+	}
+
+	/**
+	 * Register the command.
+	 *
+	 * @return void
+	 */
+	protected function registerListenerMakeCommand()
+	{
+		$this->app->singleton('command.listener.make', function ($app) {
+			return new ListenerMakeCommand($app['files']);
+		});
+	}
+
+	/**
+	 * Register the command.
+	 *
+	 * @return void
+	 */
+	protected function registerModelMakeCommand()
+	{
+		$this->app->singleton('command.model.make', function ($app) {
+			return new ModelMakeCommand($app['files']);
 		});
 	}
 
@@ -121,6 +223,30 @@ class ConsoleServiceProvider extends ServiceProvider
 		});
 	}
 
+	/**
+	 * Register the command.
+	 *
+	 * @return void
+	 */
+	protected function registerPolicyMakeCommand()
+	{
+		$this->app->singleton('command.policy.make', function ($app) {
+			return new PolicyMakeCommand($app['files']);
+		});
+	}
+
+	/**
+	 * Register the command.
+	 *
+	 * @return void
+	 */
+	protected function registerProviderMakeCommand()
+	{
+		$this->app->singleton('command.provider.make', function ($app) {
+			return new ProviderMakeCommand($app['files']);
+		});
+	}
+	
 	/**
 	 * Register the command.
 	 *
