@@ -37,6 +37,9 @@ class CommandMakeCommand extends GeneratorCommand
 	 */
 	public function fire()
 	{
+		$this->ensureExistsBaseClass();
+
+		//
 		parent::fire();
 
 		if ($this->option('handler')) {
@@ -72,6 +75,34 @@ class CommandMakeCommand extends GeneratorCommand
 	protected function getDefaultNamespace($rootNamespace)
 	{
 		return $rootNamespace .'\Commands';
+	}
+
+	/**
+	 * Ensure that exists the base class \App\Commands\Command
+	 *
+	 * @return void
+	 */
+	protected function ensureExistsBaseClass()
+	{
+		$path = $this->getPath('Commands\Command');
+
+		if ($this->files->exists($path)) {
+			return;
+		}
+
+		$rootNamespace = $this->container->getNamespace();
+
+		$content = "<?php
+namespace {$rootNamespace}Commands;
+
+
+abstract class Command
+{
+	//
+}
+";
+
+		$this->files->put($path, $content);
 	}
 
 	/**
