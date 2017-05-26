@@ -2,8 +2,6 @@
 
 namespace {{namespace}};
 
-use Nova\Queue\InteractsWithQueueTrait;
-
 use {{fullCommand}};
 
 
