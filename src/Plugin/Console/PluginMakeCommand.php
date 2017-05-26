@@ -65,7 +65,7 @@ class PluginMakeCommand extends Command
 	protected $pluginStubs = array(
 		'config',
 		'seeder',
-		'plugin-service-provider',
+		'service-provider',
 		'readme',
 		'composer'
 	);

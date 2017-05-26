@@ -137,6 +137,7 @@ class MakeCommand extends CommandGenerator
 			$find = basename($filePath);
 
 			$filePath = strrev(preg_replace(strrev("/$find/"), '', strrev($filePath), 1));
+
 			$filePath = $filePath .$file;
 
 			if ($this->files->exists($filePath)) {
@@ -155,7 +156,7 @@ class MakeCommand extends CommandGenerator
 				}
 			}
 
-			if (!isset($stubFile)) {
+			if (! isset($stubFile)) {
 				$stubFile = $this->listStubs['default'][$key];
 			}
 
