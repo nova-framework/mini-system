@@ -44,9 +44,17 @@ class PluginServiceProvider extends ServiceProvider
 	 */
 	public function boot()
 	{
-		$this->loadEvents();
+		$events = $this->app['events'];
 
-		$this->loadRoutes();
+		foreach ($this->listen as $event => $listeners) {
+			foreach ($listeners as $listener) {
+				$events->listen($event, $listener);
+			}
+		}
+
+		foreach ($this->subscribe as $subscriber) {
+			$events->subscribe($subscriber);
+		}
 	}
 
 	/**
@@ -72,55 +80,6 @@ class PluginServiceProvider extends ServiceProvider
 		$app = $this->app;
 
 		return require $path;
-	}
-
-	/**
-	 * Load the plugin's Events.
-	 *
-	 * @return void
-	 */
-	protected function loadEvents()
-	{
-		$events = $this->app['events'];
-
-		foreach ($this->listen as $event => $listeners) {
-			foreach ($listeners as $listener) {
-				$events->listen($event, $listener);
-			}
-		}
-
-		foreach ($this->subscribe as $subscriber) {
-			$events->subscribe($subscriber);
-		}
-	}
-
-	/**
-	 * Load the plugin's Routes.
-	 *
-	 * @return void
-	 */
-	protected function loadRoutes()
-	{
-		if (method_exists($this, 'map')) {
-			call_user_func(array($this, 'map'), $this->app['router']);
-		}
-	}
-
-	/**
-	 * Load the standard routes file for the plugin.
-	 *
-	 * @param  string  $path
-	 * @param  string  $group
-	 * @return mixed
-	 */
-	protected function loadRoutesFrom($path, $group = 'web')
-	{
-		$router = $this->app['router'];
-
-		$router->group(array('middleware' => $group, 'namespace' => $this->namespace), function ($router) use ($path)
-		{
-			require $path;
-		});
 	}
 
 	/**

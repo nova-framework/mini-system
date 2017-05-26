@@ -53,6 +53,7 @@ class PluginMakeCommand extends Command
 			'src/Database/Seeds/',
 			'src/Language/',
 			'src/Models/',
+			'src/Policies/',
 			'src/Providers/',
 			'src/Views/',
 			'webroot/'
@@ -76,6 +77,7 @@ class PluginMakeCommand extends Command
 			'src/Config/Config.php',
 			'src/Database/Seeds/DatabaseSeeder.php',
 			'src/Providers/PluginServiceProvider.php',
+			'src/Providers/RouteServiceProvider.php',
 			'src/Bootstrap.php',
 			'src/Routes.php',
 			'README.md',
@@ -92,7 +94,7 @@ class PluginMakeCommand extends Command
 		'default' => array(
 			'config',
 			'seeder',
-			'service-provider',
+			'stantard-service-provider',
 			'readme',
 			'composer'
 		),
@@ -100,6 +102,7 @@ class PluginMakeCommand extends Command
 			'config',
 			'seeder',
 			'extended-service-provider',
+			'route-service-provider',
 			'bootstrap',
 			'routes',
 			'readme',
