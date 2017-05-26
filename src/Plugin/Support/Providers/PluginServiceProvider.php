@@ -44,17 +44,7 @@ class PluginServiceProvider extends ServiceProvider
 	 */
 	public function boot()
 	{
-		$events = $this->app['events'];
-
-		foreach ($this->listen as $event => $listeners) {
-			foreach ($listeners as $listener) {
-				$events->listen($event, $listener);
-			}
-		}
-
-		foreach ($this->subscribe as $subscriber) {
-			$events->subscribe($subscriber);
-		}
+		$this->loadEvents();
 
 		$this->loadRoutes();
 	}
@@ -85,7 +75,27 @@ class PluginServiceProvider extends ServiceProvider
 	}
 
 	/**
-	 * Load the application routes.
+	 * Load the plugin's Events.
+	 *
+	 * @return void
+	 */
+	protected function loadEvents()
+	{
+		$events = $this->app['events'];
+
+		foreach ($this->listen as $event => $listeners) {
+			foreach ($listeners as $listener) {
+				$events->listen($event, $listener);
+			}
+		}
+
+		foreach ($this->subscribe as $subscriber) {
+			$events->subscribe($subscriber);
+		}
+	}
+
+	/**
+	 * Load the plugin's Routes.
 	 *
 	 * @return void
 	 */
@@ -123,6 +133,24 @@ class PluginServiceProvider extends ServiceProvider
 	{
 		foreach ($this->policies as $key => $value) {
 			$gate->policy($key, $value);
+		}
+	}
+
+	/**
+	 * Register any additional module middleware.
+	 *
+	 * @param  array|string  $middleware
+	 * @return void
+	 */
+	protected function addMiddleware($middleware)
+	{
+		$middlewares = is_array($middleware) ? $middleware : func_get_args();
+
+		//
+		$kernel = $this->app['Mini\Contracts\Http\KernelInterface'];
+
+		foreach ($middlewares as $middleware) {
+			$kernel->pushMiddleware($middleware);
 		}
 	}
 

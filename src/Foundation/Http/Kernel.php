@@ -219,6 +219,36 @@ class Kernel implements KernelInterface
 	}
 
 	/**
+	 * Add a new middleware to beginning of the stack if it does not already exist.
+	 *
+	 * @param  string  $middleware
+	 * @return $this
+	 */
+	public function prependMiddleware($middleware)
+	{
+		if (array_search($middleware, $this->middleware) === false) {
+			array_unshift($this->middleware, $middleware);
+		}
+
+		return $this;
+	}
+
+	/**
+	 * Add a new middleware to end of the stack if it does not already exist.
+	 *
+	 * @param  string|\Closure  $middleware
+	 * @return \Nova\Foundation\Http\Kernel
+	 */
+	public function pushMiddleware($middleware)
+	{
+		if (array_search($middleware, $this->middleware) === false) {
+			array_push($this->middleware, $middleware);
+		}
+
+		return $this;
+	}
+
+	/**
 	 * Determine if the kernel has a given middleware.
 	 *
 	 * @param  string  $middleware

@@ -150,9 +150,6 @@ class Connection implements ConnectionInterface
 		//
 		$this->queryGrammar = $this->withTablePrefix(new QueryGrammar());
 
-		$this->schemaGrammar = $this->withTablePrefix(new SchemaGrammar());
-
-		//
 		$this->connector = $this->createConnector($config);
 
 		$this->pdo = $this->createConnection($config);
@@ -189,6 +186,10 @@ class Connection implements ConnectionInterface
 	 */
 	public function getSchemaBuilder()
 	{
+		if (! isset($this->schemaGrammar)) {
+			$this->schemaGrammar = $this->withTablePrefix(new SchemaGrammar());
+		}
+
 		return new SchemaBuilder($this);
 	}
 
