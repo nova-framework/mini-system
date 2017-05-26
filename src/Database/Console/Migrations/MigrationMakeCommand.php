@@ -8,7 +8,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 
 
-class MakeMigrationCommand extends BaseCommand
+class MigrationMakeCommand extends BaseCommand
 {
 	/**
 	 * The console command name.

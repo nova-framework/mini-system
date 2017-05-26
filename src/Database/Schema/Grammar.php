@@ -113,11 +113,11 @@ class Grammar extends BaseGrammar
 	protected function compileCreateEncoding($sql, Connection $connection)
 	{
 		if (! is_null($charset = $connection->getConfig('charset'))) {
-			$sql .= ' default character set '.$charset;
+			$sql .= ' default character set ' .$charset;
 		}
 
 		if (! is_null($collation = $connection->getConfig('collation'))) {
-			$sql .= ' collate '.$collation;
+			$sql .= ' collate ' .$collation;
 		}
 
 		return $sql;

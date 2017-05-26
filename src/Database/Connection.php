@@ -14,7 +14,11 @@ use Mini\Database\Connector;
 use Mini\Database\Query\Expression;
 use Mini\Database\Query\Builder as QueryBuilder;
 use Mini\Database\Query\Grammar as QueryGrammar;
+use Mini\Database\Schema\Builder as SchemaBuilder;
+use Mini\Database\Schema\Grammar as SchemaGrammar;
+use Mini\Database\Grammar;
 use Mini\Database\QueryException;
+use Mini\Support\Arr;
 
 use Closure;
 use PDO;
@@ -51,6 +55,13 @@ class Connection implements ConnectionInterface
 	 * @var \Mini\Database\Query\Grammar
 	 */
 	protected $queryGrammar;
+
+	/**
+	 * The schema grammar implementation.
+	 *
+	 * @var \Mini\Database\Schema\Grammar
+	 */
+	protected $schemaGrammar;
 
 	/**
 	 * The paginator environment instance.
@@ -136,7 +147,10 @@ class Connection implements ConnectionInterface
 
 		$this->tablePrefix = $config['prefix'];
 
-		$this->queryGrammar = $this->withTablePrefix(new QueryGrammar());;
+		//
+		$this->queryGrammar = $this->withTablePrefix(new QueryGrammar());
+
+		$this->schemaGrammar = $this->withTablePrefix(new SchemaGrammar());
 
 		//
 		$this->connector = $this->createConnector($config);
@@ -166,6 +180,16 @@ class Connection implements ConnectionInterface
 	public function createConnection(array $config)
 	{
 		return $this->connector->connect($config);
+	}
+
+	/**
+	 * Get a schema builder instance for the connection.
+	 *
+	 * @return \Nova\Database\Schema\Builder
+	 */
+	public function getSchemaBuilder()
+	{
+		return new SchemaBuilder($this);
 	}
 
 	/**
@@ -522,9 +546,9 @@ class Connection implements ConnectionInterface
 	 *
 	 * @return array
 	 */
-	public function getConfig()
+	public function getConfig($option)
 	{
-		return $this->config;
+		return Arr::get($this->config, $option);
 	}
 
 	/**
@@ -566,7 +590,7 @@ class Connection implements ConnectionInterface
 	 * @param  \Nova\Database\Grammar  $grammar
 	 * @return \Nova\Database\Grammar
 	 */
-	public function withTablePrefix(QueryGrammar $grammar)
+	public function withTablePrefix(Grammar $grammar)
 	{
 		$grammar->setTablePrefix($this->tablePrefix);
 
@@ -620,6 +644,16 @@ class Connection implements ConnectionInterface
 	public function getQueryGrammar()
 	{
 		return $this->queryGrammar;
+	}
+
+	/**
+	 * Get the schema grammar used by the connection.
+	 *
+	 * @return \Nova\Database\Schema\Grammar
+	 */
+	public function getSchemaGrammar()
+	{
+		return $this->schemaGrammar;
 	}
 
 	/**

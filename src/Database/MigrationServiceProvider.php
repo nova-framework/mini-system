@@ -7,7 +7,7 @@ use Mini\Database\Console\Migrations\RefreshCommand;
 use Mini\Database\Console\Migrations\InstallCommand;
 use Mini\Database\Console\Migrations\MigrateCommand;
 use Mini\Database\Console\Migrations\RollbackCommand;
-use Mini\Database\Console\Migrations\MakeMigrationCommand;
+use Mini\Database\Console\Migrations\MigrationMakeCommand;
 use Mini\Database\Migrations\DatabaseMigrationRepository;
 use Mini\Database\Migrations\Migrator;
 use Mini\Database\Migrations\MigrationCreator;
@@ -172,7 +172,7 @@ class MigrationServiceProvider extends ServiceProvider
 
 			$packagePath = $app['path.base'] .DS .'vendor';
 
-			return new MakeMigrationCommand($creator, $packagePath);
+			return new MigrationMakeCommand($creator, $packagePath);
 		});
 	}
 

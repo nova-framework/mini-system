@@ -17,7 +17,7 @@ class Builder
 	/**
 	 * The schema grammar instance.
 	 *
-	 * @var \Mini\Database\Schema\Grammars\Grammar
+	 * @var \Mini\Database\Schema\Grammar
 	 */
 	protected $grammar;
 
