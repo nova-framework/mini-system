@@ -131,13 +131,21 @@ class BelongsToMany extends Relation
 
 		$tablePrefix = $this->query->getQuery()->getConnection()->getTablePrefix();
 
-		$hash = 'self_' .md5(microtime(true));
-
-		$query->from($this->table .' AS ' .$tablePrefix .$hash);
+		$query->from($this->table .' AS ' .$tablePrefix .$hash = $this->getRelationCountHash());
 
 		$key = $this->wrap($this->getQualifiedParentKeyName());
 
 		return $query->where($hash .'.' .$this->foreignKey, '=', new Expression($key));
+	}
+
+	/**
+	 * Get a relationship join table hash.
+	 *
+	 * @return string
+	 */
+	public function getRelationCountHash()
+	{
+		return 'self_'.md5(microtime(true));
 	}
 
 	/**
