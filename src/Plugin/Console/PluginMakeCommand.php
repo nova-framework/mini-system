@@ -34,14 +34,30 @@ class PluginMakeCommand extends Command
 	 * @var array
 	 */
 	protected $pluginFolders = array(
-		'src/',
-		'src/Config/',
-		'src/Database/',
-		'src/Database/Migrations/',
-		'src/Database/Seeds/',
-		'src/Language/',
-		'src/Providers/',
-		'webroot/'
+		'default' => array(
+			'src/',
+			'src/Config/',
+			'src/Database/',
+			'src/Database/Migrations/',
+			'src/Database/Seeds/',
+			'src/Language/',
+			'src/Providers/',
+			'webroot/'
+		),
+		'extended' => array(
+			'src/',
+			'src/Config/',
+			'src/Controllers/',
+			'src/Database/',
+			'src/Database/Migrations/',
+			'src/Database/Seeds/',
+			'src/Language/',
+			'src/Models/',
+			'src/Policies/',
+			'src/Providers/',
+			'src/Views/',
+			'webroot/'
+		)
 	);
 
 	/**
@@ -50,11 +66,22 @@ class PluginMakeCommand extends Command
 	 * @var array
 	 */
 	protected $pluginFiles = array(
-		'src/Config/Config.php',
-		'src/Database/Seeds/DatabaseSeeder.php',
-		'src/Providers/PluginServiceProvider.php',
-		'README.md',
-		'composer.json'
+		'default' => array(
+			'src/Config/Config.php',
+			'src/Database/Seeds/DatabaseSeeder.php',
+			'src/Providers/PluginServiceProvider.php',
+			'README.md',
+			'composer.json'
+		),
+		'extended' => array(
+			'src/Config/Config.php',
+			'src/Database/Seeds/DatabaseSeeder.php',
+			'src/Providers/PluginServiceProvider.php',
+			'src/Bootstrap.php',
+			'src/Routes.php',
+			'README.md',
+			'composer.json'
+		)
 	);
 
 	/**
@@ -63,11 +90,22 @@ class PluginMakeCommand extends Command
 	 * @var array
 	 */
 	protected $pluginStubs = array(
-		'config',
-		'seeder',
-		'service-provider',
-		'readme',
-		'composer'
+		'default' => array(
+			'config',
+			'seeder',
+			'service-provider',
+			'readme',
+			'composer'
+		),
+		'extended' => array(
+			'config',
+			'seeder',
+			'extended-service-provider',
+			'bootstrap',
+			'routes',
+			'readme',
+			'composer'
+		)
 	);
 
 	/**
@@ -287,7 +325,11 @@ class PluginMakeCommand extends Command
 		$pluginPath = $this->getPluginPath($slug);
 
 		// Generate the Plugin directories.
-		foreach ($this->pluginFolders as $folder) {
+		$mode = $this->option('extended') ? 'extended' : 'default';
+
+		$pluginFolders = $this->pluginFolders[$mode];
+
+		foreach ($pluginFolders as $folder) {
 			$path = $pluginPath .$folder;
 
 			$this->files->makeDirectory($path);
@@ -308,10 +350,14 @@ class PluginMakeCommand extends Command
 	 */
 	protected function generateFiles()
 	{
-		foreach ($this->pluginFiles as $key => $file) {
+		$mode = $this->option('extended') ? 'extended' : 'default';
+
+		$pluginFiles = $this->pluginFiles[$mode];
+
+		foreach ($pluginFiles as $key => $file) {
 			$file = $this->formatContent($file);
 
-			$this->files->put($this->getDestinationFile($file), $this->getStubContent($key));
+			$this->files->put($this->getDestinationFile($file), $this->getStubContent($key, $mode));
 		}
 
 		// Generate the Language files
@@ -342,7 +388,12 @@ return array (
 
 		$pluginPath = $this->getPluginPath($slug);
 
-		foreach ($this->pluginFolders as $folder) {
+		//
+		$mode = $this->option('extended') ? 'extended' : 'default';
+
+		$pluginFolders = $this->pluginFolders[$mode];
+
+		foreach ($pluginFolders as $folder) {
 			$path = $pluginPath .$folder;
 
 			//
@@ -426,12 +477,16 @@ return array (
 	 * Get stub content by key.
 	 *
 	 * @param int $key
+	 * @param bool $mode
 	 *
 	 * @return string
 	 */
-	protected function getStubContent($key)
+	protected function getStubContent($key, $mode)
 	{
-		$stub = $this->pluginStubs[$key];
+		$pluginStubs = $this->pluginStubs[$mode];
+
+		//
+		$stub = $pluginStubs[$key];
 
 		$path = __DIR__ .DS .'stubs' .DS .$stub .'.stub';
 
@@ -497,6 +552,7 @@ return array (
 	{
 		return array(
 			array('--quick', '-Q', InputOption::VALUE_REQUIRED, 'Skip the make:plugin Wizard and use default values'),
+			array('--extended', null, InputOption::VALUE_NONE, 'Generate an extended Plugin'),
 		);
 	}
 }

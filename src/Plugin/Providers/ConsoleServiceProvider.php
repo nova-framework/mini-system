@@ -9,12 +9,11 @@ use Mini\Plugin\Console\PluginMigrateResetCommand;
 use Mini\Plugin\Console\PluginMigrateRollbackCommand;
 use Mini\Plugin\Console\PluginSeedCommand;
 
+use Mini\Plugin\Console\PluginMakeCommand;
 use Mini\Plugin\Console\ControllerMakeCommand;
-use Mini\Plugin\Console\ExtendedPluginMakeCommand;
 use Mini\Plugin\Console\MiddlewareMakeCommand;
 use Mini\Plugin\Console\MigrationMakeCommand;
 use Mini\Plugin\Console\ModelMakeCommand;
-use Mini\Plugin\Console\PluginMakeCommand;
 use Mini\Plugin\Console\SeederMakeCommand;
 
 use Mini\Support\ServiceProvider;
@@ -36,7 +35,6 @@ class ConsoleServiceProvider extends ServiceProvider
 			'PluginMigrateRollback',
 			'PluginSeed',
 			'PluginMake',
-			'ExtendedPluginMake',
 			'ControllerMake',
 			'MiddlewareMake',
 			'ModelMake',
@@ -133,19 +131,6 @@ class ConsoleServiceProvider extends ServiceProvider
 		});
 
 		$this->commands('command.make.plugin');
-	}
-
-	/**
-	 * Register the make:plugin:extended command.
-	 */
-	private function registerExtendedPluginMakeCommand()
-	{
-		$this->app->bindShared('command.make.plugin.extended', function ($app)
-		{
-			return new ExtendedPluginMakeCommand($app['files'], $app['plugins']);
-		});
-
-		$this->commands('command.make.plugin.extended');
 	}
 
 	/**
