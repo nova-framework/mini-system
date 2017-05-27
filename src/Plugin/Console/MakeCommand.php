@@ -109,7 +109,7 @@ class MakeCommand extends CommandGenerator
 		if ($this->plugins->exists($slug)) {
 			$this->pluginsPath = $this->plugins->getPath();
 
-			$this->pluginsInfo = collect($this->plugins->where('slug', $slug));
+			$this->pluginInfo = collect($this->plugins->where('slug', $slug));
 
 			$this->data['slug'] = $slug;
 			$this->data['name'] = $name;
@@ -134,6 +134,7 @@ class MakeCommand extends CommandGenerator
 
 			$file = $this->formatContent($file);
 
+			//
 			$find = basename($filePath);
 
 			$filePath = strrev(preg_replace(strrev("/$find/"), '', strrev($filePath), 1));
@@ -245,7 +246,7 @@ class MakeCommand extends CommandGenerator
 		$name = ltrim($name, '\/');
 		$name = rtrim($name, '\/');
 
-		return $this->pluginsPath .DS .$this->pluginsInfo->get('basename')  .DS .'src' .DS .$folder .DS .$name;
+		return $this->pluginsPath .DS .$this->pluginInfo->get('basename') .DS .'src' .DS .$folder .DS .$name;
 	}
 
 	/**
@@ -283,14 +284,15 @@ class MakeCommand extends CommandGenerator
 	 */
 	protected function getNamespace($file)
 	{
-		$namespace = str_replace($this->pluginsPath, '', $file);
+		$basename = $this->pluginInfo->get('basename');
+
+		$namespace = str_replace($this->pluginsPath .DS .$basename .DS .'src', '', $file);
 
 		$find = basename($namespace);
 
 		$namespace = strrev(preg_replace(strrev("/$find/"), '', strrev($namespace), 1));
 
-		$namespace = ltrim($namespace, '\/');
-		$namespace = rtrim($namespace, '\/');
+		$namespace = $this->pluginInfo->get('namespace') .'\\' .trim($namespace, '\\/');
 
 		return str_replace('/', '\\', $namespace);
 	}
