@@ -628,7 +628,7 @@ class Application extends Container
 	{
 		$aliases = array(
 			'app'			=> array('Mini\Foundation\Application', 'Mini\Container\Container'),
-			'asset.router'	=> 'Mini\Routing\Assets\Router',
+			'asset.dispatcher'	=> 'Mini\Routing\Assets\Dispatcher',
 			'cache'			=> 'Mini\Cache\CacheManager',
 			'cache.store'	=> 'Mini\Cache\Repository',
 			'gate'			=> 'Mini\Auth\Contracts\Access\GateInterface',

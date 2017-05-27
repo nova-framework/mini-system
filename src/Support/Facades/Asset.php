@@ -15,5 +15,5 @@ class Assets extends Facade
 	 *
 	 * @return string
 	 */
-	protected static function getFacadeAccessor() { return 'asset.router'; }
+	protected static function getFacadeAccessor() { return 'asset.dispatcher'; }
 }

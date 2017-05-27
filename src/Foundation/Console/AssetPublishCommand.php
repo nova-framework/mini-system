@@ -4,7 +4,7 @@ namespace Mini\Foundation\Console;
 
 use Mini\Console\Command;
 use Mini\Foundation\Publishers\AssetPublisher;
-use Mini\Routing\Assets\Router as AssetRouter;
+use Mini\Routing\Assets\Dispatcher as AssetDispatcher;
 use Mini\Support\Str;
 
 use Symfony\Component\Console\Input\InputOption;
@@ -29,33 +29,34 @@ class AssetPublishCommand extends Command
 	protected $description = "Publish a package's assets to the public directory";
 
 	/**
-	 * The asset router instance.
+	 * The asset dispatcher instance.
 	 *
-	 * @var \Mini\Routing\Assets\Router
+	 * @var \Mini\Routing\Assets\Dispatcher
 	 */
-	protected $router;
+	protected $dispatcher;
 
 	/**
 	 * The asset publisher instance.
 	 *
 	 * @var \Mini\Foundation\AssetPublisher
 	 */
-	protected $assets;
+	protected $publisher;
 
 
 	/**
 	 * Create a new asset publish command instance.
 	 *
+	 * @param \\Mini\Routing\Assets\Dispatcher $dispatcher
 	 * @param  \Mini\Foundation\AssetPublisher  $assets
 	 * @return void
 	 */
-	public function __construct(AssetRouter $router, AssetPublisher $assets)
+	public function __construct(AssetDispatcher $dispatcher, AssetPublisher $publisher)
 	{
 		parent::__construct();
 
-		$this->router = $router;
+		$this->dispatcher = $dispatcher;
 
-		$this->assets = $assets;
+		$this->publisher = $publisher;
 	}
 
 	/**
@@ -79,11 +80,11 @@ class AssetPublishCommand extends Command
 	protected function publishAssets($package)
 	{
 		if ( ! is_null($path = $this->getPath())) {
-			$this->assets->publish($package, $path);
+			$this->publisher->publish($package, $path);
 		} else {
 			$path = $this->router->getNamespace($package);
 
-			$this->assets->publishPackage($package, $path);
+			$this->publisher->publishPackage($package, $path);
 		}
 
 		$this->output->writeln('<info>Assets published for package:</info> '.$package);
@@ -121,7 +122,7 @@ class AssetPublishCommand extends Command
 		$packages = array();
 
 		//
-		$namespaces = $this->router->getNamespaces();
+		$namespaces = $this->dispatcher->getNamespaces();
 
 		foreach ($namespaces as $name => $hint) {
 			$packages[] = $name;
