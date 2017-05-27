@@ -66,9 +66,6 @@ class DatabaseStore implements StoreInterface
 
 		$cache = $this->table()->where('key', '=', $prefixed)->first();
 
-		// If we have a cache record we will check the expiration time against current
-		// time on the system and see if the record has expired. If it has, we will
-		// remove the records from the database table so it isn't returned again.
 		if (! is_null($cache)) {
 			if (is_array($cache)) $cache = (object) $cache;
 
@@ -94,9 +91,6 @@ class DatabaseStore implements StoreInterface
 	{
 		$key = $this->prefix.$key;
 
-		// All of the cached values in the database are encrypted in case this is used
-		// as a session data store by the consumer. We'll also calculate the expire
-		// time and place that on the table so we will check it on our retrieval.
 		$value = $this->encrypter->encrypt($value);
 
 		$expiration = $this->getTime() + ($minutes * 60);

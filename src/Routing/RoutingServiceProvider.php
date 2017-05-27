@@ -2,7 +2,9 @@
 
 namespace Mini\Routing;
 
-use Mini\Routing\Assets\Router as AssetsRouter;
+use Mini\Http\Request;
+use Mini\Http\Response;
+use Mini\Routing\Assets\Dispatcher;
 use Mini\Routing\Redirector;
 use Mini\Routing\ResponseFactory;
 use Mini\Routing\Router;
@@ -108,9 +110,30 @@ class RoutingServiceProvider extends ServiceProvider
 	 */
 	protected function registerAssetDispatcher()
 	{
-		$this->app->bindShared('asset.router', function($app)
+		$this->app->bindShared('asset.dispatcher', function($app)
 		{
-			return new AssetsRouter();
+			return new Dispatcher();
+		});
+
+		// Register the default Asset Routes to Dispatcher.
+		$dispatcher = $this->app['asset.dispatcher'];
+
+		$dispatcher->route('assets/(.*)', function (Request $request, $path) use ($dispatcher)
+		{
+			$path = base_path('assets') .DS .str_replace('/', DS, $path);
+
+			return $dispatcher->serve($path, $request);
+		});
+
+		$dispatcher->route('plugins/([^/]+)/(.*)', function (Request $request, $plugin, $path) use ($dispatcher)
+		{
+			if (! is_null($basePath = $dispatcher->findNamedPath($plugin))) {
+				$path = $basePath .str_replace('/', DS, $path);
+
+				return $dispatcher->serve($path, $request);
+			}
+
+			return new Response('File Not Found', 404);
 		});
 	}
 }

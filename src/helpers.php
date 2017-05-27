@@ -20,19 +20,23 @@ if (! function_exists('site_url'))
 	}
 }
 
-if (! function_exists('theme_url'))
+if (! function_exists('resource_url'))
 {
 	/**
 	 * Resource URL helper
 	 *
 	 * @param string $path
-	 * @param string $plugin
+	 * @param string|null $plugin
 	 *
 	 * @return string
 	 */
-	function plugin_url($path, $plugin)
+	function resource_url($path, $plugin = null)
 	{
-		if (! Plugin::exists($plugin)) {
+		if (is_null($plugin)) {
+			$path = 'assets/' .ltrim($path, '/');
+
+			return asset($path);
+		} else if (! Plugin::exists($plugin)) {
 			throw new LogicException("Plugin [$plugin] not found");
 		}
 
@@ -44,7 +48,7 @@ if (! function_exists('theme_url'))
 
 		$path = 'plugins/' .$plugin .'/' .ltrim($path, '/');
 
-		return url($path);
+		return asset($path);
 	}
 }
 

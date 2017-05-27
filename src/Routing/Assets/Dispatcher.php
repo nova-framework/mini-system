@@ -20,7 +20,7 @@ use Closure;
 use LogicException;
 
 
-class Router
+class Dispatcher
 {
 	/**
 	 * All of the registered Asset Routes.
@@ -36,24 +36,6 @@ class Router
 	 */
 	protected $hints = array();
 
-
-	/**
-	 * Create a new Assets Router instance.
-	 *
-	 * @return void
-	 */
-	public function __construct()
-	{
-		// Add the Asset Route for Plugins.
-		$this->route('plugins/([^/]+)/(.*)', function (Request $request, $plugin, $path)
-		{
-			if (is_null($namedPath = $this->findNamedPath($plugin))) {
-				return new Response('File Not Found', 404);
-			}
-
-			return $namedPath .DS .str_replace('/', DS, $path);
-		});
-	}
 
 	/**
 	 * Register a new Asset Route with the manager.
@@ -79,21 +61,13 @@ class Router
 	 */
 	public function dispatch(SymfonyRequest $request)
 	{
-		$response = null;
-
 		if (! is_null($route = $this->findRoute($request))) {
 			list($callback, $parameters) = $route;
 
 			array_unshift($parameters, $request);
 
-			$response = call_user_func_array($callback, $parameters);
+			return call_user_func_array($callback, $parameters);
 		}
-
-		if (is_string($response) && ! empty($response)) {
-			return $this->serve($response, $request);
-		}
-
-		return $response;
 	}
 
 	/**
@@ -231,7 +205,7 @@ class Router
 	{
 		$namespace = str_replace('_', '-', $namespace);
 
-		$this->hints[$namespace] = $hint;
+		$this->hints[$namespace] = rtrim($hint, DS) .DS;
 	}
 
 	/**
