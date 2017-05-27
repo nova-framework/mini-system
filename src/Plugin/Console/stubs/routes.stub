@@ -9,9 +9,9 @@
 |
 */
 
-Route::group(['prefix' => '{{slug}}'], function()
+$router->group(array('prefix' => '{{slug}}'), function($router)
 {
-    Route::get('/', function()
+    $router->get('/', function()
     {
         dd('This is the {{name}} plugin index page.');
     });
