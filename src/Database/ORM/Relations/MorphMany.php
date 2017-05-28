@@ -2,7 +2,8 @@
 
 namespace Mini\Database\ORM\Relations;
 
-use Mini\Database\Relations\HasMany;
+use Mini\Database\ORM\Relations\HasMany;
+use Mini\Database\ORM\Builder;
 use Mini\Database\ORM\Collection;
 use Mini\Database\ORM\Model;
 
@@ -106,7 +107,7 @@ class MorphMany extends HasMany
 	 */
 	public function match(array $models, Collection $results, $relation)
 	{
-		return $this->matchMany($models, $results, $relation);
+		return parent::match($models, $results, $relation);
 	}
 
 	/**
