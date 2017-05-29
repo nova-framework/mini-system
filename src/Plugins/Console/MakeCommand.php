@@ -1,10 +1,10 @@
 <?php
 
-namespace Mini\Plugin\Console;
+namespace Mini\Plugins\Console;
 
 use Mini\Console\Command as CommandGenerator;
 use Mini\Filesystem\Filesystem;
-use Mini\Plugin\PluginManager;
+use Mini\Plugins\PluginManager;
 use Mini\Support\Str;
 
 
@@ -41,7 +41,7 @@ class MakeCommand extends CommandGenerator
 	/**
 	 * The plugins instance.
 	 *
-	 * @var \Mini\Plugin\PluginManager
+	 * @var \Mini\Plugins\PluginManager
 	 */
 	protected $plugins;
 
@@ -85,7 +85,7 @@ class MakeCommand extends CommandGenerator
 	 * Create a new command instance.
 	 *
 	 * @param Filesystem $files
-	 * @param \Mini\Plugin\PluginManager	$plugin
+	 * @param \Mini\Plugins\PluginManager	$plugin
 	 */
 	public function __construct(Filesystem $files, PluginManager $plugins)
 	{

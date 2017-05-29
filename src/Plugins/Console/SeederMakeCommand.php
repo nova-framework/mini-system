@@ -1,34 +1,34 @@
 <?php
 
-namespace Mini\Plugin\Console;
+namespace Mini\Plugins\Console;
 
-use Mini\Plugin\Console\MakeCommand;
+use Mini\Plugins\Console\MakeCommand;
 
 use Symfony\Component\Console\Input\InputArgument;
 
 
-class ControllerMakeCommand extends MakeCommand
+class SeederMakeCommand extends MakeCommand
 {
 	/**
 	 * The name of the console command.
 	 *
 	 * @var string
 	 */
-	protected $name = 'make:plugin:controller';
+	protected $name = 'make:plugin:seeder';
 
 	/**
 	 * The console command description.
 	 *
 	 * @var string
 	 */
-	protected $description = 'Create a new Plugin Controller class';
+	protected $description = 'Create a new Plugin Seeder class';
 
 	/**
 	 * String to store the command type.
 	 *
 	 * @var string
 	 */
-	protected $type = 'Controller';
+	protected $type = 'Seeder';
 
 	/**
 	 * Plugin folders to be created.
@@ -36,7 +36,7 @@ class ControllerMakeCommand extends MakeCommand
 	 * @var array
 	 */
 	protected $listFolders = array(
-		'Controllers/',
+		'Database/Seeds/',
 	);
 
 	/**
@@ -55,7 +55,7 @@ class ControllerMakeCommand extends MakeCommand
 	 */
 	protected $listStubs = array(
 		'default' => array(
-			'controller.stub',
+			'seeder_plus.stub',
 		),
 	);
 
@@ -105,7 +105,8 @@ class ControllerMakeCommand extends MakeCommand
 	{
 		return array(
 			array('slug', InputArgument::REQUIRED, 'The slug of the Plugin.'),
-			array('name', InputArgument::REQUIRED, 'The name of the Controller class.'),
+			array('name', InputArgument::REQUIRED, 'The name of the Seeder class.'),
 		);
 	}
+
 }

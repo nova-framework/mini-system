@@ -1,9 +1,9 @@
 <?php
 
-namespace Mini\Plugin\Console;
+namespace Mini\Plugins\Console;
 
 use Mini\Console\Command;
-use Mini\Plugin\PluginManager;
+use Mini\Plugins\PluginManager;
 
 
 class PluginListCommand extends Command
@@ -23,7 +23,7 @@ class PluginListCommand extends Command
 	protected $description = 'List all Framework Plugins';
 
 	/**
-	 * @var \Mini\Plugin\PluginManager
+	 * @var \Mini\Plugins\PluginManager
 	 */
 	protected $plugins;
 
@@ -37,7 +37,7 @@ class PluginListCommand extends Command
 	/**
 	 * Create a new command instance.
 	 *
-	 * @param \Mini\Plugin\PluginManager $plugin
+	 * @param \Mini\Plugins\PluginManager $plugin
 	 */
 	public function __construct(PluginManager $plugins)
 	{

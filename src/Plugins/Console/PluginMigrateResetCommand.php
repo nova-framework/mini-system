@@ -1,19 +1,20 @@
 <?php
 
-namespace Mini\Plugin\Console;
+namespace Mini\Plugins\Console;
 
 use Mini\Console\Command;
 use Mini\Console\ConfirmableTrait;
+use Mini\Filesystem\Filesystem;
 use Mini\Database\Migrations\Migrator;
-use Mini\Plugin\Console\MigrationTrait;
-use Mini\Plugin\PluginManager;
-use Mini\Support\Arr;
+use Mini\Plugins\Console\MigrationTrait;
+use Mini\Plugins\PluginManager;
+use Mini\Support\Str;
 
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 
 
-class PluginMigrateRollbackCommand extends Command
+class PluginMigrateResetCommand extends Command
 {
 	use ConfirmableTrait;
 	use MigrationTrait;
@@ -23,17 +24,17 @@ class PluginMigrateRollbackCommand extends Command
 	 *
 	 * @var string
 	 */
-	protected $name = 'plugin:migrate:rollback';
+	protected $name = 'plugin:migrate:reset';
 
 	/**
 	 * The console command description.
 	 *
 	 * @var string
 	 */
-	protected $description = 'Rollback the last database migrations for a specific or all plugins';
+	protected $description = 'Rollback all database migrations for a specific or all plugins';
 
 	/**
-	 * @var \Mini\Plugin\PluginManager
+	 * @var \Mini\Plugins\PluginManager
 	 */
 	protected $plugins;
 
@@ -42,18 +43,25 @@ class PluginMigrateRollbackCommand extends Command
 	 */
 	protected $migrator;
 
+	/**
+	 * @var Filesystem
+	 */
+	protected $files;
 
 	/**
 	 * Create a new command instance.
 	 *
-	 * @param \Mini\Plugin\PluginManager $plugins
+	 * @param PluginManager  $plugins
+	 * @param Filesystem	 $files
+	 * @param Migrator	   $migrator
 	 */
-	public function __construct(Migrator $migrator, PluginManager $plugins)
+	public function __construct(PluginManager $plugins, Filesystem $files, Migrator $migrator)
 	{
 		parent::__construct();
 
-		$this->migrator = $migrator;
 		$this->plugins  = $plugins;
+		$this->files	= $files;
+		$this->migrator = $migrator;
 	}
 
 	/**
@@ -74,24 +82,34 @@ class PluginMigrateRollbackCommand extends Command
 				return $this->error('Plugin does not exist.');
 			}
 
-			return $this->rollback($slug);
+			if ($this->plugins->isEnabled($slug)) {
+				return $this->reset($slug);
+			}
+
+			return;
 		}
 
-		foreach ($this->plugins->all() as $plugin) {
-			$this->comment('Rollback the last migration from Plugin: ' .$plugin['name']);
+		$plugins = $this->plugins->enabled()->reverse();
 
-			$this->rollback($plugin['slug']);
+		foreach ($plugins as $plugin) {
+			$this->comment('Resetting the migrations of Plugin: ' .$plugin['name']);
+
+			$this->reset($plugin['slug']);
 		}
 	}
 
 	/**
-	 * Run the migration rollback for the specified plugin.
+	 * Run the migration reset for the specified plugin.
+	 *
+	 * Migrations should be reset in the reverse order that they were
+	 * migrated up as. This ensures the database is properly reversed
+	 * without conflict.
 	 *
 	 * @param string $slug
 	 *
 	 * @return mixed
 	 */
-	protected function rollback($slug)
+	protected function reset($slug)
 	{
 		if (! $this->plugins->exists($slug)) {
 			return $this->error('Plugin does not exist.');
@@ -100,17 +118,18 @@ class PluginMigrateRollbackCommand extends Command
 		$this->requireMigrations($slug);
 
 		//
-		$this->migrator->setConnection($this->input->getOption('database'));
+		$this->migrator->setconnection($this->input->getOption('database'));
 
 		$pretend = $this->input->getOption('pretend');
 
-		$this->migrator->rollback($pretend, $slug);
+		while (true) {
+			$count = $this->migrator->rollback($pretend, $slug);
 
-		//
-		foreach ($this->migrator->getNotes() as $note) {
-			if (! $this->option('quiet')) {
-				$this->line($note);
+			foreach ($this->migrator->getNotes() as $note) {
+				$this->output->writeln($note);
 			}
+
+			if ($count == 0) break;
 		}
 	}
 
@@ -136,7 +155,7 @@ class PluginMigrateRollbackCommand extends Command
 		return array(
 			array('database', null, InputOption::VALUE_OPTIONAL, 'The database connection to use.'),
 			array('force', null, InputOption::VALUE_NONE, 'Force the operation to run while in production.'),
-			array('pretend', null, InputOption::VALUE_NONE, 'Dump the SQL queries that would be run.'),
+			array('pretend', null, InputOption::VALUE_OPTIONAL, 'Dump the SQL queries that would be run.'),
 		);
 	}
 }

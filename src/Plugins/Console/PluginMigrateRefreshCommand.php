@@ -1,10 +1,10 @@
 <?php
 
-namespace Mini\Plugin\Console;
+namespace Mini\Plugins\Console;
 
 use Mini\Console\Command;
 use Mini\Console\ConfirmableTrait;
-use Mini\Plugin\PluginManager;
+use Mini\Plugins\PluginManager;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -29,7 +29,7 @@ class PluginMigrateRefreshCommand extends Command
 	protected $description = 'Reset and re-run all migrations for a specific or all plugins';
 
 	/**
-	 * @var \Mini\Plugin\PluginManager
+	 * @var \Mini\Plugins\PluginManager
 	 */
 	protected $plugins;
 

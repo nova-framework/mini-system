@@ -1,10 +1,10 @@
 <?php
 
-namespace Mini\Plugin\Console;
+namespace Mini\Plugins\Console;
 
 use Mini\Console\Command;
 use Mini\Filesystem\Filesystem;
-use Mini\Plugin\PluginManager;
+use Mini\Plugins\PluginManager;
 use Mini\Support\Str;
 
 use Symfony\Component\Console\Input\InputArgument;
@@ -113,7 +113,7 @@ class PluginMakeCommand extends Command
 	/**
 	 * The plugins instance.
 	 *
-	 * @var \Mini\Plugin\PluginManager
+	 * @var \Mini\Plugins\PluginManager
 	 */
 	protected $plugin;
 
@@ -136,7 +136,7 @@ class PluginMakeCommand extends Command
 	 * Create a new command instance.
 	 *
 	 * @param Filesystem $files
-	 * @param \Mini\Plugin\PluginManager	$plugin
+	 * @param \Mini\Plugins\PluginManager	$plugin
 	 */
 	public function __construct(Filesystem $files, PluginManager $plugin)
 	{

@@ -1,63 +1,63 @@
 <?php
 
-namespace Mini\Plugin\Console;
+namespace Mini\Plugins\Console;
 
-use Mini\Plugin\Console\MakeCommand;
+use Mini\Plugins\Console\MakeCommand;
 
 use Symfony\Component\Console\Input\InputArgument;
 
 
-class MiddlewareMakeCommand extends MakeCommand
+class PolicyMakeCommand extends MakeCommand
 {
 	/**
 	 * The name of the console command.
 	 *
 	 * @var string
 	 */
-	protected $name = 'make:plugin:middleware';
+	protected $name = 'make:plugin:policy';
 
 	/**
 	 * The console command description.
 	 *
 	 * @var string
 	 */
-	protected $description = 'Create a new Plugin Middleware class';
+	protected $description = 'Create a new Plugin Policy class';
 
 	/**
 	 * String to store the command type.
 	 *
 	 * @var string
 	 */
-	protected $type = 'Middleware';
+	protected $type = 'Policy';
 
 	/**
 	 * Plugin folders to be created.
 	 *
 	 * @var array
 	 */
-	protected $listFolders = [
-		'Http/Middleware/',
-	];
+	protected $listFolders = array(
+		'Policies/',
+	);
 
 	/**
 	 * Plugin files to be created.
 	 *
 	 * @var array
 	 */
-	protected $listFiles = [
+	protected $listFiles = array(
 		'{{filename}}.php',
-	];
+	);
 
 	/**
 	 * Plugin stubs used to populate defined files.
 	 *
 	 * @var array
 	 */
-	protected $listStubs = [
-		'default' => [
-			'middleware.stub',
-		],
-	];
+	protected $listStubs = array(
+		'default' => array(
+			'policy.stub',
+		),
+	);
 
 	/**
 	 * Resolve Container after getting file path.
@@ -106,7 +106,7 @@ class MiddlewareMakeCommand extends MakeCommand
 	{
 		return array(
 			array('slug', InputArgument::REQUIRED, 'The slug of the Plugin.'),
-			array('name', InputArgument::REQUIRED, 'The name of the Middleware class.'),
+			array('name', InputArgument::REQUIRED, 'The name of the Policy class.'),
 		);
 	}
 }

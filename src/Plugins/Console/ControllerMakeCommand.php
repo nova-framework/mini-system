@@ -1,34 +1,34 @@
 <?php
 
-namespace Mini\Plugin\Console;
+namespace Mini\Plugins\Console;
 
-use Mini\Plugin\Console\MakeCommand;
+use Mini\Plugins\Console\MakeCommand;
 
 use Symfony\Component\Console\Input\InputArgument;
 
 
-class PolicyMakeCommand extends MakeCommand
+class ControllerMakeCommand extends MakeCommand
 {
 	/**
 	 * The name of the console command.
 	 *
 	 * @var string
 	 */
-	protected $name = 'make:plugin:policy';
+	protected $name = 'make:plugin:controller';
 
 	/**
 	 * The console command description.
 	 *
 	 * @var string
 	 */
-	protected $description = 'Create a new Plugin Policy class';
+	protected $description = 'Create a new Plugin Controller class';
 
 	/**
 	 * String to store the command type.
 	 *
 	 * @var string
 	 */
-	protected $type = 'Policy';
+	protected $type = 'Controller';
 
 	/**
 	 * Plugin folders to be created.
@@ -36,7 +36,7 @@ class PolicyMakeCommand extends MakeCommand
 	 * @var array
 	 */
 	protected $listFolders = array(
-		'Policies/',
+		'Controllers/',
 	);
 
 	/**
@@ -55,14 +55,14 @@ class PolicyMakeCommand extends MakeCommand
 	 */
 	protected $listStubs = array(
 		'default' => array(
-			'policy.stub',
+			'controller.stub',
 		),
 	);
 
 	/**
 	 * Resolve Container after getting file path.
 	 *
-	 * @param string $filePath
+	 * @param string $FilePath
 	 *
 	 * @return array
 	 */
@@ -96,7 +96,6 @@ class PolicyMakeCommand extends MakeCommand
 		return str_replace($searches, $replaces, $content);
 	}
 
-
 	/**
 	 * Get the console command arguments.
 	 *
@@ -106,7 +105,7 @@ class PolicyMakeCommand extends MakeCommand
 	{
 		return array(
 			array('slug', InputArgument::REQUIRED, 'The slug of the Plugin.'),
-			array('name', InputArgument::REQUIRED, 'The name of the Policy class.'),
+			array('name', InputArgument::REQUIRED, 'The name of the Controller class.'),
 		);
 	}
 }

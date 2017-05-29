@@ -1,9 +1,9 @@
 <?php
 
-namespace Mini\Plugin;
+namespace Mini\Plugins;
 
 use Mini\Foundation\Application;
-use Mini\Plugin\Repository;
+use Mini\Plugins\Repository;
 use Mini\Support\Str;
 
 
@@ -15,7 +15,7 @@ class PluginManager
 	protected $app;
 
 	/**
-	 * @var \Mini\Plugin\Repository
+	 * @var \Mini\Plugins\Repository
 	 */
 	protected $repository;
 
@@ -54,7 +54,7 @@ class PluginManager
 	 *
 	 * @return void
 	 *
-	 * @throws \Mini\Plugin\FileMissingException
+	 * @throws \Mini\Plugins\FileMissingException
 	 */
 	protected function registerServiceProvider($properties)
 	{

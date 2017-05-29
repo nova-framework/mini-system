@@ -1,68 +1,68 @@
 <?php
 
-namespace Mini\Plugin\Console;
+namespace Mini\Plugins\Console;
 
-use Mini\Plugin\Console\MakeCommand;
+use Mini\Plugins\Console\MakeCommand;
 
 use Symfony\Component\Console\Input\InputArgument;
 
 
-class SeederMakeCommand extends MakeCommand
+class MiddlewareMakeCommand extends MakeCommand
 {
 	/**
 	 * The name of the console command.
 	 *
 	 * @var string
 	 */
-	protected $name = 'make:plugin:seeder';
+	protected $name = 'make:plugin:middleware';
 
 	/**
 	 * The console command description.
 	 *
 	 * @var string
 	 */
-	protected $description = 'Create a new Plugin Seeder class';
+	protected $description = 'Create a new Plugin Middleware class';
 
 	/**
 	 * String to store the command type.
 	 *
 	 * @var string
 	 */
-	protected $type = 'Seeder';
+	protected $type = 'Middleware';
 
 	/**
 	 * Plugin folders to be created.
 	 *
 	 * @var array
 	 */
-	protected $listFolders = array(
-		'Database/Seeds/',
-	);
+	protected $listFolders = [
+		'Http/Middleware/',
+	];
 
 	/**
 	 * Plugin files to be created.
 	 *
 	 * @var array
 	 */
-	protected $listFiles = array(
+	protected $listFiles = [
 		'{{filename}}.php',
-	);
+	];
 
 	/**
 	 * Plugin stubs used to populate defined files.
 	 *
 	 * @var array
 	 */
-	protected $listStubs = array(
-		'default' => array(
-			'seeder_plus.stub',
-		),
-	);
+	protected $listStubs = [
+		'default' => [
+			'middleware.stub',
+		],
+	];
 
 	/**
 	 * Resolve Container after getting file path.
 	 *
-	 * @param string $FilePath
+	 * @param string $filePath
 	 *
 	 * @return array
 	 */
@@ -96,6 +96,7 @@ class SeederMakeCommand extends MakeCommand
 		return str_replace($searches, $replaces, $content);
 	}
 
+
 	/**
 	 * Get the console command arguments.
 	 *
@@ -105,8 +106,7 @@ class SeederMakeCommand extends MakeCommand
 	{
 		return array(
 			array('slug', InputArgument::REQUIRED, 'The slug of the Plugin.'),
-			array('name', InputArgument::REQUIRED, 'The name of the Seeder class.'),
+			array('name', InputArgument::REQUIRED, 'The name of the Middleware class.'),
 		);
 	}
-
 }

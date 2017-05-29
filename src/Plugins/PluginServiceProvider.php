@@ -1,9 +1,9 @@
 <?php
 
-namespace Mini\Plugin;
+namespace Mini\Plugins;
 
-use Mini\Plugin\PluginManager;
-use Mini\Plugin\Repository;
+use Mini\Plugins\PluginManager;
+use Mini\Plugins\Repository;
 use Mini\Support\ServiceProvider;
 
 

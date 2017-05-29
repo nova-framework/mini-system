@@ -1,6 +1,6 @@
 <?php
 
-namespace Mini\Plugin\Console;
+namespace Mini\Plugins\Console;
 
 use InvalidArgumentException;
 

@@ -1,8 +1,8 @@
 <?php
 
-namespace Mini\Plugin\Console;
+namespace Mini\Plugins\Console;
 
-use Mini\Plugin\Console\MakeCommand;
+use Mini\Plugins\Console\MakeCommand;
 
 use Symfony\Component\Console\Input\InputArgument;
 

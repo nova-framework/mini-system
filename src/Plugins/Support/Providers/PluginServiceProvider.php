@@ -1,6 +1,6 @@
 <?php
 
-namespace Mini\Plugin\Support\Providers;
+namespace Mini\Plugins\Support\Providers;
 
 use Mini\Auth\Contracts\Access\GateInterface as Gate;
 use Mini\Support\ServiceProvider;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Mini\Plugin;
+namespace Mini\Plugins;
 
 use Mini\Config\Repository as Config;
 use Mini\Filesystem\FileNotFoundException;

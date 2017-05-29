@@ -1,6 +1,6 @@
 <?php
 
-namespace Mini\Plugin;
+namespace Mini\Plugins;
 
 
 class FileMissingException extends \Exception {}

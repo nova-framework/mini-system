@@ -1,21 +1,21 @@
 <?php
 
-namespace Mini\Plugin;
+namespace Mini\Plugins;
 
-use Mini\Plugin\Console\PluginListCommand;
-use Mini\Plugin\Console\PluginMigrateCommand;
-use Mini\Plugin\Console\PluginMigrateRefreshCommand;
-use Mini\Plugin\Console\PluginMigrateResetCommand;
-use Mini\Plugin\Console\PluginMigrateRollbackCommand;
-use Mini\Plugin\Console\PluginSeedCommand;
+use Mini\Plugins\Console\PluginListCommand;
+use Mini\Plugins\Console\PluginMigrateCommand;
+use Mini\Plugins\Console\PluginMigrateRefreshCommand;
+use Mini\Plugins\Console\PluginMigrateResetCommand;
+use Mini\Plugins\Console\PluginMigrateRollbackCommand;
+use Mini\Plugins\Console\PluginSeedCommand;
 
-use Mini\Plugin\Console\PluginMakeCommand;
-use Mini\Plugin\Console\ControllerMakeCommand;
-use Mini\Plugin\Console\MiddlewareMakeCommand;
-use Mini\Plugin\Console\MigrationMakeCommand;
-use Mini\Plugin\Console\ModelMakeCommand;
-use Mini\Plugin\Console\PolicyMakeCommand;
-use Mini\Plugin\Console\SeederMakeCommand;
+use Mini\Plugins\Console\PluginMakeCommand;
+use Mini\Plugins\Console\ControllerMakeCommand;
+use Mini\Plugins\Console\MiddlewareMakeCommand;
+use Mini\Plugins\Console\MigrationMakeCommand;
+use Mini\Plugins\Console\ModelMakeCommand;
+use Mini\Plugins\Console\PolicyMakeCommand;
+use Mini\Plugins\Console\SeederMakeCommand;
 
 use Mini\Support\ServiceProvider;
 

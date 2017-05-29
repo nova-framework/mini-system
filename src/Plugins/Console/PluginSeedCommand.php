@@ -1,10 +1,10 @@
 <?php
 
-namespace Mini\Plugin\Console;
+namespace Mini\Plugins\Console;
 
 use Mini\Console\Command;
 use Mini\Console\ConfirmableTrait;
-use Mini\Plugin\PluginManager;
+use Mini\Plugins\PluginManager;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -29,14 +29,14 @@ class PluginSeedCommand extends Command
 	protected $description = 'Seed the database with records for a specific or all plugins';
 
 	/**
-	 * @var \Mini\Plugin\PluginManager
+	 * @var \Mini\Plugins\PluginManager
 	 */
 	protected $plugins;
 
 	/**
 	 * Create a new command instance.
 	 *
-	 * @param \Mini\Plugin\PluginManager $plugins
+	 * @param \Mini\Plugins\PluginManager $plugins
 	 */
 	public function __construct(PluginManager $plugins)
 	{

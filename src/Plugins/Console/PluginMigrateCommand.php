@@ -1,11 +1,11 @@
 <?php
 
-namespace Mini\Plugin\Console;
+namespace Mini\Plugins\Console;
 
 use Mini\Console\Command;
 use Mini\Console\ConfirmableTrait;
 use Mini\Database\Migrations\Migrator;
-use Mini\Plugin\PluginManager;
+use Mini\Plugins\PluginManager;
 use Mini\Support\Arr;
 
 use Symfony\Component\Console\Input\InputOption;
@@ -31,7 +31,7 @@ class PluginMigrateCommand extends Command
 	protected $description = 'Run the database migrations for a specific or all plugins';
 
 	/**
-	 * @var \Mini\Plugin\PluginManager
+	 * @var \Mini\Plugins\PluginManager
 	 */
 	protected $plugins;
 
