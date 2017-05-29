@@ -4,7 +4,6 @@ namespace {{namespace}}\Providers;
 
 use Mini\Auth\Contracts\Access\GateInterface as Gate;
 use Mini\Plugins\Support\Providers\PluginServiceProvider as ServiceProvider;
-use Mini\Routing\Router;
 
 
 class PluginServiceProvider extends ServiceProvider
