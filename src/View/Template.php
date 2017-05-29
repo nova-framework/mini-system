@@ -171,8 +171,9 @@ class Template
 		}
 
 		if (count($this->footer) > 0) {
-			$result = ltrim($result, PHP_EOL)
-							.PHP_EOL .implode(PHP_EOL, array_reverse($this->footer));
+			$footer = implode(PHP_EOL, array_reverse($this->footer));
+
+			$result = ltrim($result, PHP_EOL) .PHP_EOL .$footer;
 		}
 
 		return $result;
