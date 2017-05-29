@@ -7,6 +7,7 @@ use Mini\View\Engines\PhpEngine;
 use Mini\View\Engines\TemplateEngine;
 use Mini\View\Factory;
 use Mini\View\FileViewFinder;
+use Mini\View\Section;
 use Mini\View\Template;
 use Mini\Support\ServiceProvider;
 
@@ -34,6 +35,8 @@ class ViewServiceProvider extends ServiceProvider
 		$this->registerViewFinder();
 
 		$this->registerFactory();
+
+		$this->registerSection();
 	}
 
 	/**
@@ -115,12 +118,25 @@ class ViewServiceProvider extends ServiceProvider
 	}
 
 	/**
+	 * Register the View Factory instance.
+	 *
+	 * @return void
+	 */
+	public function registerSection()
+	{
+		$this->app->bindShared('view.section', function($app)
+		{
+			return new Section($app['view']);
+		});
+	}
+
+	/**
 	 * Get the services provided by the provider.
 	 *
 	 * @return array
 	 */
 	public function provides()
 	{
-		return array('view', 'view.engine.resolver', 'view.finder', 'template');
+		return array('view', 'view.engine.resolver', 'view.finder', 'template', 'section');
 	}
 }
