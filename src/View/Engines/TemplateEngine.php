@@ -16,7 +16,7 @@ class TemplateEngine extends PhpEngine
 	/**
 	 * The Template instance.
 	 *
-	 * @var \Nova\View\Template
+	 * @var \Mini\View\Template
 	 */
 	protected $template;
 
@@ -31,7 +31,7 @@ class TemplateEngine extends PhpEngine
 	/**
 	 * Create a new Template Engine instance.
 	 *
-	 * @param  \Nova\View\Template  $template
+	 * @param  \Mini\View\Template  $template
 	 * @return void
 	 */
 	public function __construct(Template $template)
@@ -99,7 +99,7 @@ class TemplateEngine extends PhpEngine
 	/**
 	 * Get the Template implementation.
 	 *
-	 * @return \Nova\View\Template
+	 * @return \Mini\View\Template
 	 */
 	public function getCompiler()
 	{

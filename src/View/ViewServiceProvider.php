@@ -3,6 +3,7 @@
 namespace Mini\View;
 
 use Mini\View\Engines\EngineResolver;
+use Mini\View\Engines\FileEngine;
 use Mini\View\Engines\PhpEngine;
 use Mini\View\Engines\TemplateEngine;
 use Mini\View\Factory;
@@ -65,8 +66,14 @@ class ViewServiceProvider extends ServiceProvider
 		{
 			$resolver = new EngineResolver();
 
+			// Register the File Engine instance.
+			$resolver->register('file', function()
+			{
+				return new FileEngine();
+			});
+
 			// Register the Default Engine instance.
-			$resolver->register('default', function()
+			$resolver->register('php', function()
 			{
 				return new PhpEngine();
 			});

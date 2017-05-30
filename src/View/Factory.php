@@ -54,7 +54,11 @@ class Factory
 	 *
 	 * @var array
 	 */
-	protected $extensions = array('tpl' => 'template', 'php' => 'default');
+	protected $extensions = array(
+		'tpl' => 'template',
+		'php' => 'php',
+		'css' => 'file',
+	);
 
 	/**
 	 * All of the finished, captured sections.
