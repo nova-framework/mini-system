@@ -456,6 +456,26 @@ class BelongsToMany extends Relation
 	}
 
 	/**
+	 * Create a new instance of the related model.
+	 *
+	 * @param  array  $attributes
+	 * @param  array  $joining
+	 * @param  bool   $touch
+	 * @return \Mini\Database\ORM\Model
+	 */
+	public function create(array $attributes, array $joining = array(), $touch = true)
+	{
+		$model = $this->related->newInstance($attributes);
+
+		//
+		$$model->save(array('touch' => false));
+
+		$this->attach($model->getKey(), $joining, $touch);
+
+		return $instance;
+	}
+
+	/**
 	 * Sync the intermediate tables with a list of IDs or collection of models.
 	 *
 	 * @param  array  $ids

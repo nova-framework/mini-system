@@ -95,7 +95,7 @@ class PluginMakeCommand extends Command
 		'default' => array(
 			'config',
 			'seeder',
-			'stantard-service-provider',
+			'standard-service-provider',
 			'readme',
 			'composer'
 		),

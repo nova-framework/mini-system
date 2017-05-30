@@ -151,6 +151,23 @@ class HasMany extends Relation
 	}
 
 	/**
+	 * Create a new instance of the related model.
+	 *
+	 * @param  array  $attributes
+	 * @return \Mini\Database\ORM\Model
+	 */
+	public function create(array $attributes)
+	{
+		$instance = $this->related->newInstance($attributes);
+
+		$instance->setAttribute($this->getPlainForeignKey(), $this->getParentKey());
+
+		$instance->save();
+
+		return $instance;
+	}
+
+	/**
 	 * Get the key for comparing against the parent key in "has" query.
 	 *
 	 * @return string

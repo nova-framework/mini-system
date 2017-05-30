@@ -65,6 +65,13 @@ class Model implements ArrayAccess, ArrayableInterface, JsonableInterface, JsonS
 	protected $perPage = 15;
 
 	/**
+	 * Indicates if the IDs are auto-incrementing.
+	 *
+	 * @var bool
+	 */
+	public $incrementing = true;
+
+	/**
 	 * Indicates if the model should be timestamped.
 	 *
 	 * @var bool
@@ -339,6 +346,20 @@ class Model implements ArrayAccess, ArrayableInterface, JsonableInterface, JsonS
 		}
 
 		return $this;
+	}
+
+	/**
+	 * Fill the model with an array of attributes. Force mass assignment.
+	 *
+	 * @param  array  $attributes
+	 * @return $this
+	 */
+	public function forceFill(array $attributes)
+	{
+		return static::unguarded(function () use ($attributes)
+		{
+			return $this->fill($attributes);
+		});
 	}
 
 	/**
@@ -677,12 +698,17 @@ class Model implements ArrayAccess, ArrayableInterface, JsonableInterface, JsonS
 
 		$attributes = $this->attributes;
 
-		$keyName = $this->getKeyName();
+		if ($this->getIncrementing()) {
+			$id = $query->insertGetId($attributes);
 
-		//
-		$id = $query->insertGetId($attributes);
+			$this->setAttribute($this->getKeyName(), $id);
+		} else {
+			if (empty($attributes)) {
+				return true;
+			}
 
-		$this->setAttribute($keyName, $id);
+			$query->insert($attributes);
+		}
 
 		//
 		$this->exists = true;
@@ -2024,6 +2050,16 @@ class Model implements ArrayAccess, ArrayableInterface, JsonableInterface, JsonS
 	}
 
 	/**
+	 * Get the value indicating whether the IDs are incrementing.
+	 *
+	 * @return bool
+	 */
+	public function getIncrementing()
+	{
+		return $this->incrementing;
+	}
+
+	/**
 	 * Disable all mass assignable restrictions.
 	 *
 	 * @return void
@@ -2041,6 +2077,28 @@ class Model implements ArrayAccess, ArrayableInterface, JsonableInterface, JsonS
 	public static function reguard()
 	{
 		static::$unguarded = false;
+	}
+
+	/**
+	 * Run the given callable while being unguarded.
+	 *
+	 * @param  callable  $callback
+	 * @return mixed
+	 */
+	public static function unguarded(callable $callback)
+	{
+		if (static::$unguarded) {
+			return call_user_func($callback);
+		}
+
+		static::unguard();
+
+		try {
+			return call_user_func($callback);
+		}
+		finally {
+			static::reguard();
+		}
 	}
 
 	/**
