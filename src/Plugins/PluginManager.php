@@ -69,7 +69,10 @@ class PluginManager
 
 		if (class_exists($defaultProvider)) {
 			$this->app->register($defaultProvider);
-		} else if (class_exists($alternateProvider)) {
+		}
+
+		// If not exists the default Service Provider, try the alternate one.
+		else if (class_exists($alternateProvider)) {
 			$this->app->register($alternateProvider);
 		}
 	}
