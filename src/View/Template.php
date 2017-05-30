@@ -575,6 +575,17 @@ class Template
 	}
 
 	/**
+	 * Compile the unset statements into valid PHP.
+	 *
+	 * @param  string  $expression
+	 * @return string
+	 */
+	protected function compileUnset($expression)
+	{
+		return "<?php unset{$expression}; ?>";
+	}
+
+	/**
 	 * Compile the can statements into valid PHP.
 	 *
 	 * @param  string  $expression
