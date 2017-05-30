@@ -47,7 +47,7 @@ class Section
 	 *
 	 * @return string
 	 */
-	public function render()
+	public function show()
 	{
 		$lastSection = $this->factory->stopSection();
 
