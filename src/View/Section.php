@@ -49,9 +49,9 @@ class Section
 	 */
 	public function show()
 	{
-		$lastSection = $this->factory->stopSection();
+		$factory = $this->factory;
 
-		return $this->factory->yieldContent($lastSection);
+		return $factory->yieldContent($factory->stopSection());
 	}
 
 	/**

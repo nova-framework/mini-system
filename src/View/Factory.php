@@ -255,18 +255,6 @@ class Factory
 	}
 
 	/**
-	 * Inject inline content into a section.
-	 *
-	 * @param  string  $section
-	 * @param  string  $content
-	 * @return void
-	 */
-	public function inject($section, $content)
-	{
-		return $this->startSection($section, $content);
-	}
-
-	/**
 	 * Stop injecting content into a section and return its contents.
 	 *
 	 * @return string
