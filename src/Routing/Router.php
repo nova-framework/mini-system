@@ -795,6 +795,46 @@ class Router
 	}
 
 	/**
+	 * Add a middleware to the beginning of a middleware group.
+	 *
+	 * If the middleware is already in the group, it will not be added again.
+	 *
+	 * @param  string  $group
+	 * @param  string  $middleware
+	 * @return $this
+	 */
+	public function prependMiddlewareToGroup($group, $middleware)
+	{
+		if (isset($this->middlewareGroups[$group]) && ! in_array($middleware, $this->middlewareGroups[$group])) {
+			array_unshift($this->middlewareGroups[$group], $middleware);
+		}
+
+		return $this;
+	}
+
+	/**
+	 * Add a middleware to the end of a middleware group.
+	 *
+	 * If the middleware is already in the group, it will not be added again.
+	 *
+	 * @param  string  $group
+	 * @param  string  $middleware
+	 * @return $this
+	 */
+	public function pushMiddlewareToGroup($group, $middleware)
+	{
+		if (! array_key_exists($group, $this->middlewareGroups)) {
+			$this->middlewareGroups[$group] = array();
+		}
+
+		if (! in_array($middleware, $this->middlewareGroups[$group])) {
+			$this->middlewareGroups[$group][] = $middleware;
+		}
+
+		return $this;
+	}
+
+	/**
 	 * Return the current Matched Route, if there are any.
 	 *
 	 * @return null|Route
