@@ -13,6 +13,8 @@ class PluginServiceProvider extends ServiceProvider
 	 * @var array
 	 */
 	protected $providers = array(
+		'{{namespace}}\Providers\AuthServiceProvider',
+		'{{namespace}}\Providers\EventServiceProvider',
 		'{{namespace}}\Providers\RouteServiceProvider'
 	);
 
