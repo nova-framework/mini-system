@@ -19,18 +19,6 @@ class Section
 	}
 
 	/**
-	 * Get the string contents of a section.
-	 *
-	 * @param  string  $section
-	 * @param  string  $default
-	 * @return string
-	 */
-	public function get($section, $default = '')
-	{
-		return $this->factory->yieldContent($section, $default);
-	}
-
-	/**
 	 * Start injecting content into a section.
 	 *
 	 * @param  string  $section
@@ -47,11 +35,9 @@ class Section
 	 *
 	 * @return string
 	 */
-	public function show()
+	public function get()
 	{
-		$factory = $this->factory;
-
-		return $factory->yieldContent($factory->stopSection());
+		return $this->factory->yieldSection();
 	}
 
 	/**
@@ -95,5 +81,17 @@ class Section
 	public function extend($section, $content)
 	{
 		$this->factory->extendSection($section, $content);
+	}
+
+	/**
+	 * Get the string contents of a section.
+	 *
+	 * @param  string  $section
+	 * @param  string  $default
+	 * @return string
+	 */
+	public function getContent($section, $default = '')
+	{
+		return $this->factory->yieldContent($section, $default);
 	}
 }
