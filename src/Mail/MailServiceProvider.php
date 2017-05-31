@@ -10,6 +10,9 @@ use Swift_SmtpTransport as SmtpTransport;
 use Swift_MailTransport as MailTransport;
 use Swift_SendmailTransport as SendmailTransport;
 
+use Swift_FileSpool as FileSpool;
+use Swift_SpoolTransport as SpoolTransport;
+
 
 class MailServiceProvider extends ServiceProvider
 {
@@ -29,12 +32,12 @@ class MailServiceProvider extends ServiceProvider
 	{
 		$me = $this;
 
-		$this->app->bindShared('mailer', function($app) use ($me)
+		$this->app->bindShared('mailer', function ($app) use ($me)
 		{
-			$me->registerSwiftMailer();
+			$me->registerSwiftMailers();
 
 			$mailer = new Mailer(
-				$app['view'], $app['swift.mailer'], $app['events']
+				$app['view'], $app['swift.mailer'], $app['swift.spool.mailer'], $app['events']
 			);
 
 			$this->setMailerDependencies($mailer, $app);
@@ -74,15 +77,22 @@ class MailServiceProvider extends ServiceProvider
 	 *
 	 * @return void
 	 */
-	public function registerSwiftMailer()
+	public function registerSwiftMailers()
 	{
 		$config = $this->app['config']['mail'];
 
 		$this->registerSwiftTransport($config);
 
-		$this->app['swift.mailer'] = $this->app->share(function($app)
+		$this->registerSpoolTransport($config);
+
+		$this->app['swift.mailer'] = $this->app->share(function ($app)
 		{
 			return new Swift_Mailer($app['swift.transport']);
+		});
+
+		$this->app['swift.spool.mailer'] = $this->app->share(function ($app)
+		{
+			return new Swift_Mailer($app['swift.spool.transport']);
 		});
 	}
 
@@ -123,7 +133,7 @@ class MailServiceProvider extends ServiceProvider
 	 */
 	protected function registerSmtpTransport($config)
 	{
-		$this->app['swift.transport'] = $this->app->share(function($app) use ($config)
+		$this->app['swift.transport'] = $this->app->share(function ($app) use ($config)
 		{
 			extract($config);
 
@@ -151,7 +161,7 @@ class MailServiceProvider extends ServiceProvider
 	 */
 	protected function registerSendmailTransport($config)
 	{
-		$this->app['swift.transport'] = $this->app->share(function($app) use ($config)
+		$this->app['swift.transport'] = $this->app->share(function ($app) use ($config)
 		{
 			return SendmailTransport::newInstance($config['sendmail']);
 		});
@@ -165,9 +175,25 @@ class MailServiceProvider extends ServiceProvider
 	 */
 	protected function registerMailTransport($config)
 	{
-		$this->app['swift.transport'] = $this->app->share(function()
+		$this->app['swift.transport'] = $this->app->share(function ()
 		{
 			return MailTransport::newInstance();
+		});
+	}
+
+	/**
+	 * Register the Spool Swift Transport instance.
+	 *
+	 * @param  array  $config
+	 * @return void
+	 */
+	protected function registerSpoolTransport($config)
+	{
+		$this->app['swift.spool.transport'] = $this->app->share(function () use ($config)
+		{
+			$spool = new FileSpool($config['files']);
+
+			return SpoolTransport::newInstance($spool);
 		});
 	}
 
@@ -179,7 +205,7 @@ class MailServiceProvider extends ServiceProvider
 	 */
 	protected function registerLogTransport($config)
 	{
-		$this->app->bindShared('swift.transport', function($app)
+		$this->app->bindShared('swift.transport', function ($app)
 		{
 			return new LogTransport($app->make('Psr\Log\LoggerInterface'));
 		});

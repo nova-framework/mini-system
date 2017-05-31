@@ -31,6 +31,13 @@ class Mailer
 	protected $swift;
 
 	/**
+	 * The Swift Spool Mailer instance.
+	 *
+	 * @var \Swift_Mailer
+	 */
+	protected $swiftSpool;
+
+	/**
 	 * The event dispatcher instance.
 	 *
 	 * @var \Mini\Events\Dispatcher
@@ -79,18 +86,23 @@ class Mailer
 	 */
 	protected $parsedViews = array();
 
+
 	/**
 	 * Create a new Mailer instance.
 	 *
 	 * @param  \Mini\View\Factory  $views
 	 * @param  \Swift_Mailer  $swift
+	 * @param  \Swift_Mailer  $swiftSpool
 	 * @param  \Mini\Events\Dispatcher  $events
 	 * @return void
 	 */
-	public function __construct(Factory $views, Swift_Mailer $swift, Dispatcher $events = null)
+	public function __construct(Factory $views, Swift_Mailer $swift, Swift_Mailer $swiftSpool, Dispatcher $events = null)
 	{
 		$this->views = $views;
 		$this->swift = $swift;
+
+		$this->swiftSpool = $swiftSpool;
+
 		$this->events = $events;
 	}
 
@@ -129,6 +141,37 @@ class Mailer
 	 */
 	public function send($view, array $data, $callback)
 	{
+		$message = $this->createSwiftMessage($view, $data, $callback);
+
+		$this->sendSwiftMessage($message);
+	}
+
+	/**
+	 * Queue a new e-mail message for sending.
+	 *
+	 * @param  string|array  $view
+	 * @param  array   $data
+	 * @param  \Closure|string  $callback
+	 * @param  string  $queue
+	 * @return mixed
+	 */
+	public function queue($view, array $data, $callback)
+	{
+		$message = $this->createSwiftMessage($view, $data, $callback);
+
+		$this->sendSwiftMessage($message, $this->swiftSpool);
+	}
+
+	/**
+	 * Create a new Swift Message using a view.
+	 *
+	 * @param  string|array  $view
+	 * @param  array  $data
+	 * @param  \Closure|string  $callback
+	 * @return \Swift_Message
+	 */
+	protected createSwiftMessage($view, array $data, $callback)
+	{
 		list($view, $plain) = $this->parseView($view);
 
 		//
@@ -139,9 +182,29 @@ class Mailer
 		//
 		$this->addContent($message, $view, $plain, $data);
 
-		$message = $message->getSwiftMessage();
+		return $message->getSwiftMessage();
+	}
 
-		$this->sendSwiftMessage($message);
+	/**
+	 * Send a Swift Message instance.
+	 *
+	 * @param  \Swift_Message  $message
+	 * @param  \Swift_Mailer|null  $mailer
+	 * @return void
+	 */
+	protected function sendSwiftMessage($message, $mailer = null)
+	{
+		if ($this->events) {
+			$this->events->fire('mailer.sending', array($message));
+		}
+
+		if (! $this->pretending) {
+			$mailer = $mailer ?: $this->swift;
+
+			$mailer->send($message, $this->failedRecipients);
+		} else if (isset($this->logger)) {
+			$this->logMessage($message);
+		}
 	}
 
 	/**
@@ -185,25 +248,6 @@ class Mailer
 		}
 
 		throw new \InvalidArgumentException("Invalid view.");
-	}
-
-	/**
-	 * Send a Swift Message instance.
-	 *
-	 * @param  \Swift_Message  $message
-	 * @return void
-	 */
-	protected function sendSwiftMessage($message)
-	{
-		if ($this->events) {
-			$this->events->fire('mailer.sending', array($message));
-		}
-
-		if (! $this->pretending) {
-			$this->swift->send($message, $this->failedRecipients);
-		} else if (isset($this->logger)) {
-			$this->logMessage($message);
-		}
 	}
 
 	/**

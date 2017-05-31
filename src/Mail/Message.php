@@ -247,16 +247,10 @@ class Message
 	 */
 	protected function prepAttachment($attachment, $options = array())
 	{
-		// First we will check for a MIME type on the message, which instructs the
-		// mail client on what type of attachment the file is so that it may be
-		// downloaded correctly by the user. The MIME option is not required.
 		if (isset($options['mime'])) {
 			$attachment->setContentType($options['mime']);
 		}
 
-		// If an alternative name was given as an option, we will set that on this
-		// attachment so that it will be downloaded with the desired names from
-		// the developer, otherwise the default file names will get assigned.
 		if (isset($options['as'])) {
 			$attachment->setFilename($options['as']);
 		}
