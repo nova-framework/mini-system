@@ -141,7 +141,7 @@ class Mailer
 	 */
 	public function send($view, array $data, $callback)
 	{
-		$this->sendMessage($view, $data, $callback);
+		$this->sendMessage($view, $data, $callback, $this->swift);
 	}
 
 	/**
@@ -163,9 +163,10 @@ class Mailer
 	 * @param  string|array  $view
 	 * @param  array  $data
 	 * @param  \Closure|string  $callback
+	 * @param  \Swift_Mailer  $mailer
 	 * @return void
 	 */
-	protected function sendMessage($view, array $data, $callback, $mailer = null)
+	protected function sendMessage($view, array $data, $callback, $mailer)
 	{
 		list($view, $plain) = $this->parseView($view);
 
@@ -177,9 +178,6 @@ class Mailer
 		//
 		$this->addContent($message, $view, $plain, $data);
 
-		// Send the Swift message.
-		$mailer = $mailer ?: $this->swift;
-
 		$this->sendSwiftMessage($message->getSwiftMessage(), $mailer);
 	}
 
@@ -187,7 +185,7 @@ class Mailer
 	 * Send a Swift Message instance.
 	 *
 	 * @param  \Swift_Message  $message
-	 * @param  \Swift_Mailer|null  $mailer
+	 * @param  \Swift_Mailer  $mailer
 	 * @return void
 	 */
 	protected function sendSwiftMessage($message, $mailer)
