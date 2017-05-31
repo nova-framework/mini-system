@@ -67,7 +67,7 @@ class FlushSpoolQueueCommand extends Command
 		extract($config);
 
 		// Get the messages from the spool.
-		$spool = $this->spoolTransport->getSpool();
+		$spool = $this->getSpool();
 
 		// Setup the spool's options.
 		$spool->setMessageLimit($messageLimit);
@@ -80,4 +80,13 @@ class FlushSpoolQueueCommand extends Command
 		$this->info("Sent $result email(s) ...");
 	}
 
+	/**
+	 * Get the messages from the Mailer's Spool instance.
+	 *
+	 * @return \Swift_Spool
+	 */
+	protected function getSpool()
+	{
+		return $this->spoolTransport->getSpool();
+	}
 }
