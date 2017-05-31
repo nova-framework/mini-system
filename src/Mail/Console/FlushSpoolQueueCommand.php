@@ -62,9 +62,9 @@ class FlushSpoolQueueCommand extends Command
 	 */
 	public function fire()
 	{
-		$config = $this->app['config']->get('mailer.spool');
+		$config = $this->container['config']->get('mail.spool');
 
-		explode($config);
+		extract($config);
 
 		// Get the messages from the spool.
 		$spool = $this->spoolTransport->getSpool();

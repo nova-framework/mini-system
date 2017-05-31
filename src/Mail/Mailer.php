@@ -2,7 +2,7 @@
 
 namespace Mini\Mail;
 
-use Mini\Log\Writer;
+use Mini\Log\Writter;
 use Mini\View\Factory;
 use Mini\Events\Dispatcher;
 use Mini\Container\Container;
@@ -169,7 +169,7 @@ class Mailer
 	 * @param  \Closure|string  $callback
 	 * @return \Swift_Message
 	 */
-	protected createSwiftMessage($view, array $data, $callback)
+	protected function createSwiftMessage($view, array $data, $callback)
 	{
 		list($view, $plain) = $this->parseView($view);
 
@@ -243,7 +243,7 @@ class Mailer
 		if (is_array($view) && isset($view[0])) {
 			return $view;
 		} else if (is_array($view)) {
-			return array(Arr:get($view, 'html'), Arr:get($view, 'text'));
+			return array(Arr::get($view, 'html'), Arr::get($view, 'text'));
 		}
 
 		throw new \InvalidArgumentException("Invalid view.");
@@ -378,7 +378,7 @@ class Mailer
 	 * @param  \Log\Writer  $logger
 	 * @return $this
 	 */
-	public function setLogger(Writer $logger)
+	public function setLogger(Writter $logger)
 	{
 		$this->logger = $logger;
 

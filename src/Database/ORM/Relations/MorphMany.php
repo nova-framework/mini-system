@@ -138,6 +138,39 @@ class MorphMany extends HasMany
 	}
 
 	/**
+	 * Create a new instance of the related model.
+	 *
+	 * @param  array  $attributes
+	 * @return \Nova\Database\ORM\Model
+	 */
+	public function create(array $attributes)
+	{
+		$instance = $this->related->newInstance($attributes);
+
+		$this->setForeignAttributesForCreate($instance);
+
+		$instance->save();
+
+		return $instance;
+	}
+
+	/**
+	 * Set the foreign ID and type for creating a related model.
+	 *
+	 * @param  \Nova\Database\ORM\Model  $model
+	 * @return void
+	 */
+	protected function setForeignAttributesForCreate(Model $model)
+	{
+		$model->{$this->getPlainForeignKey()} = $this->getParentKey();
+
+		//
+		$morphClass = last(explode('.', $this->morphType));
+
+		$model->{$morphClass} = $this->morphClass;
+	}
+
+	/**
 	 * Get the foreign key "type" name.
 	 *
 	 * @return string

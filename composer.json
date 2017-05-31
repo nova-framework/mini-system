@@ -32,7 +32,7 @@
             "Mini\\" : "src/"
         },
         "files": [
-            "src/helpers.php"
+            "src/Foundation/helpers.php"
         ]
     },
     "prefer-stable": true,

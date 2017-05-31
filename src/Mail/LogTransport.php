@@ -8,6 +8,7 @@ use Swift_Mime_MimeEntity;
 use Psr\Log\LoggerInterface;
 use Swift_Events_EventListener;
 
+
 class LogTransport implements Swift_Transport
 {
 	/**

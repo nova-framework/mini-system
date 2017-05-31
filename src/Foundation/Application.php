@@ -638,6 +638,7 @@ class Application extends Container
 			'encrypter'	 	=> 'Mini\Encryption\Encrypter',
 			'events'		=> 'Mini\Events\Dispatcher',
 			'files'			=> 'Mini\Filesystem\Filesystem',
+			'mailer'		=> 'Mini\Mail\Mailer',
 			'redirect'		=> 'Mini\Routing\Redirector',
 			'request'		=> 'Mini\Http\Request',
 			'router'		=> 'Mini\Routing\Router',
