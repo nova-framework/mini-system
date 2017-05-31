@@ -30,11 +30,9 @@ class MailServiceProvider extends ServiceProvider
 	 */
 	public function register()
 	{
-		$me = $this;
-
-		$this->app->bindShared('mailer', function ($app) use ($me)
+		$this->app->bindShared('mailer', function ($app)
 		{
-			$me->registerSwiftMailers();
+			$this->registerSwiftMailers();
 
 			$mailer = new Mailer(
 				$app['view'], $app['swift.mailer'], $app['swift.spool.mailer'], $app['events']
@@ -54,6 +52,20 @@ class MailServiceProvider extends ServiceProvider
 
 			return $mailer;
 		});
+
+		$this->registerCommands();
+	}
+
+	public function registerCommands()
+	{
+		$this->app->bindShared('command.mailer.spool.flush', function($app)
+		{
+			$this->registerSwiftMailers();
+
+			return new Console\FlushSpoolQueueCommand($app['swift.transport'], $app['swift.spool.transport']);
+		});
+
+		$this->commands('command.mailer.spool.flush');
 	}
 
 	/**
@@ -189,6 +201,10 @@ class MailServiceProvider extends ServiceProvider
 	 */
 	protected function registerSpoolTransport($config)
 	{
+		$config = isset($config['spool'])
+			? $config['spool']
+			: array('files' => STORAGE_PATH .'spool');
+
 		$this->app['swift.spool.transport'] = $this->app->share(function () use ($config)
 		{
 			$spool = new FileSpool($config['files']);

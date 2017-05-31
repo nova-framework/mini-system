@@ -152,8 +152,7 @@ class Mailer
 	 * @param  string|array  $view
 	 * @param  array   $data
 	 * @param  \Closure|string  $callback
-	 * @param  string  $queue
-	 * @return mixed
+	 * @return void
 	 */
 	public function queue($view, array $data, $callback)
 	{
