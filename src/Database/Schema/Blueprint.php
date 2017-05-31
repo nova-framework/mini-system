@@ -631,17 +631,6 @@ class Blueprint
 	}
 
 	/**
-	 * Create a new uuid column on the table.
-	 *
-	 * @param  string  $column
-	 * @return \Mini\Support\Fluent
-	 */
-	public function uuid($column)
-	{
-		return $this->addColumn('uuid', $column);
-	}
-
-	/**
 	 * Add the proper columns for a polymorphic table.
 	 *
 	 * @param  string  $name

@@ -530,17 +530,6 @@ class Grammar extends BaseGrammar
 	}
 
 	/**
-	 * Create the column definition for a uuid type.
-	 *
-	 * @param  \Mini\Support\Fluent  $column
-	 * @return string
-	 */
-	protected function typeUuid(Fluent $column)
-		{
-			return 'char(36)';
-	}
-
-	/**
 	 * Get the SQL for an unsigned column modifier.
 	 *
 	 * @param  \Mini\Database\Schema\Blueprint  $blueprint
