@@ -12,6 +12,7 @@ use Swift_Mailer;
 use Swift_Message;
 
 use Closure;
+use InvalidArgumentException;
 
 
 class Mailer
@@ -78,13 +79,6 @@ class Mailer
 	 * @var array
 	 */
 	protected $failedRecipients = array();
-
-	/**
-	 * Array of parsed views containing html and text view name.
-	 *
-	 * @var array
-	 */
-	protected $parsedViews = array();
 
 
 	/**
@@ -233,15 +227,16 @@ class Mailer
 	{
 		if (is_string($view)) {
 			return array($view, null);
-		}
-
-		if (is_array($view) && isset($view[0])) {
+		} else if (! is_array($view)) {
+			throw new InvalidArgumentException("Invalid view.");
+		} else if (isset($view[0])) {
 			return $view;
-		} else if (is_array($view)) {
-			return array(Arr::get($view, 'html'), Arr::get($view, 'text'));
 		}
 
-		throw new \InvalidArgumentException("Invalid view.");
+		return array(
+			Arr::get($view, 'html'),
+			Arr::get($view, 'text')
+		);
 	}
 
 	/**
@@ -271,10 +266,12 @@ class Mailer
 		if ($callback instanceof Closure) {
 			return call_user_func($callback, $message);
 		} else if (is_string($callback)) {
-			return $this->container[$callback]->mail($message);
+			$instance = $this->container->make($callback);
+
+			return $instance->mail($message);
 		}
 
-		throw new \InvalidArgumentException("Callback is not valid.");
+		throw new InvalidArgumentException("Callback is not valid.");
 	}
 
 	/**
@@ -284,7 +281,9 @@ class Mailer
 	 */
 	protected function createMessage()
 	{
-		$message = new Message(new Swift_Message);
+		$swiftMessage = new Swift_Message;
+
+		$message = new Message($swiftMessage);
 
 		if (isset($this->from['address'])) {
 			$message->from($this->from['address'], $this->from['name']);
