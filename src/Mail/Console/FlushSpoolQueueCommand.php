@@ -77,7 +77,7 @@ class FlushSpoolQueueCommand extends Command
 		// Send the messages via the real transport.
 		$result = $spool->flushQueue($this->transport);
 
-		$this->info("Sent $result emails!");
+		$this->info("Sent $result email(s) ...");
 	}
 
 }

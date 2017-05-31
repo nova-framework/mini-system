@@ -141,9 +141,7 @@ class Mailer
 	 */
 	public function send($view, array $data, $callback)
 	{
-		$message = $this->createSwiftMessage($view, $data, $callback);
-
-		$this->sendSwiftMessage($message);
+		$this->sendMessage($view, $data, $callback);
 	}
 
 	/**
@@ -156,24 +154,22 @@ class Mailer
 	 */
 	public function queue($view, array $data, $callback)
 	{
-		$message = $this->createSwiftMessage($view, $data, $callback);
-
-		$this->sendSwiftMessage($message, $this->swiftSpool);
+		$this->sendMessage($view, $data, $callback, $this->swiftSpool);
 	}
 
 	/**
-	 * Create a new Swift Message using a view.
+	 * Create and send a new message using a view.
 	 *
 	 * @param  string|array  $view
 	 * @param  array  $data
 	 * @param  \Closure|string  $callback
-	 * @return \Swift_Message
+	 * @return void
 	 */
-	protected function createSwiftMessage($view, array $data, $callback)
+	protected function sendMessage($view, array $data, $callback, $mailer = null)
 	{
 		list($view, $plain) = $this->parseView($view);
 
-		//
+		// Create a new message.
 		$data['message'] = $message = $this->createMessage();
 
 		$this->callMessageBuilder($callback, $message);
@@ -181,7 +177,10 @@ class Mailer
 		//
 		$this->addContent($message, $view, $plain, $data);
 
-		return $message->getSwiftMessage();
+		// Send the Swift message.
+		$mailer = $mailer ?: $this->swift;
+
+		$this->sendSwiftMessage($message->getSwiftMessage(), $mailer);
 	}
 
 	/**
@@ -191,15 +190,13 @@ class Mailer
 	 * @param  \Swift_Mailer|null  $mailer
 	 * @return void
 	 */
-	protected function sendSwiftMessage($message, $mailer = null)
+	protected function sendSwiftMessage($message, $mailer)
 	{
 		if ($this->events) {
 			$this->events->fire('mailer.sending', array($message));
 		}
 
 		if (! $this->pretending) {
-			$mailer = $mailer ?: $this->swift;
-
 			$mailer->send($message, $this->failedRecipients);
 		} else if (isset($this->logger)) {
 			$this->logMessage($message);
