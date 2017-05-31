@@ -2,7 +2,7 @@
 
 namespace {{namespace}};
 
-use Nova\Bus\Contracts\SelfHandlingInterface;
+use Mini\Bus\Contracts\SelfHandlingInterface;
 
 use {{rootNamespace}}Commands\Command;
 

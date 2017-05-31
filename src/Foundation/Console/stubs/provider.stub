@@ -2,7 +2,7 @@
 
 namespace {{namespace}};
 
-use Nova\Support\ServiceProvider;
+use Mini\Support\ServiceProvider;
 
 
 class {{className}} extends ServiceProvider

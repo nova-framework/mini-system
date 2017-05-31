@@ -2,7 +2,7 @@
 
 namespace {{namespace}};
 
-use Nova\Console\Command;
+use Mini\Console\Command;
 
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;

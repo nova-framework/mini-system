@@ -2,7 +2,7 @@
 
 namespace {{namespace}};
 
-use Nova\Auth\Access\HandlesAuthorizationTrait;
+use Mini\Auth\Access\HandlesAuthorizationTrait;
 
 
 class {{className}}
