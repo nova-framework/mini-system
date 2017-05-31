@@ -30,10 +30,10 @@ class MailServiceProvider extends ServiceProvider
 	 */
 	public function register()
 	{
+		$this->registerSwiftMailers();
+
 		$this->app->bindShared('mailer', function ($app)
 		{
-			$this->registerSwiftMailers();
-
 			$mailer = new Mailer(
 				$app['view'], $app['swift.mailer'], $app['swift.spool.mailer'], $app['events']
 			);
@@ -60,8 +60,6 @@ class MailServiceProvider extends ServiceProvider
 	{
 		$this->app->bindShared('command.mailer.spool.flush', function($app)
 		{
-			$this->registerSwiftMailers();
-
 			return new Console\FlushSpoolQueueCommand($app['swift.transport'], $app['swift.spool.transport']);
 		});
 
