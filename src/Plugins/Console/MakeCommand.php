@@ -316,11 +316,21 @@ class MakeCommand extends CommandGenerator
 	 */
 	protected function getStubContent($stubName)
 	{
-		$stubPath = __DIR__ .DS .'stubs' .DS;
+		$stubPath = $this->getStubsPath() .$stubName;
 
-		$content = $this->files->get($stubPath .$stubName);
+		$content = $this->files->get($stubPath);
 
 		return $this->formatContent($content);
+	}
+
+	/**
+	 * Get stubs path.
+	 *
+	 * @return string
+	 */
+	protected function getStubsPath()
+	{
+		return dirname(__FILE__) .DS .'stubs' .DS;
 	}
 
 	/**
