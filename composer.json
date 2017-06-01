@@ -31,7 +31,7 @@
             "Mini\\" : "src/"
         },
         "files": [
-            "src/Foundation/helpers.php"
+            "src/Support/helpers.php"
         ]
     },
     "prefer-stable": true,
