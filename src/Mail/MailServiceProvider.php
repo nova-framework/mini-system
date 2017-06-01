@@ -3,6 +3,7 @@
 namespace Mini\Mail;
 
 use Mini\Mail\LogTransport;
+use Mini\Support\Arr;
 use Mini\Support\ServiceProvider;
 
 use Swift_Mailer;
@@ -185,7 +186,7 @@ class MailServiceProvider extends ServiceProvider
 	 */
 	protected function registerMailTransport($config)
 	{
-		$this->app['swift.transport'] = $this->app->share(function ()
+		$this->app['swift.transport'] = $this->app->share(function ($app)
 		{
 			return MailTransport::newInstance();
 		});
@@ -199,13 +200,23 @@ class MailServiceProvider extends ServiceProvider
 	 */
 	protected function registerSpoolTransport($config)
 	{
-		$config = isset($config['spool'])
-			? $config['spool']
-			: array('files' => STORAGE_PATH .'spool');
+		$config = Arr::get($config, 'spool', array(
+			'files'			=> storage_path('spool'),
+			'messageLimit'	=> 10,
+			'timeLimit'		=> 100,
+			'retryLimit'	=> 10,
+		));
 
-		$this->app['swift.spool.transport'] = $this->app->share(function () use ($config)
+		$this->app['swift.spool.transport'] = $this->app->share(function ($app) use ($config)
 		{
-			$spool = new FileSpool($config['files']);
+			extract($config);
+
+			// Create a new File Spool instance.
+			$spool = new FileSpool($files);
+
+			$spool->setMessageLimit($messageLimit);
+			$spool->setTimeLimit($timeLimit);
+			$spool->setRetryLimit($retryLimit);
 
 			return SpoolTransport::newInstance($spool);
 		});
@@ -221,7 +232,9 @@ class MailServiceProvider extends ServiceProvider
 	{
 		$this->app->bindShared('swift.transport', function ($app)
 		{
-			return new LogTransport($app->make('Psr\Log\LoggerInterface'));
+			$logger = $app->make('Psr\Log\LoggerInterface');
+
+			return new LogTransport($logger);
 		});
 	}
 

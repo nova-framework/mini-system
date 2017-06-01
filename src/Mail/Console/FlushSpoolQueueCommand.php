@@ -62,19 +62,19 @@ class FlushSpoolQueueCommand extends Command
 	 */
 	public function fire()
 	{
-		$config = $this->container['config']->get('mail.spool');
+		$config = $this->container['config'];
 
-		extract($config);
+		// Get the Swift Spool instance.
+		$spool = $this->getSwiftSpool();
 
-		// Get the messages from the spool.
-		$spool = $this->getSpool();
+		// Execute a recovery if for any reason a process is sending for too long.
+		$timeout = $config->get('mail.spool.timeout', 900);
 
-		// Setup the spool's options.
-		$spool->setMessageLimit($messageLimit);
-		$spool->setTimeLimit($timeLimit);
-		$spool->setRetryLimit($retryLimit);
+		if (is_integer($timeout) && ($timeout > 0)) {
+			$spool->recover($timeout);
+		}
 
-		// Send the messages via the real transport.
+		// Sends messages using the given transport instance.
 		$result = $spool->flushQueue($this->transport);
 
 		$this->info("Sent $result email(s) ...");
@@ -85,7 +85,7 @@ class FlushSpoolQueueCommand extends Command
 	 *
 	 * @return \Swift_Spool
 	 */
-	protected function getSpool()
+	protected function getSwiftSpool()
 	{
 		return $this->spoolTransport->getSpool();
 	}
