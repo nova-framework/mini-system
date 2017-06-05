@@ -125,7 +125,7 @@ class RoutingServiceProvider extends ServiceProvider
 			return $dispatcher->serve($path, $request);
 		});
 
-		$dispatcher->route('plugins/([^/]+)/(.*)', function (Request $request, $plugin, $path) use ($dispatcher)
+		$dispatcher->route('packages/([^/]+)/(.*)', function (Request $request, $plugin, $path) use ($dispatcher)
 		{
 			if (! is_null($basePath = $dispatcher->findNamedPath($plugin))) {
 				$path = $basePath .str_replace('/', DS, $path);

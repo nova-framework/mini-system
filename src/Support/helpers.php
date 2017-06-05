@@ -26,27 +26,27 @@ if (! function_exists('resource_url'))
 	 * Resource URL helper
 	 *
 	 * @param string $path
-	 * @param string|null $plugin
+	 * @param string|null $package
 	 *
 	 * @return string
 	 */
-	function resource_url($path, $plugin = null)
+	function resource_url($path, $package = null)
 	{
-		if (is_null($plugin)) {
+		if (is_null($package)) {
 			$path = 'assets/' .ltrim($path, '/');
 
 			return asset($path);
-		} else if (! Plugin::exists($plugin)) {
-			throw new LogicException("Plugin [$plugin] not found");
+		} else if (! Plugin::exists($package)) {
+			throw new LogicException("Plugin [$package] not found");
 		}
 
-		if (Str::length($plugin) > 3) {
-			$plugin = Str::snake($plugin, '-');
+		if (Str::length($package) > 3) {
+			$package = Str::snake($package, '-');
 		} else {
-			$plugin = Str::lower($plugin);
+			$package = Str::lower($package);
 		}
 
-		$path = 'plugins/' .$plugin .'/' .ltrim($path, '/');
+		$path = 'packages/' .$package .'/' .ltrim($path, '/');
 
 		return asset($path);
 	}
@@ -57,20 +57,20 @@ if (! function_exists('plugin_path'))
 	/**
 	 * Return the path to the given module file.
 	 *
-	 * @param string $module
+	 * @param string $plugin
 	 * @param string $path
 	 *
 	 * @return string
 	 */
-	function plugin_path($module, $path = '')
+	function plugin_path($plugin, $path = '')
 	{
-		$modules = app('plugins');
+		$plugins = app('plugins');
 
 		//
-		$properties = $modules->where('basename', $module);
+		$properties = $plugins->where('basename', $module);
 
 		if (! $properties->isEmpty()) {
-			$result = $modules->resolveClassPath($properties);
+			$result = $plugins->resolveClassPath($properties);
 		} else {
 			return false;
 		}

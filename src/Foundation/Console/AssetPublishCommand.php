@@ -82,9 +82,11 @@ class AssetPublishCommand extends Command
 		if ( ! is_null($path = $this->getPath())) {
 			$this->publisher->publish($package, $path);
 		} else {
-			$path = $this->router->getNamespace($package);
+			$path = $this->dispatcher->getNamespace($package);
 
-			$this->publisher->publishPackage($package, $path);
+			if (! is_null($path)) {
+				$this->publisher->publishPackage($package, $path);
+			}
 		}
 
 		$this->output->writeln('<info>Assets published for package:</info> '.$package);
