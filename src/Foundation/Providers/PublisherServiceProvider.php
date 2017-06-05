@@ -119,12 +119,12 @@ class PublisherServiceProvider extends ServiceProvider
 		{
 			$viewPath = $app['path'] .DS .'Views';
 
-			$packagePath = $app['path.base'] .DS .'plugins';
+			$vendorPath = $app['path.base'] .DS .'vendor';
 
 			//
 			$publisher = new ViewPublisher($app['files'], $viewPath);
 
-			$publisher->setPackagePath($packagePath);
+			$publisher->setPackagePath($vendorPath);
 
 			return $publisher;
 		});
@@ -139,7 +139,7 @@ class PublisherServiceProvider extends ServiceProvider
 	{
 		$this->app->bindShared('command.view.publish', function($app)
 		{
-			return new ViewPublishCommand($app['view.publisher']);
+			return new ViewPublishCommand(, $app['plugins'], $app['view.publisher']);
 		});
 	}
 

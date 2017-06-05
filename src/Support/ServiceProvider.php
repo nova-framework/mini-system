@@ -77,7 +77,7 @@ abstract class ServiceProvider
 		$appView = $this->getAppViewPath($package);
 
 		if ($files->isDirectory($appView)) {
-			$views->addNamespace($namespace, $appView);
+			$views->addNamespace($package, $appView);
 		}
 
 		$viewPath = $path .DS .'Views';
