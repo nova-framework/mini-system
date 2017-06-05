@@ -52,7 +52,7 @@ class ViewPublisher
 	 */
 	public function publish($package, $source)
 	{
-		$destination = $this->publishPath .str_replace('/', DS, "/Plugins/{$package}");
+		$destination = $this->publishPath .str_replace('/', DS, "/Packages/{$package}");
 
 		$this->makeDestination($destination);
 

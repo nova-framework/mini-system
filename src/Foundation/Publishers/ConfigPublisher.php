@@ -139,7 +139,7 @@ class ConfigPublisher
 			throw new \InvalidArgumentException("Configuration not found.");
 		}
 
-		return $this->publishPath .str_replace('/', DS, "/Plugins/{$namespace}");
+		return $this->publishPath .str_replace('/', DS, "/Packages/{$namespace}");
 	}
 
 }

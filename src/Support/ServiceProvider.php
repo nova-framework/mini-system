@@ -150,7 +150,7 @@ abstract class ServiceProvider
 	 */
 	protected function getAppViewPath($package)
 	{
-		return $this->app['path'] .str_replace('/', DS, "/Views/Plugins/{$package}");
+		return $this->app['path'] .str_replace('/', DS, "/Views/Packages/{$package}");
 	}
 
 	/**
