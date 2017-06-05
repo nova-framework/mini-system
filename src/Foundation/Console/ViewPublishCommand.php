@@ -30,7 +30,7 @@ class ViewPublishCommand extends Command
 	 *
 	 * @var \Mini\Foundation\ViewPublisher
 	 */
-	protected $view;
+	protected $publisher;
 
 
 	/**
@@ -39,11 +39,11 @@ class ViewPublishCommand extends Command
 	 * @param  \Mini\Foundation\ViewPublisher  $view
 	 * @return void
 	 */
-	public function __construct(ViewPublisher $view)
+	public function __construct(ViewPublisher $publisher)
 	{
 		parent::__construct();
 
-		$this->view = $view;
+		$this->publisher = $publisher;
 	}
 
 	/**
@@ -56,9 +56,9 @@ class ViewPublishCommand extends Command
 		$package = $this->input->getArgument('package');
 
 		if (! is_null($path = $this->getPath())) {
-			$this->view->publish($package, $path);
+			$this->publisher->publish($package, $path);
 		} else {
-			$this->view->publishPackage($package);
+			$this->publisher->publishPackage($package);
 		}
 
 		$this->output->writeln('<info>Views published for package:</info> '.$package);

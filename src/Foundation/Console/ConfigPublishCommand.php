@@ -33,7 +33,8 @@ class ConfigPublishCommand extends Command
 	 *
 	 * @var \Mini\Foundation\ConfigPublisher
 	 */
-	protected $config;
+	protected $publisher;
+
 
 	/**
 	 * Create a new configuration publish command instance.
@@ -41,11 +42,11 @@ class ConfigPublishCommand extends Command
 	 * @param  \Mini\Foundation\ConfigPublisher  $config
 	 * @return void
 	 */
-	public function __construct(ConfigPublisher $config)
+	public function __construct(ConfigPublisher $publisher)
 	{
 		parent::__construct();
 
-		$this->config = $config;
+		$this->publisher = $publisher;
 	}
 
 	/**
@@ -59,12 +60,12 @@ class ConfigPublishCommand extends Command
 
 		$proceed = $this->confirmToProceed('Config Already Published!', function() use ($package)
 		{
-			return $this->config->alreadyPublished($package);
+			return $this->publisher->alreadyPublished($package);
 		});
 
 		if (! $proceed) return;
 
-		$this->config->publishPackage($package);
+		$this->publisher->publishPackage($package);
 
 		$this->output->writeln('<info>Configuration published for package:</info> '.$package);
 	}
