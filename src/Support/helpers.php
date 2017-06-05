@@ -36,11 +36,10 @@ if (! function_exists('resource_url'))
 			$path = 'assets/' .ltrim($path, '/');
 
 			return asset($path);
-		} else if (! Plugin::exists($package)) {
-			throw new LogicException("Plugin [$package] not found");
 		}
 
-		if (Str::length($package) > 3) {
+		// We process for a package resource.
+		else if (Str::length($package) > 3) {
 			$package = Str::snake($package, '-');
 		} else {
 			$package = Str::lower($package);
