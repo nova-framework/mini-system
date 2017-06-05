@@ -66,7 +66,7 @@ if (! function_exists('plugin_path'))
 		$plugins = app('plugins');
 
 		//
-		$properties = $plugins->where('basename', $module);
+		$properties = $plugins->where('basename', $plugin);
 
 		if (! $properties->isEmpty()) {
 			$result = $plugins->resolveClassPath($properties);
