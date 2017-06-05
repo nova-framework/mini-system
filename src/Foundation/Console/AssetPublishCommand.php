@@ -91,7 +91,7 @@ class AssetPublishCommand extends Command
 			$this->publisher->publishPackage($package, $path);
 		}
 
-		$this->output->writeln('<info>Assets published for package:</info> '.$package);
+		$this->output->writeln('<info>Assets published for package:</info> ' .$package);
 	}
 
 	/**
