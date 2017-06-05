@@ -79,14 +79,16 @@ class AssetPublishCommand extends Command
 	 */
 	protected function publishAssets($package)
 	{
+		if (! $this->dispatcher->hasNamespace($package)) {
+			return $this->error('Package does not exist.');
+		}
+
 		if ( ! is_null($path = $this->getPath())) {
 			$this->publisher->publish($package, $path);
 		} else {
 			$path = $this->dispatcher->getNamespace($package);
 
-			if (! is_null($path)) {
-				$this->publisher->publishPackage($package, $path);
-			}
+			$this->publisher->publishPackage($package, $path);
 		}
 
 		$this->output->writeln('<info>Assets published for package:</info> '.$package);
