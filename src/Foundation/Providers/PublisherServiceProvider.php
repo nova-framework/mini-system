@@ -139,7 +139,7 @@ class PublisherServiceProvider extends ServiceProvider
 	{
 		$this->app->bindShared('command.view.publish', function($app)
 		{
-			return new ViewPublishCommand(, $app['plugins'], $app['view.publisher']);
+			return new ViewPublishCommand($app['plugins'], $app['view.publisher']);
 		});
 	}
 
