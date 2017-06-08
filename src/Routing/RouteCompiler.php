@@ -60,7 +60,7 @@ class RouteCompiler
 	 *
 	 * @throw \LogicException
 	 */
-	protected static function compilePattern($regex, $patterns, $isHost = false)
+	protected static function compilePattern($regex, $patterns, $isHost)
 	{
 		$optionals = 0;
 
