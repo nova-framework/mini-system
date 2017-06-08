@@ -132,15 +132,15 @@ class Route
 	 */
 	protected function matchHost(Request $request)
 	{
-		$compiled = $this->getCompiled();
-
-		if (! is_null($regex = $compiled->getHostRegex())) {
-			$path = '.' .$request->getHost();
-
-			return $this->matchPattern($path, $regex);
+		if (is_null($domain = $this->domain())) {
+			return true;
 		}
 
-		return true;
+		$pattern = '.' .$request->getHost();
+
+		$compiled = $this->getCompiled();
+
+		return $this->matchPattern($pattern, $compiled->getHostRegex());
 	}
 
 	/**
@@ -151,12 +151,11 @@ class Route
 	 */
 	protected function matchUri(Request $request)
 	{
+		$pattern = '/' .ltrim($request->path(), '/');
+
 		$compiled = $this->getCompiled();
 
-		//
-		$path = '/' .ltrim($request->path(), '/');
-
-		return $this->matchPattern($path, $compiled->getRegex());
+		return $this->matchPattern($pattern, $compiled->getRegex());
 	}
 
 	/**
