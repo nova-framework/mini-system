@@ -41,7 +41,7 @@ class RouteCompiler
 		list ($regex, $variables) = static::compilePattern($uri = $route->getUri(), $patterns, false);
 
 		if (! empty($hostVariables)) {
-			$variables = array_merge($variables, $hostVariables);
+			$variables = array_merge($hostVariables, $variables);
 		}
 
 		return new CompiledRoute(
