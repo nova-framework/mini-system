@@ -155,7 +155,7 @@ class Route
 
 		$compiled = $this->getCompiled();
 
-		return $this->matchPattern($pattern, $compiled->getHostRegex());
+		return $this->match($pattern, $compiled->getHostRegex());
 	}
 
 	/**
@@ -170,7 +170,7 @@ class Route
 
 		$compiled = $this->getCompiled();
 
-		return $this->matchPattern($pattern, $compiled->getRegex());
+		return $this->match($pattern, $compiled->getRegex());
 	}
 
 	/**
@@ -180,7 +180,7 @@ class Route
 	 * @param string  $regex
 	 * @return bool
 	 */
-	protected function matchPattern($value, $regex)
+	protected function match($value, $regex)
 	{
 		if ($value === $regex) {
 			// We have a direct match, then no parameters to capture.
