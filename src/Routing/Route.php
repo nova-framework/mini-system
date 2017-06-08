@@ -73,6 +73,21 @@ class Route
 	}
 
 	/**
+	 * Compile the Route pattern for matching.
+	 *
+	 * @return string
+	 * @throws \LogicException
+	 */
+	public function compile()
+	{
+		if (isset($this->compiled)) {
+			return;
+		}
+
+		return $this->compiled = RouteCompiler::compile($this);
+	}
+
+	/**
 	 * Checks if the Request matches the Route.
 	 *
 	 * @param \Mini\Http\Request  $request
@@ -194,21 +209,6 @@ class Route
 			return is_string($key) && is_string($value) && (strlen($value) > 0);
 
 		}, ARRAY_FILTER_USE_BOTH);
-	}
-
-	/**
-	 * Compile the Route pattern for matching.
-	 *
-	 * @return string
-	 * @throws \LogicException
-	 */
-	public function compile()
-	{
-		if (isset($this->compiled)) {
-			return;
-		}
-
-		$this->compiled = RouteCompiler::compile($this);
 	}
 
 	/**
