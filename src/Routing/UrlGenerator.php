@@ -246,8 +246,10 @@ class UrlGenerator
 	{
 		$pattern = $route->uri();
 
+		$domain = $this->getRouteDomain($route, $parameters);
+
 		$uri = strtr(rawurlencode($this->trimUrl(
-			$root = $this->replaceRoot($route, $parameters),
+			$root = $this->replaceRoot($route, $domain, $parameters),
 			$this->replaceRouteParameters($pattern, $parameters)
 		)), $this->dontEncode) .$this->getRouteQueryString($parameters);
 
@@ -258,12 +260,13 @@ class UrlGenerator
 	 * Replace the parameters on the root path.
 	 *
 	 * @param  \Nova\Routing\Route  $route
+	 * @param  string  $domain
 	 * @param  array  $parameters
 	 * @return string
 	 */
-	protected function replaceRoot($route, &$parameters)
+	protected function replaceRoot($route, $domain, &$parameters)
 	{
-		return $this->replaceRouteParameters($this->getRouteRoot($route), $parameters);
+		return $this->replaceRouteParameters($this->getRouteRoot($route, $domain), $parameters);
 	}
 
 	/**
@@ -356,17 +359,71 @@ class UrlGenerator
 	}
 
 	/**
+	 * Get the formatted domain for a given route.
+	 *
+	 * @param  \Nova\Routing\Route  $route
+	 * @param  array  $parameters
+	 * @return string
+	 */
+	protected function getRouteDomain($route, &$parameters)
+	{
+		if (! is_null($domain = $route->domain())) {
+			return $this->formatDomain($route, $parameters);
+		}
+	}
+
+	/**
+	 * Format the domain and port for the route and request.
+	 *
+	 * @param  \Nova\Routing\Route  $route
+	 * @param  array  $parameters
+	 * @return string
+	 */
+	protected function formatDomain($route, &$parameters)
+	{
+		$domain = $this->getDomainAndScheme($route);
+
+		return $this->addPortToDomain($domain);
+	}
+
+	/**
+	 * Get the domain and scheme for the route.
+	 *
+	 * @param  \Nova\Routing\Route  $route
+	 * @return string
+	 */
+	protected function getDomainAndScheme($route)
+	{
+		return $this->getRouteScheme($route) .$route->domain();
+	}
+
+	/**
+	 * Add the port to the domain if necessary.
+	 *
+	 * @param  string  $domain
+	 * @return string
+	 */
+	protected function addPortToDomain($domain)
+	{
+		if (in_array($this->request->getPort(), array('80', '443'))) {
+			return $domain;
+		}
+
+		return $domain .':' .$this->request->getPort();
+	}
+
+	/**
 	 * Get the root of the route URL.
 	 *
 	 * @param  \Nova\Routing\Route  $route
 	 * @param  string  $domain
 	 * @return string
 	 */
-	protected function getRouteRoot($route)
+	protected function getRouteRoot($route, $domain)
 	{
 		$scheme = $this->getRouteScheme($route);
 
-		return $this->getRootUrl($scheme);
+		return $this->getRootUrl($scheme, $domain);
 	}
 
 	/**
@@ -406,9 +463,11 @@ class UrlGenerator
 	 * @param  string  $root
 	 * @return string
 	 */
-	protected function getRootUrl($scheme)
+	protected function getRootUrl($scheme, $root = null)
 	{
-		$root = $this->forcedRoot ?: $this->request->root();
+		if (is_null($root)) {
+			$root = $this->forcedRoot ?: $this->request->root();
+		}
 
 		$start = Str::startsWith($root, 'http://') ? 'http://' : 'https://';
 
