@@ -115,15 +115,15 @@ class ControllerMakeCommand extends MakeCommand
 		);
 	}
 
-    /**
-     * Get the console command options.
-     *
-     * @return array
-     */
-    protected function getOptions()
-    {
-        return array(
-            array('--resource', null, InputOption::VALUE_NONE, 'Generate a Plugin Resource Controller class'),
-        );
-    }
+	/**
+	 * Get the console command options.
+	 *
+	 * @return array
+	 */
+	protected function getOptions()
+	{
+		return array(
+			array('--resource', null, InputOption::VALUE_NONE, 'Generate a Plugin Resource Controller class'),
+		);
+	}
 }

@@ -49,9 +49,9 @@ class ControllerMakeCommand extends GeneratorCommand
 	 */
 	protected function getStub()
 	{
-        if ($this->option('plain')) {
-            return realpath(__DIR__) .str_replace('/', DS, '/stubs/controller.plain.stub');
-        }
+		if ($this->option('plain')) {
+			return realpath(__DIR__) .str_replace('/', DS, '/stubs/controller.plain.stub');
+		}
 
 		return realpath(__DIR__) .str_replace('/', DS, '/stubs/controller.stub');
 	}
@@ -67,15 +67,15 @@ class ControllerMakeCommand extends GeneratorCommand
 		return $rootNamespace .'\Controllers';
 	}
 
-    /**
-     * Get the console command options.
-     *
-     * @return array
-     */
-    protected function getOptions()
-    {
-        return array(
-            array('plain', null, InputOption::VALUE_NONE, 'Generate an empty Controller class.'),
-        );
-    }
+	/**
+	 * Get the console command options.
+	 *
+	 * @return array
+	 */
+	protected function getOptions()
+	{
+		return array(
+			array('plain', null, InputOption::VALUE_NONE, 'Generate an empty Controller class.'),
+		);
+	}
 }
