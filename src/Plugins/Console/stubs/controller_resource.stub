@@ -2,7 +2,9 @@
 
 namespace {{namespace}};
 
-use Mini\Routing\Controller as BaseController;
+use Mini\Http\Request;
+
+use {{rootNamespace}}Controllers\BaseController;
 
 
 class {{className}} extends BaseController
@@ -30,9 +32,10 @@ class {{className}} extends BaseController
     /**
      * Store a newly created resource in storage.
      *
+     * @param  \Mini\Http\Request  $request
      * @return \Mini\Http\Response
      */
-    public function store()
+    public function store(Request $request)
     {
         //
     }
@@ -62,10 +65,11 @@ class {{className}} extends BaseController
     /**
      * Update the specified resource in storage.
      *
+     * @param  \Mini\Http\Request  $request
      * @param  int  $id
      * @return \Mini\Http\Response
      */
-    public function update($id)
+    public function update(Request $request, $id)
     {
         //
     }

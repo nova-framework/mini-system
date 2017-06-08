@@ -5,6 +5,7 @@ namespace Mini\Plugins\Console;
 use Mini\Plugins\Console\MakeCommand;
 
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 
 
 class ControllerMakeCommand extends MakeCommand
@@ -71,10 +72,10 @@ class ControllerMakeCommand extends MakeCommand
 	 */
 	protected function resolveByPath($filePath)
 	{
-		$this->data['filename']  = $this->makeFileName($filePath);
-		$this->data['namespace'] = $this->getNamespace($filePath);
-
-		$this->data['className'] = basename($filePath);
+		$this->data['filename']			= $this->makeFileName($filePath);
+		$this->data['namespace']		= $this->getNamespace($filePath);
+		$this->data['rootNamespace']	= $this->container->getNamespace();
+		$this->data['className']		= basename($filePath);
 	}
 
 	/**
@@ -87,12 +88,14 @@ class ControllerMakeCommand extends MakeCommand
 		$searches = array(
 			'{{filename}}',
 			'{{namespace}}',
+			'{{rootNamespace}}',
 			'{{className}}',
 		);
 
 		$replaces = array(
 			$this->data['filename'],
 			$this->data['namespace'],
+			$this->data['rootNamespace'],
 			$this->data['className'],
 		);
 
