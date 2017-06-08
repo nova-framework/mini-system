@@ -81,12 +81,14 @@ class Route
 	 */
 	public function matches(Request $request, $includingMethod = true)
 	{
-		foreach (array('Method', 'Scheme', 'Domain', 'Uri') as $type) {
-			if (! $includingMethod && ($type === 'Method')) {
+		foreach (array('method', 'scheme', 'domain', 'uri') as $method) {
+			if (! $includingMethod && ($method === 'method')) {
 				continue;
 			}
 
-			if (! $this->{"match{$type}"}($request)) {
+			$method = 'match' .ucfirst($method);
+
+			if (false === $this->{$method}($request)) {
 				return false;
 			}
 		}

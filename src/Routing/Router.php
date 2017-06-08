@@ -9,6 +9,7 @@ use Mini\Http\Exception\HttpResponseException;
 use Mini\Http\Request;
 use Mini\Http\Response;
 use Mini\Routing\Controller;
+use Mini\Routing\ResourceRegistrar;
 use Mini\Routing\Route;
 use Mini\Routing\RouteCollection;
 use Mini\Support\Arr;
@@ -93,6 +94,13 @@ class Router
 	 * @var array
 	 */
 	public static $methods = array('GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS');
+
+	/**
+	 * The resource registrar instance.
+	 *
+	 * @var \Mini\Routing\ResourceRegistrar
+	 */
+	protected $registrar;
 
 
 	/**
@@ -208,6 +216,21 @@ class Router
 		$route = $this->createRoute($methods, $route, $action);
 
 		return $this->routes->addRoute($route);
+	}
+
+	/**
+	 * Route a resource to a controller.
+	 *
+	 * @param  string  $name
+	 * @param  string  $controller
+	 * @param  array   $options
+	 * @return void
+	 */
+	public function resource($name, $controller, array $options = array())
+	{
+		$registrar = $this->getRegistrar();
+
+		$registrar->register($name, $controller, $options);
 	}
 
 	/**
@@ -942,5 +965,15 @@ class Router
 	public function getRoutes()
 	{
 		return $this->routes;
+	}
+
+	/**
+	 * Get a Resource Registrar instance.
+	 *
+	 * @return \Mini\Routing\ResourceRegistrar
+	 */
+	public function getRegistrar()
+	{
+		return $this->registrar ?: $this->registrar = new ResourceRegistrar($this);
 	}
 }
