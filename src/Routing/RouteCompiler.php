@@ -45,7 +45,7 @@ class RouteCompiler
 		}
 
 		return new CompiledRoute(
-			$uri, $domain, $patterns, $regex, $hostRegex, array_unique($variables)
+			$regex, $hostRegex, array_unique($variables)
 		);
 	}
 
@@ -59,7 +59,7 @@ class RouteCompiler
 	 *
 	 * @throw \LogicException
 	 */
-	public static function compilePattern($regex, $patterns, $isHost = false)
+	protected static function compilePattern($regex, $patterns, $isHost = false)
 	{
 		$optionals = 0;
 
