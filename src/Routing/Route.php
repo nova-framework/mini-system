@@ -96,12 +96,14 @@ class Route
 	 */
 	public function matches(Request $request, $includingMethod = true)
 	{
-		foreach (array('Method', 'Scheme', 'Host', 'Uri') as $type) {
-			if (! $includingMethod && ($type === 'Method')) {
+		foreach (array('Method', 'Scheme', 'Host', 'Uri') as $what) {
+			if (! $includingMethod && ($what === 'Method')) {
 				continue;
 			}
 
-			if (! call_user_func(array($this, "matches{$type}"), $request)) {
+			$method = "matches{$what}";
+
+			if (! call_user_func(array($this, $method), $request)) {
 				return false;
 			}
 		}
