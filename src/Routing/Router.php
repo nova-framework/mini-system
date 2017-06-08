@@ -470,7 +470,7 @@ class Router
 	}
 
 	/**
-	 * Run the given Route within a stack "onion" instance.
+	 * Run the given Route within a Pipeline instance stack.
 	 *
 	 * @param  \Mini\Routing\Route	$route
 	 * @param  \Mini\Http\Request	$request
@@ -479,10 +479,6 @@ class Router
 	protected function runRouteWithinStack(Route $route, Request $request)
 	{
 		$middleware = $this->gatherRouteMiddlewares($route);
-
-		if (empty($middleware)) {
-			return $this->callRouteAction($route, $request);
-		}
 
 		return $this->sendThroughPipeline($middleware, $request, function ($request) use ($route)
 		{
@@ -532,7 +528,7 @@ class Router
 	}
 
 	/**
-	 *  Run the given Controller within a stack "onion" instance.
+	 *  Run the given Controller within a Pipeline instance stack.
 	 *
 	 * @param  \Mini\Routing\Controller  $controller
 	 * @param  \Mini\Http\Request  $request
@@ -548,10 +544,6 @@ class Router
 			return $this->resolveMiddleware($name);
 
 		}, $controller->getMiddlewareForMethod($method));
-
-		if (empty($middleware)) {
-			return $this->callControllerAction($controller, $request, $method, $parameters);
-		}
 
 		return $this->sendThroughPipeline($middleware, $request, function ($request) use ($controller, $method, $parameters)
 		{

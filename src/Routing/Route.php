@@ -73,21 +73,6 @@ class Route
 	}
 
 	/**
-	 * Compile the Route pattern for matching.
-	 *
-	 * @return string
-	 * @throws \LogicException
-	 */
-	public function compile()
-	{
-		if (isset($this->compiled)) {
-			return $this->compiled;
-		}
-
-		return $this->compiled = RouteCompiler::compile($this);
-	}
-
-	/**
 	 * Checks if the Request matches the Route.
 	 *
 	 * @param \Mini\Http\Request  $request
@@ -207,6 +192,21 @@ class Route
 		$this->parameters = array_merge($this->parameters, $parameters);
 
 		return true;
+	}
+
+	/**
+	 * Compile the Route pattern for matching.
+	 *
+	 * @return string
+	 * @throws \LogicException
+	 */
+	public function compile()
+	{
+		if (isset($this->compiled)) {
+			return $this->compiled;
+		}
+
+		return $this->compiled = RouteCompiler::compile($this);
 	}
 
 	/**
@@ -343,6 +343,11 @@ class Route
 		return isset($this->action['domain']) ? $this->action['domain'] : null;
 	}
 
+	/**
+	 * Get the compiled route.
+	 *
+	 * @return \Mini\Routing\CompiledRoute
+	 */
 	public function getCompiled()
 	{
 		return $this->compile();

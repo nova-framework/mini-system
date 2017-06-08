@@ -15,16 +15,16 @@ class CompiledRoute
 	/**
 	 * The regex pattern the route responds to.
 	 *
-	 * @var string
+	 * @var string|null
 	 */
 	protected $hostRegex;
 
 	/**
 	 * The parameter names of the route.
 	 *
-	 * @var array|null
+	 * @var array
 	 */
-	protected $variables;
+	protected $variables = array();
 
 
 	public function __construct($regex, $hostRegex, array $variables)
@@ -34,16 +34,31 @@ class CompiledRoute
 		$this->variables	= $variables;
 	}
 
+	/**
+	 * Get the regular expression.
+	 *
+	 * @return string|null
+	 */
 	public function getRegex()
 	{
 		return $this->regex;
 	}
 
+	/**
+	 * Get the host regular expression.
+	 *
+	 * @return string|null
+	 */
 	public function getHostRegex()
 	{
 		return $this->hostRegex;
 	}
 
+	/**
+	 * Get the variables defined in route.
+	 *
+	 * @return array
+	 */
 	public function getVariables()
 	{
 		return $this->variables;
