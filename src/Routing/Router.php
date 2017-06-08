@@ -357,9 +357,9 @@ class Router
 	 */
 	protected function newRoute($methods, $uri, $action)
 	{
-		$patterns = array_merge($this->patterns, Arr::get($action, 'where', array()));
+		$wheres = array_merge($this->patterns, Arr::get($action, 'where', array()));
 
-		return new Route($methods, $uri, $action, $patterns);
+		return new Route($methods, $uri, $action, $wheres);
 	}
 
 	/**

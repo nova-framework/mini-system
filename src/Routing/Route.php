@@ -61,6 +61,13 @@ class Route
 	 */
 	protected $regex;
 
+	/**
+	 * The regex pattern the route responds to.
+	 *
+	 * @var string
+	 */
+	protected $hostRegex;
+
 
 	/**
 	 * Create a new Route instance.
@@ -79,34 +86,117 @@ class Route
 	}
 
 	/**
-	 * Compile the Route pattern for matching.
+	 * Checks if the Request matches the Route.
 	 *
-	 * @return string
-	 * @throws \LogicException
+	 * @param \Mini\Http\Request  $request
+	 * @param bool  $includingMethod
+	 * @return bool
 	 */
-	public function compile()
+	public function matches(Request $request, $includingMethod = true)
 	{
-		if (isset($this->regex)) {
-			return $this->regex;
+		foreach (array('method', 'scheme', 'host', 'uri') as $type) {
+			if (! $includingMethod && ($type === 'method')) {
+				continue;
+			}
+
+			if (! $this->match($type, $request)) {
+				return false;
+			}
 		}
 
-		list ($this->regex, $this->variables) = RouteCompiler::compile($this->uri, $this->wheres);
-
-		return $this->regex;
+		return true;
 	}
 
 	/**
-	 * Checks if a request path matches the Route pattern.
+	 * Validate a Request instance using a validation type.
 	 *
-	 * @param string $path
+	 * @param string  $type
+	 * @param \Mini\Http\Request  $request
 	 * @return bool
 	 */
-	public function matches($path)
+	protected function match($type, Request $request)
 	{
-		$pattern = $this->compile();
+		$method = 'match' .ucfirst($type);
 
-		if (preg_match('#^' .$pattern .'$#s', $path, $matches) === 1) {
-			$this->parameters = $this->matchToParameters($matches);
+		return call_user_func(array($this, $method), $request);
+	}
+
+	/**
+	 * Checks if a request method matches one of the Route methods.
+	 *
+	 * @param \Mini\Http\Request  $request
+	 * @return bool
+	 */
+	protected function matchMethod(Request $request)
+	{
+		return in_array($request->getMethod(), $this->getMethods());
+	}
+
+	/**
+	 * Checks if a request scheme matches the Route scheme.
+	 *
+	 * @param \Mini\Http\Request  $request
+	 * @return bool
+	 */
+	protected function matchScheme(Request $request)
+	{
+		$secure = $request->secure();
+
+		if ($this->httpOnly()) {
+			return ! $secure;
+		} else if ($this->secure()) {
+			return $secure;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Checks if a request host matches the Route host pattern.
+	 *
+	 * @param \Mini\Http\Request  $request
+	 * @return bool
+	 */
+	protected function matchHost(Request $request)
+	{
+		if (! is_null($regex = $this->getHostRegex())) {
+			$path = '.' .$request->getHost();
+
+			return $this->matchPattern($path, $regex);
+		}
+
+		return true;
+	}
+
+	/**
+	 * Checks if a request path matches the Route uri.
+	 *
+	 * @param \Mini\Http\Request  $request
+	 * @return bool
+	 */
+	protected function matchUri(Request $request)
+	{
+		$path = '/' .ltrim($request->path(), '/');
+
+		return $this->matchPattern($path, $this->getRegex());
+	}
+
+	/**
+	 * Checks if a string matches the regex and capture the parameters.
+	 *
+	 * @param string  $value
+	 * @param string  $regex
+	 * @return bool
+	 */
+	protected function matchPattern($value, $regex)
+	{
+		if ($value === $regex) {
+			// We have a direct match, then no parameters to capture.
+			return true;
+		} else if (preg_match($regex, $value, $matches) === 1) {
+			$this->parameters = array_merge(
+				$this->parameters, $this->gatherParameters($matches)
+			);
 
 			return true;
 		}
@@ -120,13 +210,28 @@ class Route
 	 * @param  array  $matches
 	 * @return array
 	 */
-	protected function matchToParameters(array $matches)
+	protected function gatherParameters(array $matches)
 	{
 		return array_filter($matches, function($value, $key)
 		{
 			return is_string($key) && is_string($value) && (strlen($value) > 0);
 
 		}, ARRAY_FILTER_USE_BOTH);
+	}
+
+	/**
+	 * Compile the Route pattern for matching.
+	 *
+	 * @return string
+	 * @throws \LogicException
+	 */
+	public function compile()
+	{
+		if (isset($this->regex)) {
+			return;
+		}
+
+		list ($this->regex, $this->hostRegex, $this->variables) = RouteCompiler::compile($this);
 	}
 
 	/**
@@ -254,6 +359,16 @@ class Route
 	}
 
 	/**
+	 * Get the domain defined for the Route.
+	 *
+	 * @return string|null
+	 */
+	public function domain()
+	{
+		return isset($this->action['domain']) ? $this->action['domain'] : null;
+	}
+
+	/**
 	 * Get the regular expression requirements on the route.
 	 *
 	 * @return array
@@ -270,7 +385,25 @@ class Route
 	 */
 	public function getRegex()
 	{
-		return $this->compile();
+		$this->compile();
+
+		return $this->regex;
+	}
+
+	/**
+	 * Get the host regex for the route.
+	 *
+	 * @return string
+	 */
+	public function getHostRegex()
+	{
+		$domain = $this->domain();
+
+		if (! is_null($domain)) {
+			$this->compile();
+
+			return $this->hostRegex;
+		}
 	}
 
 	/**

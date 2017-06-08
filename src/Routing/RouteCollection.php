@@ -160,16 +160,9 @@ class RouteCollection implements Countable, IteratorAggregate
 	 */
 	protected function check(array $routes, Request $request)
 	{
-		$path = '/' .ltrim($request->path(), '/');
-
-		// We will try to direct match the Route because this way is faster.
-		if (isset($routes[$path])) {
-			return $routes[$path];
-		}
-
-		return Arr::first($routes, function($uri, $route) use ($path)
+		return Arr::first($routes, function($uri, $route) use ($request)
 		{
-			return $route->matches($path);
+			return $route->matches($request);
 		});
 	}
 
