@@ -30,6 +30,7 @@ class RouteCompiler
 	{
 		$hostRegex = null;
 
+		//
 		$patterns = $route->getWheres();
 
 		// If the Route has a domain defined, compile the host's regex and variables.
@@ -38,7 +39,7 @@ class RouteCompiler
 		}
 
 		// Compile the path's regex and variables.
-		list ($regex, $variables) = static::compilePattern($uri = $route->getUri(), $patterns, false);
+		list ($regex, $variables) = static::compilePattern($route->getUri(), $patterns, false);
 
 		if (! empty($hostVariables)) {
 			$variables = array_merge($hostVariables, $variables);
