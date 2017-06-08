@@ -244,12 +244,12 @@ class UrlGenerator
 	 */
 	protected function toRoute($route, array $parameters, $absolute)
 	{
-		$domain = $this->getRouteDomain($route);
-
-		$uri = strtr(rawurlencode($this->trimUrl(
-			$root = $this->replaceRoot($route, $domain, $parameters),
+		$url = $this->trimUrl(
+			$root = $this->replaceRouteRoot($route, $parameters),
 			$this->replaceRouteParameters($route->uri(), $parameters)
-		)), $this->dontEncode) .$this->getRouteQueryString($parameters);
+		);
+
+		$uri = strtr(rawurlencode($url), $this->dontEncode) .$this->getRouteQueryString($parameters);
 
 		return $absolute ? $uri : '/' .ltrim(str_replace($root, '', $uri), '/');
 	}
@@ -258,13 +258,12 @@ class UrlGenerator
 	 * Replace the parameters on the root path.
 	 *
 	 * @param  \Nova\Routing\Route  $route
-	 * @param  string  $domain
 	 * @param  array  $parameters
 	 * @return string
 	 */
-	protected function replaceRoot($route, $domain, &$parameters)
+	protected function replaceRouteRoot($route, &$parameters)
 	{
-		$root = $this->getRouteRoot($route, $domain);
+		$root = $this->getRouteRoot($route, $this->getRouteDomain($route));
 
 		return $this->replaceRouteParameters($root, $parameters);
 	}
@@ -319,43 +318,27 @@ class UrlGenerator
 			return '';
 		}
 
-		$query = http_build_query(
-			$keyed = $this->getStringParameters($parameters)
-		);
+		$variables = array();
 
-		if (count($keyed) < count($parameters)) {
-			$query .= '&' .implode('&', $this->getNumericParameters($parameters));
+		$parameters = array_filter($parameters, function($value, $key) use (&$variables)
+		{
+			if (is_string($key)) {
+				return true;
+			}
+
+			array_push($variables, $value);
+
+			return false;
+
+		}, ARRAY_FILTER_USE_BOTH);
+
+		$query = http_build_query($parameters);
+
+		if (! empty($variables)) {
+			$query .= '&' .implode('&', $variables);
 		}
 
 		return '?' .trim($query, '&');
-	}
-
-	/**
-	 * Get the string parameters from a given list.
-	 *
-	 * @param  array  $parameters
-	 * @return array
-	 */
-	protected function getStringParameters(array $parameters)
-	{
-		return Arr::where($parameters, function($key, $value)
-		{
-			return is_string($key);
-		});
-	}
-
-	/**
-	 * Get the numeric parameters from a given list.
-	 *
-	 * @param  array  $parameters
-	 * @return array
-	 */
-	protected function getNumericParameters(array $parameters)
-	{
-		return Arr::where($parameters, function($key, $value)
-		{
-			return is_numeric($key);
-		});
 	}
 
 	/**
@@ -366,48 +349,19 @@ class UrlGenerator
 	 */
 	protected function getRouteDomain($route)
 	{
-		if (! is_null($domain = $route->domain())) {
-			return $this->formatDomain($route);
-		}
-	}
-
-	/**
-	 * Format the domain and port for the route and request.
-	 *
-	 * @param  \Nova\Routing\Route  $route
-	 * @return string
-	 */
-	protected function formatDomain($route)
-	{
-		$domain = $this->getDomainAndScheme($route);
-
-		return $this->addPortToDomain($domain);
-	}
-
-	/**
-	 * Get the domain and scheme for the route.
-	 *
-	 * @param  \Nova\Routing\Route  $route
-	 * @return string
-	 */
-	protected function getDomainAndScheme($route)
-	{
-		return $this->getRouteScheme($route) .$route->domain();
-	}
-
-	/**
-	 * Add the port to the domain if necessary.
-	 *
-	 * @param  string  $domain
-	 * @return string
-	 */
-	protected function addPortToDomain($domain)
-	{
-		if (in_array($this->request->getPort(), array('80', '443'))) {
+		if (is_null($domain = $route->domain())) {
 			return $domain;
 		}
 
-		return $domain .':' .$this->request->getPort();
+		$domain = $this->getRouteScheme($route) .$domain;
+
+		$port = $this->request->getPort();
+
+		if (in_array($port, array('80', '443'))) {
+			return $domain;
+		}
+
+		return $domain .':' .$port;
 	}
 
 	/**
