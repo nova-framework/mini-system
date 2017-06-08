@@ -35,7 +35,7 @@ class CompiledRoute
 	}
 
 	/**
-	 * Get the regular expression.
+	 * Get the uri regular expression.
 	 *
 	 * @return string|null
 	 */
