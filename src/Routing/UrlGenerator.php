@@ -244,13 +244,11 @@ class UrlGenerator
 	 */
 	protected function toRoute($route, array $parameters, $absolute)
 	{
-		$pattern = $route->uri();
-
-		$domain = $this->getRouteDomain($route, $parameters);
+		$domain = $this->getRouteDomain($route);
 
 		$uri = strtr(rawurlencode($this->trimUrl(
 			$root = $this->replaceRoot($route, $domain, $parameters),
-			$this->replaceRouteParameters($pattern, $parameters)
+			$this->replaceRouteParameters($route->uri(), $parameters)
 		)), $this->dontEncode) .$this->getRouteQueryString($parameters);
 
 		return $absolute ? $uri : '/' .ltrim(str_replace($root, '', $uri), '/');
@@ -266,7 +264,9 @@ class UrlGenerator
 	 */
 	protected function replaceRoot($route, $domain, &$parameters)
 	{
-		return $this->replaceRouteParameters($this->getRouteRoot($route, $domain), $parameters);
+		$root = $this->getRouteRoot($route, $domain);
+
+		return $this->replaceRouteParameters($root, $parameters);
 	}
 
 	/**
@@ -362,13 +362,12 @@ class UrlGenerator
 	 * Get the formatted domain for a given route.
 	 *
 	 * @param  \Nova\Routing\Route  $route
-	 * @param  array  $parameters
 	 * @return string
 	 */
-	protected function getRouteDomain($route, &$parameters)
+	protected function getRouteDomain($route)
 	{
 		if (! is_null($domain = $route->domain())) {
-			return $this->formatDomain($route, $parameters);
+			return $this->formatDomain($route);
 		}
 	}
 
@@ -376,10 +375,9 @@ class UrlGenerator
 	 * Format the domain and port for the route and request.
 	 *
 	 * @param  \Nova\Routing\Route  $route
-	 * @param  array  $parameters
 	 * @return string
 	 */
-	protected function formatDomain($route, &$parameters)
+	protected function formatDomain($route)
 	{
 		$domain = $this->getDomainAndScheme($route);
 

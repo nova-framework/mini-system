@@ -96,14 +96,12 @@ class Route
 	 */
 	public function matches(Request $request, $includingMethod = true)
 	{
-		foreach (array('Method', 'Scheme', 'Host', 'Uri') as $what) {
-			if (! $includingMethod && ($what === 'Method')) {
+		foreach (array('Method', 'Scheme', 'Domain', 'Uri') as $type) {
+			if (! $includingMethod && ($type === 'Method')) {
 				continue;
 			}
 
-			$method = "matches{$what}";
-
-			if (! call_user_func(array($this, $method), $request)) {
+			if (! $this->{"match{$type}"}($request)) {
 				return false;
 			}
 		}
@@ -117,7 +115,7 @@ class Route
 	 * @param \Mini\Http\Request  $request
 	 * @return bool
 	 */
-	protected function matchesMethod(Request $request)
+	protected function matchMethod(Request $request)
 	{
 		$methods = $this->getMethods();
 
@@ -130,14 +128,12 @@ class Route
 	 * @param \Mini\Http\Request  $request
 	 * @return bool
 	 */
-	protected function matchesScheme(Request $request)
+	protected function matchScheme(Request $request)
 	{
-		$secure = $request->secure();
-
 		if ($this->httpOnly()) {
-			return ! $secure;
+			return ! $request->secure();
 		} else if ($this->secure()) {
-			return $secure;
+			return $request->secure();
 		}
 
 		return true;
@@ -149,18 +145,18 @@ class Route
 	 * @param \Mini\Http\Request  $request
 	 * @return bool
 	 */
-	protected function matchesHost(Request $request)
+	protected function matchDomain(Request $request)
 	{
 		if (is_null($domain = $this->domain())) {
 			return true;
 		}
 
-		$pattern = '.' .$request->getHost();
+		$path = '.' .$request->getHost();
 
 		//
 		$compiled = $this->compile();
 
-		return $this->matchesPattern($pattern, $compiled->getHostRegex());
+		return $this->matchPath($path, $compiled->getHostRegex());
 	}
 
 	/**
@@ -169,52 +165,48 @@ class Route
 	 * @param \Mini\Http\Request  $request
 	 * @return bool
 	 */
-	protected function matchesUri(Request $request)
+	protected function matchUri(Request $request)
 	{
-		$pattern = '/' .ltrim($request->path(), '/');
+		$path = '/' .ltrim($request->path(), '/');
 
 		//
 		$compiled = $this->compile();
 
-		return $this->matchesPattern($pattern, $compiled->getRegex());
+		return $this->matchPath($path, $compiled->getRegex());
 	}
 
 	/**
-	 * Checks if a string matches the regex and capture the parameters.
+	 * Checks if a path matches the pattern and capture the matched parameters.
 	 *
-	 * @param string  $value
+	 * @param string  $path
 	 * @param string  $regex
 	 * @return bool
 	 */
-	protected function matchesPattern($value, $regex)
+	protected function matchPath($path, $regex)
 	{
-		if ($value === $regex) {
-			// We have a direct match, then no parameters to capture.
+		if ($path === $regex) {
+			// Direct match with no parameters to capture.
 			return true;
-		} else if (preg_match($regex, $value, $matches) === 1) {
-			$this->parameters = array_merge(
-				$this->parameters, $this->gatherParameters($matches)
-			);
-
-			return true;
+		} else if (preg_match($regex, $path, $matches) !== 1) {
+			// The path does not match the given pattern.
+			return false;
 		}
 
-		return false;
-	}
-
-	/**
-	 * Get the Route parameters from the matches.
-	 *
-	 * @param  array  $matches
-	 * @return array
-	 */
-	protected function gatherParameters(array $matches)
-	{
-		return array_filter($matches, function($value, $key)
+		// Retrieve the valid parameters from matches.
+		$parameters = array_filter($matches, function($value, $key)
 		{
-			return is_string($key) && is_string($value) && (strlen($value) > 0);
+			if (! is_string($key)) {
+				return false;
+			}
+
+			return is_string($value) && (strlen($value) > 0);
 
 		}, ARRAY_FILTER_USE_BOTH);
+
+		// Merge the parameters on the Route ones.
+		$this->parameters = array_merge($this->parameters, $parameters);
+
+		return true;
 	}
 
 	/**
