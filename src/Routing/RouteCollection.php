@@ -152,21 +152,6 @@ class RouteCollection implements Countable, IteratorAggregate
 	}
 
 	/**
-	 * Determine if a route in the array matches the request.
-	 *
-	 * @param  array  $routes
-	 * @param  \Mini\Http\Request  $request
-	 * @return \Mini\Routing\Route|null
-	 */
-	protected function check(array $routes, Request $request)
-	{
-		return Arr::first($routes, function($uri, $route) use ($request)
-		{
-			return $route->matches($request);
-		});
-	}
-
-	/**
 	 * Determine if any routes match on another HTTP verb.
 	 *
 	 * @param  \Mini\Http\Request  $request
@@ -179,7 +164,7 @@ class RouteCollection implements Countable, IteratorAggregate
 		$others = array();
 
 		foreach ($methods as $method) {
-			if (! is_null($route = $this->check($this->get($method), $request))) {
+			if (! is_null($route = $this->check($this->get($method), $request, false))) {
 				$others[] = $method;
 			}
 		}
@@ -205,6 +190,22 @@ class RouteCollection implements Countable, IteratorAggregate
 		return new Route('OPTIONS', $request->path(), function() use ($others)
 		{
 			return new Response('', 200, array('Allow' => implode(',', $others)));
+		});
+	}
+
+	/**
+	 * Determine if a route in the array matches the request.
+	 *
+	 * @param  array  $routes
+	 * @param  \Mini\Http\Request  $request
+	 * @param  bool  $includingMethod
+	 * @return \Mini\Routing\Route|null
+	 */
+	protected function check(array $routes, Request $request, $includingMethod = true)
+	{
+		return Arr::first($routes, function($uri, $route) use ($request, $includingMethod)
+		{
+			return $route->matches($request, $includingMethod);
 		});
 	}
 
