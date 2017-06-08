@@ -119,7 +119,7 @@ class Route
 	 */
 	protected function matchesMethod(Request $request)
 	{
-		$method = $this->getMethods();
+		$methods = $this->getMethods();
 
 		return in_array($request->getMethod(), $methods);
 	}
