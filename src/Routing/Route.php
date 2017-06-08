@@ -81,7 +81,7 @@ class Route
 	public function compile()
 	{
 		if (isset($this->compiled)) {
-			return;
+			return $this->compiled;
 		}
 
 		return $this->compiled = RouteCompiler::compile($this);
@@ -101,7 +101,7 @@ class Route
 				continue;
 			}
 
-			if (! call_user_func(array($this, "match{$type}"), $request)) {
+			if (! call_user_func(array($this, "matches{$type}"), $request)) {
 				return false;
 			}
 		}
@@ -115,7 +115,7 @@ class Route
 	 * @param \Mini\Http\Request  $request
 	 * @return bool
 	 */
-	protected function matchMethod(Request $request)
+	protected function matchesMethod(Request $request)
 	{
 		return in_array($request->getMethod(), $this->getMethods());
 	}
@@ -126,7 +126,7 @@ class Route
 	 * @param \Mini\Http\Request  $request
 	 * @return bool
 	 */
-	protected function matchScheme(Request $request)
+	protected function matchesScheme(Request $request)
 	{
 		$secure = $request->secure();
 
@@ -145,7 +145,7 @@ class Route
 	 * @param \Mini\Http\Request  $request
 	 * @return bool
 	 */
-	protected function matchHost(Request $request)
+	protected function matchesHost(Request $request)
 	{
 		if (is_null($domain = $this->domain())) {
 			return true;
@@ -153,9 +153,10 @@ class Route
 
 		$pattern = '.' .$request->getHost();
 
-		$compiled = $this->getCompiled();
+		//
+		$compiled = $this->compile();
 
-		return $this->match($pattern, $compiled->getHostRegex());
+		return $this->matchesPattern($pattern, $compiled->getHostRegex());
 	}
 
 	/**
@@ -164,13 +165,14 @@ class Route
 	 * @param \Mini\Http\Request  $request
 	 * @return bool
 	 */
-	protected function matchUri(Request $request)
+	protected function matchesUri(Request $request)
 	{
 		$pattern = '/' .ltrim($request->path(), '/');
 
-		$compiled = $this->getCompiled();
+		//
+		$compiled = $this->compile();
 
-		return $this->match($pattern, $compiled->getRegex());
+		return $this->matchesPattern($pattern, $compiled->getRegex());
 	}
 
 	/**
@@ -180,7 +182,7 @@ class Route
 	 * @param string  $regex
 	 * @return bool
 	 */
-	protected function match($value, $regex)
+	protected function matchesPattern($value, $regex)
 	{
 		if ($value === $regex) {
 			// We have a direct match, then no parameters to capture.
@@ -271,7 +273,7 @@ class Route
 	 */
 	public function parameterNames()
 	{
-		$compiled = $this->getCompiled();
+		$compiled = $this->compile();
 
 		return $compiled->getVariables();
 	}
@@ -347,9 +349,7 @@ class Route
 
 	public function getCompiled()
 	{
-		$this->compile();
-
-		return $this->compiled;
+		return $this->compile();
 	}
 
 	/**
