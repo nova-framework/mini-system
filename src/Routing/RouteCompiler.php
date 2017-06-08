@@ -2,6 +2,7 @@
 
 namespace Mini\Routing;
 
+use Mini\Routing\CompiledRoute;
 use Mini\Routing\Route;
 
 use DomainException;
@@ -37,13 +38,15 @@ class RouteCompiler
 		}
 
 		// Compile the path's regex and variables.
-		list ($regex, $variables) = static::compilePattern($route->getUri(), $patterns, false);
+		list ($regex, $variables) = static::compilePattern($uri = $route->getUri(), $patterns, false);
 
 		if (! empty($hostVariables)) {
 			$variables = array_merge($variables, $hostVariables);
 		}
 
-		return array($regex, $hostRegex, array_unique($variables));
+		return new CompiledRoute(
+			$uri, $domain, $patterns, $regex, $hostRegex, array_unique($variables)
+		);
 	}
 
 	/**

@@ -4,6 +4,7 @@ namespace Mini\Routing;
 
 use Mini\Container\Container;
 use Mini\Http\Request;
+use Mini\Routing\CompiledRoute;
 use Mini\Routing\RouteCompiler;
 use Mini\Support\Arr;
 
@@ -48,25 +49,11 @@ class Route
 	protected $parameters = array();
 
 	/**
-	 * The parameter names for the route.
+	 * The compiled route.
 	 *
-	 * @var array|null
+	 * @var \Mini\Routing\CompiledRoute
 	 */
-	protected $variables;
-
-	/**
-	 * The regex pattern the route responds to.
-	 *
-	 * @var string
-	 */
-	protected $regex;
-
-	/**
-	 * The regex pattern the route responds to.
-	 *
-	 * @var string
-	 */
-	protected $hostRegex;
+	protected $compiled;
 
 
 	/**
@@ -94,31 +81,17 @@ class Route
 	 */
 	public function matches(Request $request, $includingMethod = true)
 	{
-		foreach (array('method', 'scheme', 'host', 'uri') as $type) {
-			if (! $includingMethod && ($type === 'method')) {
+		foreach (array('Method', 'Scheme', 'Host', 'Uri') as $type) {
+			if (! $includingMethod && ($type === 'Method')) {
 				continue;
 			}
 
-			if (! $this->match($type, $request)) {
+			if (! call_user_func(array($this, "match{$type}"), $request)) {
 				return false;
 			}
 		}
 
 		return true;
-	}
-
-	/**
-	 * Validate a Request instance using a validation type.
-	 *
-	 * @param string  $type
-	 * @param \Mini\Http\Request  $request
-	 * @return bool
-	 */
-	protected function match($type, Request $request)
-	{
-		$method = 'match' .ucfirst($type);
-
-		return call_user_func(array($this, $method), $request);
 	}
 
 	/**
@@ -159,10 +132,12 @@ class Route
 	 */
 	protected function matchHost(Request $request)
 	{
-		if (! is_null($regex = $this->getHostRegex())) {
+		$compiled = $this->getCompiled();
+
+		if (! is_null($regex = $compiled->getHostRegex())) {
 			$path = '.' .$request->getHost();
 
-			return $this->matchPattern($path, $regex);
+			return $this->match($path, $regex);
 		}
 
 		return true;
@@ -176,9 +151,11 @@ class Route
 	 */
 	protected function matchUri(Request $request)
 	{
+		$compiled = $this->getCompiled();
+
 		$path = '/' .ltrim($request->path(), '/');
 
-		return $this->matchPattern($path, $this->getRegex());
+		return $this->match($path, $compiled->getRegex());
 	}
 
 	/**
@@ -188,7 +165,7 @@ class Route
 	 * @param string  $regex
 	 * @return bool
 	 */
-	protected function matchPattern($value, $regex)
+	protected function match($value, $regex)
 	{
 		if ($value === $regex) {
 			// We have a direct match, then no parameters to capture.
@@ -227,11 +204,11 @@ class Route
 	 */
 	public function compile()
 	{
-		if (isset($this->regex)) {
+		if (isset($this->compiled)) {
 			return;
 		}
 
-		list ($this->regex, $this->hostRegex, $this->variables) = RouteCompiler::compile($this);
+		$this->compiled = RouteCompiler::compile($this);
 	}
 
 	/**
@@ -294,9 +271,9 @@ class Route
 	 */
 	public function parameterNames()
 	{
-		$this->compile();
+		$compiled = $this->getCompiled();
 
-		return $this->variables;
+		return $compiled->getVariables();
 	}
 
 	/**
@@ -368,6 +345,13 @@ class Route
 		return isset($this->action['domain']) ? $this->action['domain'] : null;
 	}
 
+	public function getCompiled()
+	{
+		$this->compile();
+
+		return $this->compiled;
+	}
+
 	/**
 	 * Get the regular expression requirements on the route.
 	 *
@@ -376,34 +360,6 @@ class Route
 	public function getWheres()
 	{
 		return $this->wheres;
-	}
-
-	/**
-	 * Get the regex for the route.
-	 *
-	 * @return string
-	 */
-	public function getRegex()
-	{
-		$this->compile();
-
-		return $this->regex;
-	}
-
-	/**
-	 * Get the host regex for the route.
-	 *
-	 * @return string
-	 */
-	public function getHostRegex()
-	{
-		$domain = $this->domain();
-
-		if (! is_null($domain)) {
-			$this->compile();
-
-			return $this->hostRegex;
-		}
 	}
 
 	/**
