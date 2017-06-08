@@ -137,7 +137,7 @@ class Route
 		if (! is_null($regex = $compiled->getHostRegex())) {
 			$path = '.' .$request->getHost();
 
-			return $this->match($path, $regex);
+			return $this->matchPattern($path, $regex);
 		}
 
 		return true;
@@ -153,9 +153,10 @@ class Route
 	{
 		$compiled = $this->getCompiled();
 
+		//
 		$path = '/' .ltrim($request->path(), '/');
 
-		return $this->match($path, $compiled->getRegex());
+		return $this->matchPattern($path, $compiled->getRegex());
 	}
 
 	/**
@@ -165,7 +166,7 @@ class Route
 	 * @param string  $regex
 	 * @return bool
 	 */
-	protected function match($value, $regex)
+	protected function matchPattern($value, $regex)
 	{
 		if ($value === $regex) {
 			// We have a direct match, then no parameters to capture.
