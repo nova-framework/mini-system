@@ -56,7 +56,9 @@ class RouteCompiler
 
 		$separator = preg_quote($isHost ? '.' : '/', '#');
 
-		$callback = function ($matches) use ($pattern, $conditions, $separator, &$optionals, &$variables)
+		$regex = '[^' .$separator .']';
+
+		$callback = function ($matches) use ($pattern, $conditions, $separator, $regex, &$optionals, &$variables)
 		{
 			@list(, $name, $optional) = $matches;
 
@@ -65,7 +67,7 @@ class RouteCompiler
 			}
 
 			$regexp = sprintf('%s(?P<%s>%s)',
-				$separator, $name, isset($conditions[$name]) ? $conditions[$name] : '[^/]+'
+				$separator, $name, isset($conditions[$name]) ? $conditions[$name] : $regex
 			);
 
 			if ($optional) {
