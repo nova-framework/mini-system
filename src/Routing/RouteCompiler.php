@@ -10,12 +10,6 @@ use LogicException;
 
 class RouteCompiler
 {
-	/**
-	 * The default regex pattern used for the named parameters.
-	 *
-	 */
-	const DEFAULT_PATTERN = '[^/]+';
-
 
 	/**
 	 * Compile an URI pattern to a valid regexp.
@@ -71,7 +65,7 @@ class RouteCompiler
 			}
 
 			$regexp = sprintf('%s(?P<%s>%s)',
-				$separator, $name, isset($conditions[$name]) ? $conditions[$name] : self::DEFAULT_PATTERN
+				$separator, $name, isset($conditions[$name]) ? $conditions[$name] : '[^/]+'
 			);
 
 			if ($optional) {
