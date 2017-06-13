@@ -56,9 +56,9 @@ class RouteCompiler
 	 */
 	protected static function compilePattern($pattern, $conditions, $isHost)
 	{
-		$variables = array();
-
 		$optionals = 0;
+
+		$variables = array();
 
 		$separator = preg_quote($isHost ? '.' : '/', '#');
 
