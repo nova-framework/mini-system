@@ -224,7 +224,7 @@ class RouteCollection implements Countable, IteratorAggregate
 		$routes = Arr::get($this->routes, $method, array());
 
 		if (($method !== 'OPTIONS') && isset($this->fallback)) {
-			// An fallback Route responds to any method excluding OPTIONS.
+			// A fallback Route responds to any method excluding OPTIONS.
 			$uri = $this->fallback->getUri();
 
 			$routes[$uri] = $this->fallback;
