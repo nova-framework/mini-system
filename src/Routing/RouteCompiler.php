@@ -56,9 +56,9 @@ class RouteCompiler
 
 		$separator = preg_quote($isHost ? '.' : '/', '#');
 
-		$regex = '[^' .$separator .']';
+		$default = '[^' .$separator .']';
 
-		$callback = function ($matches) use ($pattern, $conditions, $separator, $regex, &$optionals, &$variables)
+		$callback = function ($matches) use ($pattern, $conditions, $separator, $default, &$optionals, &$variables)
 		{
 			@list(, $name, $optional) = $matches;
 
@@ -66,7 +66,7 @@ class RouteCompiler
 				throw new LogicException("Route pattern [$pattern] cannot reference variable name [$name] more than once.");
 			}
 
-			$regexp = sprintf('%s(?P<%s>%s)', $separator, $name, isset($conditions[$name]) ? $conditions[$name] : $regex);
+			$regexp = sprintf('%s(?P<%s>%s)', $separator, $name, isset($conditions[$name]) ? $conditions[$name] : $default);
 
 			if ($optional) {
 				$regexp = "(?:$regexp";
