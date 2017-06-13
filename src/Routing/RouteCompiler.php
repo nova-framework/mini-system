@@ -89,14 +89,10 @@ class RouteCompiler
 			return $regexp;
 		};
 
-		$result = preg_replace_callback('#' .$separator .'\{(.*?)(\?)?\}#', $callback, $pattern);
+		$regexp = preg_replace_callback('#' .$separator .'\{(.*?)(\?)?\}#', $callback, $pattern) .str_repeat(')?', $optionals);
 
-		if ($optionals > 0) {
-			$result .= str_repeat(')?', $optionals);
-		}
-
-		$regexp = self::REGEX_DELIMITER .'^' .$result .'$' .self::REGEX_DELIMITER .'s' .($isHost ? 'i' : '');
-
-		return array($regexp, $variables);
+		return array(
+			self::REGEX_DELIMITER .'^' .$regexp .'$' .self::REGEX_DELIMITER .'s' .($isHost ? 'i' : ''), $variables
+		);
 	}
 }
