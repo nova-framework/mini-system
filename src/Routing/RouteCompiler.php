@@ -31,12 +31,10 @@ class RouteCompiler
 	{
 		$hostRegex = null;
 
-		// If the Route has a domain defined, compile the host's regex and variables.
 		if (! is_null($domain = $route->domain())) {
 			list ($hostRegex, $hostVariables) = static::compilePattern($domain, $route->getWheres(), true);
 		}
 
-		// Compile the path's regex and variables.
 		list ($regex, $variables) = static::compilePattern($route->getUri(), $route->getWheres(), false);
 
 		if (! empty($hostVariables)) {
