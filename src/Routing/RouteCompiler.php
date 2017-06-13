@@ -76,7 +76,7 @@ class RouteCompiler
 
 			$regexp = sprintf('%s(?P<%s>%s)', $separator, $name, $pattern);
 
-			if (isset($optional)) {
+			if ($optional) {
 				$regexp = "(?:$regexp";
 
 				$optionals++;
