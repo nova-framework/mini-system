@@ -10,8 +10,6 @@ use LogicException;
 
 class RouteCompiler
 {
-	const REGEX_DELIMITER = '#';
-
 	/**
 	 * The default regex pattern used for the named parameters.
 	 *
@@ -62,7 +60,7 @@ class RouteCompiler
 
 		$optionals = 0;
 
-		$separator = preg_quote($isHost ? '.' : '/', self::REGEX_DELIMITER);
+		$separator = preg_quote($isHost ? '.' : '/', '#');
 
 		$callback = function ($matches) use ($pattern, $conditions, $separator, &$optionals, &$variables)
 		{
@@ -89,10 +87,8 @@ class RouteCompiler
 			return $regexp;
 		};
 
-		$regexp = preg_replace_callback('#' .$separator .'\{(.*?)(\?)?\}#', $callback, $pattern) .str_repeat(')?', $optionals);
+		$regexp = preg_replace_callback('#' .$separator .'\{(.*?)(\?)?\}#', $callback, $pattern);
 
-		return array(
-			self::REGEX_DELIMITER .'^' .$regexp .'$' .self::REGEX_DELIMITER .'s' .($isHost ? 'i' : ''), $variables
-		);
+		return array('#^' .$regexp .str_repeat(')?', $optionals) .'$#s' .($isHost ? 'i' : ''), $variables);
 	}
 }
