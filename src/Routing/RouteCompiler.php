@@ -5,12 +5,13 @@ namespace Mini\Routing;
 use Mini\Routing\CompiledRoute;
 use Mini\Routing\Route;
 
-use DomainException;
 use LogicException;
 
 
 class RouteCompiler
 {
+	const REGEX_DELIMITER = '#';
+
 	/**
 	 * The default regex pattern used for the named parameters.
 	 *
@@ -30,85 +31,72 @@ class RouteCompiler
 	{
 		$hostRegex = null;
 
-		//
-		$patterns = $route->getWheres();
-
 		// If the Route has a domain defined, compile the host's regex and variables.
 		if (! is_null($domain = $route->domain())) {
-			list ($hostRegex, $hostVariables) = static::compilePattern($domain, $patterns, true);
+			list ($hostRegex, $hostVariables) = static::compilePattern($domain, $route->getWheres(), true);
 		}
 
 		// Compile the path's regex and variables.
-		list ($regex, $variables) = static::compilePattern($route->getUri(), $patterns, false);
+		list ($regex, $variables) = static::compilePattern($route->getUri(), $route->getWheres(), false);
 
 		if (! empty($hostVariables)) {
 			$variables = array_merge($variables, $hostVariables);
 		}
 
-		return new CompiledRoute(
-			$regex, $hostRegex, array_unique($variables)
-		);
+		return new CompiledRoute($regex, $hostRegex, array_unique($variables));
 	}
 
 	/**
-	 * Compile an host or path pattern to a valid regexp.
+	 * Compile an host or URI pattern to a valid regexp.
 	 *
-	 * @param  string	$regex
+	 * @param  string	$path
 	 * @param  array	$patterns
 	 * @param  bool		$isHost
 	 * @return string
 	 *
 	 * @throw \LogicException
 	 */
-	protected static function compilePattern($regex, $patterns, $isHost)
+	protected static function compilePattern($path, $patterns, $isHost)
 	{
-		$optionals = 0;
-
-		//
-		$separator = $isHost ? '\.' : '/';
-
 		$variables = array();
 
-		$result = preg_replace_callback('#' .$separator .'\{(.*?)(\?)?\}#', function ($matches) use ($regex, $patterns, $separator, &$optionals, &$variables)
+		$optionals = 0;
+
+		$separator = preg_quote($isHost ? '.' : '/', self::REGEX_DELIMITER);
+
+		$callback = function ($matches) use ($path, $patterns, $separator, &$optionals, &$variables)
 		{
 			@list(, $name, $optional) = $matches;
 
-			// Check if the parameter name is unique.
 			if (in_array($name, $variables)) {
-				$message = sprintf('Route pattern [%s] cannot reference variable name [%s] more than once.', $regex, $name);
-
-				throw new LogicException($message);
+				throw new LogicException("Route pattern [$path] cannot reference variable name [$name] more than once.");
 			}
 
-			array_push($variables, $name);
+			$pattern = isset($patterns[$name]) ? $patterns[$name] : self::DEFAULT_PATTERN;
 
-			// Process for the optional parameters.
-			$prefix = '';
+			$regexp = sprintf('%s(?P<%s>%s)', $separator, $name, $pattern);
 
 			if (! is_null($optional)) {
-				$prefix = '(?:';
+				$regexp = "(?:$regexp";
 
 				$optionals++;
 			} else if ($optionals > 0) {
-				$message = sprintf('Route pattern [%s] cannot reference variable [%s] after one or more optionals.', $regex, $name);
-
-				throw new LogicException($message);
+				throw new LogicException("Route pattern [$path] cannot reference variable [$name] after one or more optionals.");
 			}
 
-			// Compute the parameter's pattern.
-			$pattern = isset($patterns[$name]) ? $patterns[$name] : self::DEFAULT_PATTERN;
+			$variables[] = $name;
 
-			return sprintf('%s%s(?P<%s>%s)', $prefix, $separator, $name, $pattern);
+			return $regexp;
+		};
 
-		}, $regex);
+		$result = preg_replace_callback('#' .$separator .'\{(.*?)(\?)?\}#', $callback, $path);
 
-		// Adjust the pattern when we have optional parameters.
 		if ($optionals > 0) {
 			$result .= str_repeat(')?', $optionals);
 		}
 
-		return array(
-			'#^' .$result .'$#s' .($isHost ? 'i' : ''), $variables
-		);
+		$regexp = self::REGEX_DELIMITER .'^' .$result .'$' .self::REGEX_DELIMITER .'s' .($isHost ? 'i' : '');
+
+		return array($regexp, $variables);
 	}
 }
