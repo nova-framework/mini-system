@@ -49,14 +49,14 @@ class RouteCompiler
 	/**
 	 * Compile an host or URI pattern to a valid regexp.
 	 *
-	 * @param  string	$path
-	 * @param  array	$patterns
+	 * @param  string	$pattern
+	 * @param  array	$conditions
 	 * @param  bool		$isHost
 	 * @return string
 	 *
 	 * @throw \LogicException
 	 */
-	protected static function compilePattern($path, $patterns, $isHost)
+	protected static function compilePattern($pattern, $conditions, $isHost)
 	{
 		$variables = array();
 
@@ -64,15 +64,15 @@ class RouteCompiler
 
 		$separator = preg_quote($isHost ? '.' : '/', self::REGEX_DELIMITER);
 
-		$callback = function ($matches) use ($path, $patterns, $separator, &$optionals, &$variables)
+		$callback = function ($matches) use ($pattern, $conditions, $separator, &$optionals, &$variables)
 		{
 			@list(, $name, $optional) = $matches;
 
 			if (in_array($name, $variables)) {
-				throw new LogicException("Route pattern [$path] cannot reference variable name [$name] more than once.");
+				throw new LogicException("Route pattern [$pattern] cannot reference variable name [$name] more than once.");
 			}
 
-			$pattern = isset($patterns[$name]) ? $patterns[$name] : self::DEFAULT_PATTERN;
+			$pattern = isset($conditions[$name]) ? $conditions[$name] : self::DEFAULT_PATTERN;
 
 			$regexp = sprintf('%s(?P<%s>%s)', $separator, $name, $pattern);
 
@@ -81,7 +81,7 @@ class RouteCompiler
 
 				$optionals++;
 			} else if ($optionals > 0) {
-				throw new LogicException("Route pattern [$path] cannot reference variable [$name] after one or more optionals.");
+				throw new LogicException("Route pattern [$pattern] cannot reference variable [$name] after one or more optionals.");
 			}
 
 			$variables[] = $name;
@@ -89,7 +89,7 @@ class RouteCompiler
 			return $regexp;
 		};
 
-		$result = preg_replace_callback('#' .$separator .'\{(.*?)(\?)?\}#', $callback, $path);
+		$result = preg_replace_callback('#' .$separator .'\{(.*?)(\?)?\}#', $callback, $pattern);
 
 		if ($optionals > 0) {
 			$result .= str_repeat(')?', $optionals);
