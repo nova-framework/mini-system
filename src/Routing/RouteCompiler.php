@@ -72,9 +72,9 @@ class RouteCompiler
 				throw new LogicException("Route pattern [$pattern] cannot reference variable name [$name] more than once.");
 			}
 
-			$regex = isset($conditions[$name]) ? $conditions[$name] : self::DEFAULT_PATTERN;
-
-			$regexp = sprintf('%s(?P<%s>%s)', $separator, $name, $regex);
+			$regexp = sprintf('%s(?P<%s>%s)',
+				$separator, $name, isset($conditions[$name]) ? $conditions[$name] : self::DEFAULT_PATTERN
+			);
 
 			if ($optional) {
 				$regexp = "(?:$regexp";
