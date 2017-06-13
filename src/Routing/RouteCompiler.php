@@ -38,10 +38,12 @@ class RouteCompiler
 		list ($regex, $variables) = static::compilePattern($route->getUri(), $route->getWheres(), false);
 
 		if (! empty($hostVariables)) {
-			$variables = array_merge($variables, $hostVariables);
+			$variables = array_unique(
+				array_merge($variables, $hostVariables)
+			);
 		}
 
-		return new CompiledRoute($regex, $hostRegex, array_unique($variables));
+		return new CompiledRoute($regex, $hostRegex, $variables);
 	}
 
 	/**
