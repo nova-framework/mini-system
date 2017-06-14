@@ -126,7 +126,7 @@ class Router
 	 */
 	public function get($route, $action)
 	{
-		return $this->match(array('GET', 'HEAD'), $route, $action);
+		return $this->addRoute(array('GET', 'HEAD'), $route, $action);
 	}
 
 	/**
@@ -138,7 +138,7 @@ class Router
 	 */
 	public function post($route, $action)
 	{
-		return $this->match('POST', $route, $action);
+		return $this->addRoute('POST', $route, $action);
 	}
 
 	/**
@@ -150,7 +150,7 @@ class Router
 	 */
 	public function put($route, $action)
 	{
-		return $this->match('PUT', $route, $action);
+		return $this->addRoute('PUT', $route, $action);
 	}
 
 	/**
@@ -162,7 +162,7 @@ class Router
 	 */
 	public function patch($route, $action)
 	{
-		return $this->match('PATCH', $route, $action);
+		return $this->addRoute('PATCH', $route, $action);
 	}
 
 	/**
@@ -174,7 +174,7 @@ class Router
 	 */
 	public function delete($route, $action)
 	{
-		return $this->match('DELETE', $route, $action);
+		return $this->addRoute('DELETE', $route, $action);
 	}
 
 	/**
@@ -186,7 +186,7 @@ class Router
 	 */
 	public function options($route, $action)
 	{
-		return $this->match('OPTIONS', $route, $action);
+		return $this->addRoute('OPTIONS', $route, $action);
 	}
 
 	/**
@@ -200,7 +200,7 @@ class Router
 	{
 		$methods = array('GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE');
 
-		return $this->match($methods, $route, $action);
+		return $this->addRoute($methods, $route, $action);
 	}
 
 	/**
@@ -213,9 +213,7 @@ class Router
 	 */
 	public function match($methods, $route, $action)
 	{
-		$route = $this->createRoute($methods, $route, $action);
-
-		return $this->routes->addRoute($route);
+		return $this->addRoute(array_map('strtoupper', (array) $methods), $uri, $action);
 	}
 
 	/**
@@ -262,15 +260,26 @@ class Router
 			$attributes['middleware'] = explode('|', $attributes['middleware']);
 		}
 
-		if (! empty($this->groupStack)) {
-			$attributes = $this->mergeGroup($attributes, end($this->groupStack));
-		}
-
-		$this->groupStack[] = $attributes;
+		$this->updateGroupStack($attributes);
 
 		call_user_func($callback, $this);
 
 		array_pop($this->groupStack);
+	}
+
+	/**
+	 * Update the group stack with the given attributes.
+	 *
+	 * @param  array  $attributes
+	 * @return void
+	 */
+	protected function updateGroupStack(array $attributes)
+	{
+		if ( ! empty($this->groupStack)) {
+			$attributes = $this->mergeGroup($attributes, end($this->groupStack));
+		}
+
+		$this->groupStack[] = $attributes;
 	}
 
 	/**
@@ -282,28 +291,12 @@ class Router
 	 */
 	protected function mergeGroup($new, $old)
 	{
-		if (isset($new['namespace'])) {
-			$new['namespace'] = isset($old['namespace'])
-				? trim($old['namespace'], '\\') .'\\' .trim($new['namespace'], '\\')
-				: trim($new['namespace'], '\\');
-		} else {
-			$new['namespace'] = isset($old['namespace']) ? $old['namespace'] : null;
-		}
+		$new['namespace'] = static::formatUsesPrefix($new, $old);
 
-		if (isset($new['prefix'])) {
-			$new['prefix'] = isset($old['prefix'])
-				? trim($old['prefix'], '/') .'/' .trim($new['prefix'], '/')
-				: trim($new['prefix'], '/');
-		} else {
-			$new['prefix'] = isset($old['prefix']) ? $old['prefix'] : null;
-		}
+		$new['prefix'] = static::formatGroupPrefix($new, $old);
 
-		if (isset($old['middleware'])) {
-			if (isset($new['middleware'])) {
-				$new['middleware'] = array_merge($old['middleware'], $new['middleware']);
-			} else {
-				$new['middleware'] = $old['middleware'];
-			}
+		if (isset($new['domain'])) {
+			unset($old['domain']);
 		}
 
 		$new['where'] = array_merge(
@@ -312,12 +305,61 @@ class Router
 		);
 
 		if (isset($old['as'])) {
-			$new['as'] = $old['as'] . (isset($new['as']) ? $new['as'] : '');
+			$new['as'] = $old['as'] .(isset($new['as']) ? '.' .$new['as'] : '');
 		}
 
-		$attributes = Arr::except($old, array('namespace', 'prefix', 'where', 'as', 'middleware'));
+		return array_merge_recursive(
+			Arr::except($old, array('namespace', 'prefix', 'where', 'as')), $new
+		);
+	}
 
-		return array_merge_recursive($attributes, $new);
+	/**
+	 * Format the uses prefix for the new group attributes.
+	 *
+	 * @param  array  $new
+	 * @param  array  $old
+	 * @return string
+	 */
+	protected static function formatUsesPrefix($new, $old)
+	{
+		if (isset($new['namespace'])) {
+			return isset($old['namespace']) && (strpos($new['namespace'], '\\') !== 0)
+				? trim($old['namespace'], '\\') .'\\' .trim($new['namespace'], '\\')
+				: trim($new['namespace'], '\\');
+		}
+
+		return isset($old['namespace']) ? $old['namespace'] : null;
+	}
+
+	/**
+	 * Format the prefix for the new group attributes.
+	 *
+	 * @param  array  $new
+	 * @param  array  $old
+	 * @return string
+	 */
+	protected static function formatGroupPrefix($new, $old)
+	{
+		$oldPrefix = isset($old['prefix']) ? $old['prefix'] : null;
+
+		if (isset($new['prefix'])) {
+			return trim($oldPrefix, '/') .'/' .trim($new['prefix'], '/');
+		}
+
+		return $oldPrefix;
+	}
+
+	/**
+	 * Add a route to the underlying route collection.
+	 *
+	 * @param  array|string  $methods
+	 * @param  string  $uri
+	 * @param  \Closure|array|string  $action
+	 * @return \Mini\Routing\Route
+	 */
+	public function addRoute($methods, $route, $action)
+	{
+		return $this->routes->addRoute($this->createRoute($methods, $route, $action));
 	}
 
 	/**
@@ -330,44 +372,61 @@ class Router
 	 */
 	protected function createRoute($methods, $uri, $action)
 	{
-		$methods = array_map('strtoupper', (array) $methods);
+		$action = $this->parseAction($action);
 
-		if (in_array('GET', $methods) && ! in_array('HEAD', $methods)) {
-			array_push($methods, 'HEAD');
+		if ($this->hasGroupStack()) {
+			$group = end($this->groupStack);
+
+			if (isset($group['prefix'])) {
+				$uri = trim($group['prefix'], '/') .'/' .trim($uri, '/');
+			}
+
+			$action = $this->mergeGroup($action, $group);
 		}
 
-		// When the Action references a Controller, convert it to a Controller Action.
-		if ($this->routingToController($action)) {
+		return $this->newRoute($methods, $uri, $action);
+	}
+
+	/**
+	 * Parse the action into an array format.
+	 *
+	 * @param  mixed  $action
+	 * @return array
+	 */
+	protected function parseAction($action)
+	{
+		if ($action instanceof Closure) {
+			return array('uses' => $action);
+		}
+
+		if ($this->actionReferencesController($action)) {
 			$action = $this->convertToControllerAction($action);
 		}
 
-		// When the Action is given as a Closure, transform it on valid Closure Action.
-		else if ($action instanceof Closure) {
-			$action = array('uses' => $action);
-		}
-
-		// When the 'uses' is not defined into Action, find the Closure in the array.
+		// If no uses is defined, we will look for the inner Closure.
 		else if (! isset($action['uses'])) {
-			$action['uses'] = $this->findActionClosure($action);
+			$action['uses'] = $this->findClosure($action);
 		}
 
 		if (isset($action['middleware']) && is_string($action['middleware'])) {
 			$action['middleware'] = explode('|', $action['middleware']);
 		}
 
-		if (! empty($this->groupStack)) {
-			$attributes = end($this->groupStack);
+		return $action;
+	}
 
-			if (isset($attributes['prefix'])) {
-				$uri = trim($attributes['prefix'], '/') .'/' .trim($uri, '/');
-			}
-
-			$action = $this->mergeGroup($action, $attributes);
-		}
-
-		$uri = '/'.trim($uri, '/');
-
-		return $this->newRoute($methods, $uri, $action);
+	/**
+	 * Find the Closure in an action array.
+	 *
+	 * @param  array  $action
+	 * @return \Closure
+	 */
+	protected function findClosure(array $action)
+	{
+		return Arr::first($action, function($key, $value)
+		{
+			return is_callable($value);
+		});
 	}
 
 	/**
@@ -380,23 +439,30 @@ class Router
 	 */
 	protected function newRoute($methods, $uri, $action)
 	{
-		$wheres = array_merge($this->patterns, Arr::get($action, 'where', array()));
+		$patterns = array_merge(
+			$this->patterns, isset($action['where']) ? $action['where'] : array()
+		);
 
-		return new Route($methods, $uri, $action, $wheres);
+		return new Route($methods, $uri, $action, $patterns);
 	}
 
 	/**
-	 * Find the Closure in an action array.
+	 * Prefix the given URI with the last prefix.
 	 *
-	 * @param  array  $action
-	 * @return \Closure
+	 * @param  string  $uri
+	 * @return string
 	 */
-	protected function findActionClosure(array $action)
+	protected function prefix($uri)
 	{
-		return Arr::first($action, function($key, $value)
-		{
-			return is_callable($value);
-		});
+		$prefix = '';
+
+		if (! empty($this->groupStack)) {
+			$last = end($this->groupStack);
+
+			$prefix = isset($last['prefix']) ? $last['prefix'] : '';
+		}
+
+		return trim(trim($prefix, '/') .'/' .trim($uri, '/'), '/') ?: '/';
 	}
 
 	/**
@@ -405,7 +471,7 @@ class Router
 	 * @param  array  $action
 	 * @return bool
 	 */
-	protected function routingToController($action)
+	protected function actionReferencesController($action)
 	{
 		if ($action instanceof Closure) {
 			return false;
@@ -429,16 +495,25 @@ class Router
 		}
 
 		if (! empty($this->groupStack)) {
-			$group = end($this->groupStack);
-
-			if (isset($group['namespace'])) {
-				$action['uses'] = $group['namespace'] .'\\' .$action['uses'];
-			}
+			$action['uses'] = $this->prependGroupUses($action['uses']);
 		}
 
 		$action['controller'] = $action['uses'];
 
 		return $action;
+	}
+
+	/**
+	 * Prepend the last group uses onto the use clause.
+	 *
+	 * @param  string  $uses
+	 * @return string
+	 */
+	protected function prependGroupUses($uses)
+	{
+		$group = end($this->groupStack);
+
+		return isset($group['namespace']) && (strpos($uses, '\\') !== 0) ? $group['namespace'] .'\\' .$uses : $uses;
 	}
 
 	/**

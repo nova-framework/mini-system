@@ -66,7 +66,13 @@ class Route
 	 */
 	public function __construct(array $methods, $uri, array $action, array $wheres = array())
 	{
-		$this->uri		= $uri;
+		if (in_array('GET', $methods) && ! in_array('HEAD', $methods)) {
+			array_push($methods, 'HEAD');
+		}
+
+		$this->uri = '/' .trim($uri, '/');
+
+		//
 		$this->methods	= $methods;
 		$this->action	= $action;
 		$this->wheres	= $wheres;
@@ -88,7 +94,7 @@ class Route
 
 			$method = 'match' .ucfirst($method);
 
-			if (false === $this->{$method}($request)) {
+			if (false === call_user_func(array($this, $method), $request)) {
 				return false;
 			}
 		}
