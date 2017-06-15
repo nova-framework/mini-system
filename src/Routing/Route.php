@@ -224,10 +224,10 @@ class Route
 	 */
 	public function middleware($middleware = null)
 	{
-		$availMiddleware = Arr::get($this->action, 'middleware', array());
+		$routeMiddleware = Arr::get($this->action, 'middleware', array());
 
 		if (is_null($middleware)) {
-			return $availMiddleware;
+			return $routeMiddleware;
 		}
 
 		if (is_string($middleware)) {
@@ -235,7 +235,7 @@ class Route
 		}
 
 		$this->action['middleware'] = array_merge(
-			$availMiddleware, $middleware
+			$routeMiddleware, $middleware
 		);
 
 		return $this;
