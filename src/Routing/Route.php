@@ -127,19 +127,19 @@ class Route
 	 */
 	protected function match($path, $pattern)
 	{
-		if (preg_match($pattern, $path, $matches) !== 1) {
-			return false;
+		if (preg_match($pattern, $path, $matches) === 1) {
+			$parameters = array_filter($matches, function($key)
+			{
+				return is_string($key);
+
+			}, ARRAY_FILTER_USE_KEY);
+
+			$this->parameters = array_merge($this->parameters, $parameters);
+
+			return true;
 		}
 
-		$parameters = array_filter($matches, function($value)
-		{
-			return is_string($value);
-
-		}, ARRAY_FILTER_USE_KEY);
-
-		$this->parameters = array_merge($this->parameters, $parameters);
-
-		return true;
+		return false;
 	}
 
 	/**
