@@ -99,7 +99,7 @@ class Route
 		// Match the Request scheme.
 		$secure = $request->secure();
 
-		if (($secure && $this->httpOnly()) || (! $secure && $this->secure())) {
+		if (($this->httpOnly() && $secure) || ($this->secure() && ! $secure)) {
 			return false;
 		}
 
