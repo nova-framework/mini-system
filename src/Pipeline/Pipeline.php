@@ -45,7 +45,7 @@ class Pipeline implements PipelineInterface
 		$slice = $this->getInitialSlice($destination);
 
 		foreach (array_reverse($pipes) as $pipe) {
-			$slice = $this->getSlice($pipe, $slice);
+			$slice = $this->getSlice($slice, $pipe);
 		}
 
 		return call_user_func($slice, $passable);
@@ -68,16 +68,16 @@ class Pipeline implements PipelineInterface
 	/**
 	 * Get a Closure that represents a slice of the application onion.
 	 *
+	 * @param  \Closure  $stack
 	 * @param  mixed  $pipe
-	 * @param  \Closure  $next
 	 * @return \Closure
 	 */
-	protected function getSlice($pipe, $next)
+	protected function getSlice($stack, $pipe)
 	{
-		return function ($passable) use ($pipe, $next)
+		return function ($passable) use ($stack, $pipe)
 		{
 			if ($pipe instanceof Closure) {
-				return call_user_func($pipe, $passable, $next);
+				return call_user_func($pipe, $passable, $stack);
 			}
 
 			$parameters = array();
@@ -88,7 +88,7 @@ class Pipeline implements PipelineInterface
 				$pipe = $this->container->make($name);
 			}
 
-			$parameters = array_merge(array($passable, $next), $parameters);
+			$parameters = array_merge(array($passable, $stack), $parameters);
 
 			return call_user_func_array(array($pipe, 'handle'), $parameters);
 		};
