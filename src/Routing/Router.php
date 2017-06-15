@@ -232,6 +232,19 @@ class Router
 	}
 
 	/**
+	 * Register an array of resource controllers.
+	 *
+	 * @param  array  $resources
+	 * @return void
+	 */
+	public function resources(array $resources)
+	{
+		foreach ($resources as $name => $controller) {
+			$this->resource($name, $controller);
+		}
+	}
+
+	/**
 	 * Route a resource to a controller.
 	 *
 	 * @param  string  $name
@@ -631,15 +644,13 @@ class Router
 	 */
 	protected function parseMiddleware($name)
 	{
-		list($name, $parameters) = array_pad(
-			array_map('trim', explode(':', $name, 2)), 2, null
-		);
+		list($name, $parameters) = array_pad(explode(':', $name, 2), 2, null);
 
 		//
 		$callable = isset($this->middleware[$name]) ? $this->middleware[$name] : $name;
 
 		// When no parameters are defined, we will just return the callable.
-		if (empty($parameters)) {
+		if (is_null($parameters)) {
 			return $callable;
 		}
 
@@ -697,7 +708,7 @@ class Router
 		if (! empty($middleware) && ! $this->shouldSkipMiddleware()) {
 			$pipeline = new Pipeline($this->container);
 
-			return $pipeline->send($request)->through($middleware)->then($destination);
+			return $pipeline->dispatch($request, $middleware, $destination);
 		}
 
 		return call_user_func($destination, $request);

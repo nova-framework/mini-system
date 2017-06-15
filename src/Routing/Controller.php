@@ -2,6 +2,8 @@
 
 namespace Mini\Routing;
 
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+
 use BadMethodCallException;
 
 
@@ -50,28 +52,16 @@ abstract class Controller
 	}
 
 	/**
-	 * Get the middleware for a given method.
+	 * Handle calls to missing methods on the controller.
 	 *
-	 * @param  string  $method
-	 * @return array
+	 * @param  array   $parameters
+	 * @return mixed
+	 *
+	 * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
 	 */
-	public function getMiddlewareForMethod($method)
+	public function missingMethod($parameters = array())
 	{
-		$middleware = array();
-
-		foreach ($this->middleware as $name => $options) {
-			if (isset($options['only']) && ! in_array($method, (array) $options['only'])) {
-				continue;
-			}
-
-			if (isset($options['except']) && in_array($method, (array) $options['except'])) {
-				continue;
-			}
-
-			$middleware[] = $name;
-		}
-
-		return $middleware;
+		throw new NotFoundHttpException('Controller method not found.');
 	}
 
 	/**

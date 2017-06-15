@@ -71,9 +71,9 @@ class Dispatcher implements DispatcherInterface
 	 */
 	public function dispatch($command, Closure $afterResolving = null)
 	{
-		return $this->pipeline->send($command)->through($this->pipes)->then(function ($command) use ($afterResolving)
+		return $this->pipeline->dispatch($command, $this->pipes, function ($command) use ($afterResolving)
 		{
-			if ($command instanceof SelfHandlingInterface)) {
+			if ($command instanceof SelfHandlingInterface) {
 				return $this->container->call(array($command, 'handle'));
 			}
 

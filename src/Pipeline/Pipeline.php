@@ -11,32 +11,18 @@ use Closure;
 class Pipeline implements PipelineInterface
 {
 	/**
-	 * The container implementation.
-	 *
-	 * @var \Mini\Container\Container
-	 */
-	protected $container;
-
-	/**
-	 * The object being passed through the pipeline.
-	 *
-	 * @var mixed
-	 */
-	protected $passable;
-
-	/**
-	 * The array of class pipes.
-	 *
-	 * @var array
-	 */
-	protected $pipes = array();
-
-	/**
 	 * The method to call on each pipe.
 	 *
 	 * @var string
 	 */
 	protected $method = 'handle';
+
+	/**
+	 * The container implementation.
+	 *
+	 * @var \Mini\Container\Container
+	 */
+	protected $container;
 
 
 	/**
@@ -48,32 +34,6 @@ class Pipeline implements PipelineInterface
 	public function __construct(Container $container)
 	{
 		$this->container = $container;
-	}
-
-	/**
-	 * Set the object being sent through the pipeline.
-	 *
-	 * @param  mixed  $passable
-	 * @return $this
-	 */
-	public function send($passable)
-	{
-		$this->passable = $passable;
-
-		return $this;
-	}
-
-	/**
-	 * Set the array of pipes.
-	 *
-	 * @param  array|mixed  $pipes
-	 * @return $this
-	 */
-	public function through($pipes)
-	{
-		$this->pipes = is_array($pipes) ? $pipes : func_get_args();
-
-		return $this;
 	}
 
 	/**
@@ -92,16 +52,23 @@ class Pipeline implements PipelineInterface
 	/**
 	 * Run the pipeline with a final destination callback.
 	 *
+	 * @param  mixed  $passable
+	 * @param  array|mixed  $pipes
 	 * @param  \Closure  $destination
 	 * @return mixed
 	 */
-	public function then(Closure $destination)
+	public function dispatch($passable, $pipes, Closure $destination)
 	{
-		$slice = array_reduce(
-			array_reverse($this->pipes), $this->carry(), $this->prepareDestination($destination)
-		);
+		$pipes = is_array($pipes) ? $pipes : array($pipes);
 
-		return call_user_func($slice, $this->passable);
+		// Create the slices stack.
+		$slice = $this->getInitialSlice($destination);
+
+		foreach(array_reverse($pipes) as $pipe) {
+			$slice = $this->getSlice($slice, $pipe);
+		}
+
+		return call_user_func($slice, $passable);
 	}
 
 	/**
@@ -110,7 +77,7 @@ class Pipeline implements PipelineInterface
 	 * @param  \Closure  $destination
 	 * @return \Closure
 	 */
-	protected function prepareDestination(Closure $destination)
+	protected function getInitialSlice(Closure $destination)
 	{
 		return function ($passable) use ($destination)
 		{
@@ -123,39 +90,21 @@ class Pipeline implements PipelineInterface
 	 *
 	 * @return \Closure
 	 */
-	protected function carry()
-	{
-		return function ($stack, $pipe)
-		{
-			return $this->getSlice($stack, $pipe);
-		};
-	}
-
-	/**
-	 * Get a Closure that represents a slice of the application onion.
-	 *
-	 * @return \Closure
-	 */
 	protected function getSlice($stack, $pipe)
 	{
 		return function ($passable) use ($stack, $pipe)
 		{
-			// If the pipe is an instance of a Closure, we will just call it directly.
 			if ($pipe instanceof Closure) {
 				return call_user_func($pipe, $passable, $stack);
 			}
 
-			// If the pipe is a string, we'll parse resolve it to callable and parameters.
-			else if (! is_object($pipe)) {
-				list($name, $parameters) = $this->parsePipeString($pipe);
+			if (! is_object($pipe)) {
+				list($name, $parameters) = $this->parsePipe($pipe);
 
 				$pipe = $this->container->make($name);
 
 				$parameters = array_merge(array($passable, $stack), $parameters);
-			}
-
-			// If the pipe is already an object, we'll just make a callable and pass it.
-			else {
+			} else {
 				$parameters = array($passable, $stack);
 			}
 
@@ -169,14 +118,12 @@ class Pipeline implements PipelineInterface
 	 * @param  string $pipe
 	 * @return array
 	 */
-	protected function parsePipeString($pipe)
+	protected function parsePipe($pipe)
 	{
-		list($name, $parameters) = array_pad(
-			array_map('trim', explode(':', $pipe, 2)), 2, array()
-		);
+		list($name, $parameters) = array_pad(explode(':', $pipe, 2), 2, array());
 
 		if (is_string($parameters)) {
-			$parameters = array_map('trim',explode(',', $parameters));
+			$parameters = explode(',', $parameters);
 		}
 
 		return array($name, $parameters);
