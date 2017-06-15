@@ -91,19 +91,31 @@ class Route
 	 */
 	public function matches(Request $request, $includingMethod = true)
 	{
-		foreach (array('Method', 'Scheme', 'Domain', 'Uri') as $matcher) {
-			if (! $includingMethod && ($matcher == 'Method')) {
+		foreach (array('method', 'scheme', 'domain', 'uri') as $matcher) {
+			if (! $includingMethod && ($matcher == 'method')) {
 				continue;
 			}
 
-			$method = "match{$matcher}";
-
-			if (false === $this->{$method}($request)) {
+			if (! $this->callMatcher($matcher, $request)) {
 				return false;
 			}
 		}
 
 		return true;
+	}
+
+	/**
+	 * Call a matcher method, to check a particular matching of this Route.
+	 *
+	 * @param string  $matcher
+	 * @param \Mini\Http\Request  $request
+	 * @return bool
+	 */
+	protected function callMatcher($matcher, Request $request)
+	{
+		$method = 'match' .ucfirst($matcher);
+
+		return call_user_func(array($this, $method), $request);
 	}
 
 	/**
