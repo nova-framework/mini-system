@@ -323,9 +323,7 @@ class Route
 		$prefix = trim($prefix, '/');
 
 		if (! empty($prefix)) {
-			$uri = trim($this->uri, '/');
-
-			$this->uri = '/' .trim($prefix  .'/' .trim($this->uri, '/'), '/');
+			$this->uri = '/' .trim($prefix .'/' .trim($this->uri, '/'), '/');
 		}
 
 		return $this;
