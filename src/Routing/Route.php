@@ -96,7 +96,9 @@ class Route
 				continue;
 			}
 
-			if (false === call_user_func(array($this, "match{$matcher}"), $request)) {
+			$method = "match{$matcher}";
+
+			if (false === $this->{$method}($request)) {
 				return false;
 			}
 		}
