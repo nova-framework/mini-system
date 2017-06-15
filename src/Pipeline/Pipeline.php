@@ -44,7 +44,7 @@ class Pipeline implements PipelineInterface
 		// Create the slices stack.
 		$slice = $this->getInitialSlice($destination);
 
-		foreach(array_reverse($pipes) as $pipe) {
+		foreach (array_reverse($pipes) as $pipe) {
 			$slice = $this->getSlice($pipe, $slice);
 		}
 
