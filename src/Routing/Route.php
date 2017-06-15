@@ -96,26 +96,14 @@ class Route
 				continue;
 			}
 
-			if (! $this->callMatcher($matcher, $request)) {
+			$method = 'match' .ucfirst($matcher);
+
+			if (! call_user_func(array($this, $method), $request)) {
 				return false;
 			}
 		}
 
 		return true;
-	}
-
-	/**
-	 * Call a matcher method, to check a particular matching of this Route.
-	 *
-	 * @param string  $matcher
-	 * @param \Mini\Http\Request  $request
-	 * @return bool
-	 */
-	protected function callMatcher($matcher, Request $request)
-	{
-		$method = 'match' .ucfirst($matcher);
-
-		return call_user_func(array($this, $method), $request);
 	}
 
 	/**
