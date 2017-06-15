@@ -409,7 +409,7 @@ class Router
 
 		// If no uses is defined, we will look for the inner Closure.
 		else if (! isset($action['uses'])) {
-			$action['uses'] = $this->findClosure($action);
+			$action['uses'] = $this->findCallable($action);
 		}
 
 		if (isset($action['middleware']) && is_string($action['middleware'])) {
@@ -425,11 +425,11 @@ class Router
 	 * @param  array  $action
 	 * @return \Closure
 	 */
-	protected function findClosure(array $action)
+	protected function findCallable(array $action)
 	{
 		return Arr::first($action, function($key, $value)
 		{
-			return is_callable($value);
+			return is_callable($value) && is_numeric($key);
 		});
 	}
 

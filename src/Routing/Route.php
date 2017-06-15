@@ -9,6 +9,7 @@ use Mini\Routing\RouteCompiler;
 use Mini\Support\Arr;
 
 use Closure;
+use LogicException;
 
 
 class Route
@@ -35,6 +36,13 @@ class Route
 	protected $action;
 
 	/**
+	 * The default values for the Route.
+	 *
+	 * @var array
+	 */
+	protected $defaults = array();
+
+	/**
 	 * The regular expression requirements.
 	 *
 	 * @var array
@@ -46,7 +54,14 @@ class Route
 	 *
 	 * @var array
 	 */
-	protected $parameters = array();
+	protected $parameters;
+
+	/**
+	 * The parameter names for the route.
+	 *
+	 * @var array|null
+	 */
+	protected $parameterNames;
 
 	/**
 	 * The compiled route.
@@ -83,6 +98,21 @@ class Route
 	}
 
 	/**
+	 * Compile the Route pattern for matching.
+	 *
+	 * @return string
+	 * @throws \LogicException
+	 */
+	public function compile()
+	{
+		if (isset($this->compiled)) {
+			return $this->compiled;
+		}
+
+		return $this->compiled = RouteCompiler::compile($this);
+	}
+
+	/**
 	 * Checks if the Request matches the Route.
 	 *
 	 * @param \Mini\Http\Request  $request
@@ -105,36 +135,39 @@ class Route
 
 		$compiled = $this->compile();
 
+		// Setup the parameter names.
+		$this->parameterNames = $compiled->getVariables();
+
 		// Match the Request host.
 		$pattern = $compiled->getHostRegex();
 
-		if (! is_null($pattern) && ! $this->match($request->getHost(), $pattern)) {
+		if (! is_null($pattern) && ! $this->matchPattern($pattern, $request->getHost())) {
 			return false;
 		}
 
 		// Match the Request path.
 		$path = ($request->path() == '/') ? '/' : '/' .$request->path();
 
-		return $this->match($path, $compiled->getRegex());
+		return $this->matchPattern($compiled->getRegex(), $path);
 	}
 
 	/**
-	 * Checks if a path matches the pattern and capture the matched parameters.
+	 * Checks if a subject matches the pattern and capture the matched parameters.
 	 *
-	 * @param string  $path
 	 * @param string  $pattern
+	 * @param string  $subject
 	 * @return bool
 	 */
-	protected function match($path, $pattern)
+	protected function matchPattern($pattern, $subject)
 	{
-		if (preg_match($pattern, $path, $matches) === 1) {
-			$parameters = array_filter($matches, function($key)
-			{
-				return is_string($key);
+		if (preg_match($pattern, $subject, $matches) === 1) {
+			$parameters = $this->replaceDefaults(
+				$this->matchToKeys($matches)
+			);
 
-			}, ARRAY_FILTER_USE_KEY);
-
-			$this->parameters = array_merge($this->parameters, $parameters);
+			$this->parameters = array_merge(
+				isset($this->parameters) ? $this->parameters : array(), $parameters
+			);
 
 			return true;
 		}
@@ -143,18 +176,44 @@ class Route
 	}
 
 	/**
-	 * Compile the Route pattern for matching.
+	 * Combine a set of parameter matches with the route's keys.
 	 *
-	 * @return string
-	 * @throws \LogicException
+	 * @param  array  $matches
+	 * @return array
 	 */
-	public function compile()
+	protected function matchToKeys(array $matches)
 	{
-		if (isset($this->compiled)) {
-			return $this->compiled;
+		if (empty($parameterNames = $this->parameterNames())) {
+			return array();
 		}
 
-		return $this->compiled = RouteCompiler::compile($this);
+		$parameters = array_intersect_key($matches, array_flip($parameterNames));
+
+		return array_filter($parameters, function($value)
+		{
+			return is_string($value) && (strlen($value) > 0);
+		});
+	}
+
+	/**
+	 * Replace null parameters with their defaults.
+	 *
+	 * @param  array  $parameters
+	 * @return array
+	 */
+	protected function replaceDefaults(array $parameters)
+	{
+		$result = array();
+
+		foreach ($this->parameterNames() as $name) {
+			if (isset($parameters[$name])) {
+				$result[$name] = $parameters[$name];
+			} else if (isset($this->defaults[$name])) {
+				$result[$name] = $this->defaults[$name];
+			}
+		}
+
+		return $result;
 	}
 
 	/**
@@ -189,11 +248,50 @@ class Route
 	 * @param  mixed   $default
 	 * @return string
 	 */
+	public function getParameter($name, $default = null)
+	{
+		return $this->parameter($name, $default);
+	}
+
+	/**
+	 * Get a given parameter from the route.
+	 *
+	 * @param  string  $name
+	 * @param  mixed   $default
+	 * @return string
+	 */
 	public function parameter($name, $default = null)
 	{
 		$parameters = $this->parameters();
 
 		return Arr::get($parameters, $name, $default);
+	}
+
+	/**
+	 * Set a parameter to the given value.
+	 *
+	 * @param  string  $name
+	 * @param  mixed   $value
+	 * @return void
+	 */
+	public function setParameter($name, $value)
+	{
+		$this->parameters();
+
+		$this->parameters[$name] = $value;
+	}
+
+	/**
+	 * Unset a parameter on the route if it is set.
+	 *
+	 * @param  string  $name
+	 * @return void
+	 */
+	public function forgetParameter($name)
+	{
+		$this->parameters();
+
+		unset($this->parameters[$name]);
 	}
 
 	/**
@@ -203,6 +301,10 @@ class Route
 	 */
 	public function parameters()
 	{
+		if (! isset($this->parameters)) {
+			throw new LogicException("Route is not bound.");
+		}
+
 		return array_map(function($value)
 		{
 			return is_string($value) ? rawurldecode($value) : $value;
@@ -217,9 +319,28 @@ class Route
 	 */
 	public function parameterNames()
 	{
-		$compiled = $this->compile();
+		if (isset($this->parameterNames)) {
+			return $this->parameterNames;
+		}
 
-		return $compiled->getVariables();
+		preg_match_all('/\{(.*?)\??\}/', $this->domain() .$this->uri, $matches);
+
+		return $this->parameterNames = $matches[1];
+	}
+
+
+	/**
+	 * Set a default value for the route.
+	 *
+	 * @param  string  $key
+	 * @param  mixed  $value
+	 * @return $this
+	 */
+	public function defaults($key, $value)
+	{
+		$this->defaults[$key] = $value;
+
+		return $this;
 	}
 
 	/**
