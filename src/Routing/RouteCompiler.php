@@ -56,7 +56,7 @@ class RouteCompiler
 
 		$separator = preg_quote($isHost ? '.' : '/', '#');
 
-		$callback = function ($matches) use ($pattern, $conditions, $separator, &$optionals, &$variables)
+		$callback = function ($matches) use ($pattern, $conditions, $isHost, $separator, &$optionals, &$variables)
 		{
 			@list(, $name, $optional) = $matches;
 
@@ -64,10 +64,16 @@ class RouteCompiler
 				throw new LogicException("Route pattern [$pattern] cannot reference variable name [$name] more than once.");
 			}
 
+			$variables[] = $name;
+
 			if (isset($conditions[$name])) {
 				$condition = $conditions[$name];
 			} else {
 				$condition = sprintf('[^%s]', $separator);
+			}
+
+			if ($isHost) {
+				return sprintf('(?P<%s>%s)', $name, $condition);
 			}
 
 			$regexp = sprintf('%s(?P<%s>%s)', $separator, $name, $condition);
@@ -80,11 +86,10 @@ class RouteCompiler
 				throw new LogicException("Route pattern [$pattern] cannot reference variable [$name] after one or more optionals.");
 			}
 
-			$variables[] = $name;
-
 			return $regexp;
 		};
 
+		// No optional parameters in a host pattern.
 		$regexp = $isHost ? '#\{(.*?)\}#' : '#/\{(.*?)(\?)?\}#';
 
 		$result = preg_replace_callback($regexp, $callback, $pattern);
