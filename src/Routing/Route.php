@@ -91,14 +91,12 @@ class Route
 	 */
 	public function matches(Request $request, $includingMethod = true)
 	{
-		foreach (array('method', 'scheme', 'domain', 'uri') as $method) {
-			if (! $includingMethod && ($method === 'method')) {
+		foreach (array('Method', 'Scheme', 'Domain', 'Uri') as $matcher) {
+			if (! $includingMethod && ($matcher == 'Method')) {
 				continue;
 			}
 
-			$method = 'match' .ucfirst($method);
-
-			if (false === call_user_func(array($this, $method), $request)) {
+			if (false === call_user_func(array($this, "match{$matcher}"), $request)) {
 				return false;
 			}
 		}
@@ -163,7 +161,10 @@ class Route
 	{
 		$path = ($request->path() == '/') ? '/' : '/' .$request->path();
 
-		//
+		if ($path == $this->getUri()) {
+			return true;
+		}
+
 		$compiled = $this->compile();
 
 		return $this->matchPath($path, $compiled->getRegex());
@@ -178,11 +179,7 @@ class Route
 	 */
 	protected function matchPath($path, $regex)
 	{
-		if ($path === $regex) {
-			// Direct match with no parameters to capture.
-			return true;
-		} else if (preg_match($regex, $path, $matches) !== 1) {
-			// The path does not match the given pattern.
+		if (preg_match($regex, $path, $matches) !== 1) {
 			return false;
 		}
 
