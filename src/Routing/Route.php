@@ -139,7 +139,7 @@ class Route
 		}
 
 		// Match the Request path.
-		$path = ($request->path() == '/') ? '/' : '/' .$request->path();
+		$path = '/' .ltrim($request->decodedPath(), '/');
 
 		return $this->matchPattern($compiled->getRegex(), $path);
 	}
@@ -194,19 +194,17 @@ class Route
 	 */
 	public function middleware($middleware = null)
 	{
-		$routeMiddleware = Arr::get($this->action, 'middleware', array());
+		$routeMiddleware = (array) Arr::get($this->action, 'middleware', array());
 
 		if (is_null($middleware)) {
 			return $routeMiddleware;
 		}
 
 		if (is_string($middleware)) {
-			$middleware = array($middleware);
+			$middleware = func_get_args();
 		}
 
-		$this->action['middleware'] = array_merge(
-			$routeMiddleware, $middleware
-		);
+		$this->action['middleware'] = array_merge($routeMiddleware, $middleware);
 
 		return $this;
 	}
@@ -271,15 +269,11 @@ class Route
 	 */
 	public function parameters()
 	{
-		if (! isset($this->parameters)) {
-			throw new LogicException("Route is not bound.");
+		if (isset($this->parameters)) {
+			return $this->parameters;
 		}
 
-		return array_map(function($value)
-		{
-			return is_string($value) ? rawurldecode($value) : $value;
-
-		}, $this->parameters);
+		throw new LogicException("Route is not bound.");
 	}
 
 	/**
@@ -293,9 +287,23 @@ class Route
 			return $this->parameterNames;
 		}
 
-		preg_match_all('/\{(.*?)\??\}/', $this->domain() .$this->uri, $matches);
+		return $this->parameterNames = $this->compileParameterNames();
+	}
 
-		return $this->parameterNames = $matches[1];
+	/**
+	 * Get the parameter names for the route.
+	 *
+	 * @return array
+	 */
+	protected function compileParameterNames()
+	{
+		preg_match_all('/\{(.*?)\}/', $this->domain() .$this->uri, $matches);
+
+		return array_map(function ($value)
+		{
+			return trim($value, '?');
+
+		}, $matches[1]);
 	}
 
 	/**
@@ -381,7 +389,8 @@ class Route
 	 */
 	public function domain()
 	{
-		return isset($this->action['domain']) ? $this->action['domain'] : null;
+		return isset($this->action['domain'])
+			? str_replace(array('http://', 'https://'), '', $this->action['domain']) : null;
 	}
 
 	/**
@@ -460,5 +469,16 @@ class Route
 	public function getAction()
 	{
 		return $this->action;
+	}
+
+	/**
+	 * Dynamically access route parameters.
+	 *
+	 * @param  string  $key
+	 * @return mixed
+	 */
+	public function __get($key)
+	{
+		return $this->parameter($key);
 	}
 }
