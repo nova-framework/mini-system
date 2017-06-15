@@ -91,112 +91,52 @@ class Route
 	 */
 	public function matches(Request $request, $includingMethod = true)
 	{
-		foreach (array('method', 'scheme', 'domain', 'uri') as $matcher) {
-			if (! $includingMethod && ($matcher == 'method')) {
-				continue;
-			}
-
-			$method = 'match' .ucfirst($matcher);
-
-			if (! call_user_func(array($this, $method), $request)) {
-				return false;
-			}
+		// Match the Request method if required.
+		if ($includingMethod && ! in_array($request->getMethod(), $this->methods)) {
+			return false;
 		}
 
-		return true;
-	}
+		// Match the Request scheme.
+		$secure = $request->secure();
 
-	/**
-	 * Checks if a request method matches one of the Route methods.
-	 *
-	 * @param \Mini\Http\Request  $request
-	 * @return bool
-	 */
-	protected function matchMethod(Request $request)
-	{
-		$methods = $this->getMethods();
-
-		return in_array($request->getMethod(), $methods);
-	}
-
-	/**
-	 * Checks if a request scheme matches the Route scheme.
-	 *
-	 * @param \Mini\Http\Request  $request
-	 * @return bool
-	 */
-	protected function matchScheme(Request $request)
-	{
-		if ($this->httpOnly()) {
-			return ! $request->secure();
-		} else if ($this->secure()) {
-			return $request->secure();
-		}
-
-		return true;
-	}
-
-	/**
-	 * Checks if a request host matches the Route host pattern.
-	 *
-	 * @param \Mini\Http\Request  $request
-	 * @return bool
-	 */
-	protected function matchDomain(Request $request)
-	{
-		if (is_null($domain = $this->domain())) {
-			return true;
+		if (($secure && $this->httpOnly()) || (! $secure && $this->secure())) {
+			return false;
 		}
 
 		$compiled = $this->compile();
 
-		return $this->matchPath($request->getHost(), $compiled->getHostRegex());
-	}
+		// Match the Request host.
+		$pattern = $compiled->getHostRegex();
 
-	/**
-	 * Checks if a request path matches the Route uri.
-	 *
-	 * @param \Mini\Http\Request  $request
-	 * @return bool
-	 */
-	protected function matchUri(Request $request)
-	{
+		if (! is_null($pattern) && ! $this->match($request->getHost(), $pattern)) {
+			return false;
+		}
+
+		// Match the Request path.
 		$path = ($request->path() == '/') ? '/' : '/' .$request->path();
 
-		if ($path == $this->getUri()) {
-			return true;
-		}
-
-		$compiled = $this->compile();
-
-		return $this->matchPath($path, $compiled->getRegex());
+		return $this->match($path, $compiled->getRegex());
 	}
 
 	/**
 	 * Checks if a path matches the pattern and capture the matched parameters.
 	 *
 	 * @param string  $path
-	 * @param string  $regex
+	 * @param string  $pattern
 	 * @return bool
 	 */
-	protected function matchPath($path, $regex)
+	protected function match($path, $pattern)
 	{
-		if (preg_match($regex, $path, $matches) !== 1) {
+		if (preg_match($pattern, $path, $matches) !== 1) {
 			return false;
 		}
 
-		// Retrieve the valid parameters from matches.
-		$parameters = array_filter($matches, function($value, $key)
+		$parameters = array_filter($matches, function($value)
 		{
-			if (! is_string($key)) {
-				return false;
-			}
+			return is_string($value);
 
-			return is_string($value) && (strlen($value) > 0);
+		}, ARRAY_FILTER_USE_KEY);
 
-		}, ARRAY_FILTER_USE_BOTH);
-
-		// Merge the parameters on the Route ones.
 		$this->parameters = array_merge($this->parameters, $parameters);
 
 		return true;
