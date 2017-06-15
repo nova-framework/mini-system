@@ -80,34 +80,22 @@ class Pipeline implements PipelineInterface
 				return call_user_func($pipe, $passable, $next);
 			}
 
-			if (! is_object($pipe)) {
-				list($name, $parameters) = $this->parsePipe($pipe);
+			$parameters = array();
+
+			if (is_string($pipe)) {
+				list ($name, $parameters) = array_pad(explode(':', $pipe, 2), 2, array());
+
+				if (is_string($parameters)) {
+					$parameters = explode(',', $parameters);
+				}
 
 				$pipe = $this->container->make($name);
-
-				$parameters = array_merge(array($passable, $next), $parameters);
-			} else {
-				$parameters = array($passable, $next);
 			}
+
+			$parameters = array_merge(array($passable, $next), $parameters);
 
 			return call_user_func_array(array($pipe, 'handle'), $parameters);
 		};
 	}
 
-	/**
-	 * Parse full pipe string to get name and parameters.
-	 *
-	 * @param  string $pipe
-	 * @return array
-	 */
-	protected function parsePipe($pipe)
-	{
-		list($name, $parameters) = array_pad(explode(':', $pipe, 2), 2, array());
-
-		if (is_string($parameters)) {
-			$parameters = explode(',', $parameters);
-		}
-
-		return array($name, $parameters);
-	}
 }
