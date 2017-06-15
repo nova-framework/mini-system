@@ -4,11 +4,11 @@ namespace Mini\Routing;
 
 use Mini\Container\Container;
 use Mini\Events\DispatcherInterface;
-use Mini\Pipeline\Pipeline;
 use Mini\Http\Exception\HttpResponseException;
 use Mini\Http\Request;
 use Mini\Http\Response;
 use Mini\Routing\Controller;
+use Mini\Routing\Pipeline;
 use Mini\Routing\ResourceRegistrar;
 use Mini\Routing\Route;
 use Mini\Routing\RouteCollection;
