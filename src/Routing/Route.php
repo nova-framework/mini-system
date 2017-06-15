@@ -36,13 +36,6 @@ class Route
 	protected $action;
 
 	/**
-	 * The default values for the Route.
-	 *
-	 * @var array
-	 */
-	protected $defaults = array();
-
-	/**
 	 * The regular expression requirements.
 	 *
 	 * @var array
@@ -161,9 +154,7 @@ class Route
 	protected function matchPattern($pattern, $subject)
 	{
 		if (preg_match($pattern, $subject, $matches) === 1) {
-			$parameters = $this->replaceDefaults(
-				$this->matchToKeys($matches)
-			);
+			$parameters = $this->matchToKeys($matches);
 
 			$this->parameters = array_merge(
 				isset($this->parameters) ? $this->parameters : array(), $parameters
@@ -193,27 +184,6 @@ class Route
 		{
 			return is_string($value) && (strlen($value) > 0);
 		});
-	}
-
-	/**
-	 * Replace null parameters with their defaults.
-	 *
-	 * @param  array  $parameters
-	 * @return array
-	 */
-	protected function replaceDefaults(array $parameters)
-	{
-		$result = array();
-
-		foreach ($this->parameterNames() as $name) {
-			if (isset($parameters[$name])) {
-				$result[$name] = $parameters[$name];
-			} else if (isset($this->defaults[$name])) {
-				$result[$name] = $this->defaults[$name];
-			}
-		}
-
-		return $result;
 	}
 
 	/**
@@ -326,21 +296,6 @@ class Route
 		preg_match_all('/\{(.*?)\??\}/', $this->domain() .$this->uri, $matches);
 
 		return $this->parameterNames = $matches[1];
-	}
-
-
-	/**
-	 * Set a default value for the route.
-	 *
-	 * @param  string  $key
-	 * @param  mixed  $value
-	 * @return $this
-	 */
-	public function defaults($key, $value)
-	{
-		$this->defaults[$key] = $value;
-
-		return $this;
 	}
 
 	/**
