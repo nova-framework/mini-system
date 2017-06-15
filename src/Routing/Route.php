@@ -59,13 +59,15 @@ class Route
 	/**
 	 * Create a new Route instance.
 	 *
-	 * @param  array 	$method
-	 * @param  string	$uri
-	 * @param  array	 $action
-	 * @param  array	 $wheres
+	 * @param  array|string  $method
+	 * @param  string  $uri
+	 * @param  array  $action
+	 * @param  array  $wheres
 	 */
-	public function __construct(array $methods, $uri, array $action, array $wheres = array())
+	public function __construct($method, $uri, array $action, array $wheres = array())
 	{
+		$methods = is_array($method) ? $method : array($method);
+
 		if (in_array('GET', $methods) && ! in_array('HEAD', $methods)) {
 			array_push($methods, 'HEAD');
 		}
