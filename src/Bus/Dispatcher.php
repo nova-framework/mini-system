@@ -3,7 +3,6 @@
 namespace Mini\Bus;
 
 use Mini\Bus\Contracts\DispatcherInterface;
-use Mini\Bus\Contracts\SelfHandlingInterface;
 use Mini\Container\Container;
 use Mini\Pipeline\Pipeline;
 
@@ -35,18 +34,11 @@ class Dispatcher implements DispatcherInterface
 	protected $pipes = array();
 
 	/**
-	 * All of the command-to-handler mappings.
+	 * The command to handler mapping for non-self-handling events.
 	 *
 	 * @var array
 	 */
-	protected $mappings = array();
-
-	/**
-	 * The fallback mapping Closure.
-	 *
-	 * @var \Closure
-	 */
-	protected $mapper;
+	protected $handlers = array();
 
 
 	/**
@@ -66,82 +58,54 @@ class Dispatcher implements DispatcherInterface
 	 * Dispatch a command to its appropriate handler.
 	 *
 	 * @param  mixed  $command
-	 * @param \Closure|null $afterResolving
+	 * @param  mixed  $handler
 	 * @return mixed
 	 */
-	public function dispatch($command, Closure $afterResolving = null)
+	public function dispatch($command, $handler = null)
 	{
-		return $this->pipeline->dispatch($command, $this->pipes, function ($command) use ($afterResolving)
-		{
-			if ($command instanceof SelfHandlingInterface) {
-				return $this->container->call(array($command, 'handle'));
-			}
-
-			list ($handler, $method) = $this->resolveHandlerAndMethod($command);
-
-			$instance = $this->container->make($instance);
-
-			if ($afterResolving) {
-				call_user_func($afterResolving, $instance);
-			}
-
-			return call_user_func(array($instance, $method), $command);
-		});
-	}
-
-	/**
-	 * Get the handler and the associated method name.
-	 *
-	 * @param mixed $command
-	 *
-	 * @return mixed
-	 */
-	protected function resolveHandlerAndMethod($command)
-	{
-		$className = get_class($command);
-
-		if (isset($this->mappings[$className])) {
-			$handler = $this->mappings[$className];
-		} else if (isset($this->mapper)) {
-			$handler = call_user_func($this->mapper, $command);
+		if (! is_null($handler) || $handler = $this->getCommandHandler($command)) {
+			$callback = function ($command) use ($handler)
+			{
+				return $handler->handle($command);
+			};
 		} else {
-			// We will do a convenience guess, trying to find the handler on its usual place.
-			// For example: 'App\Commands\CreateUser' -> 'App\Handlers\Commands\CreateUserHandler'
-
-			$handler = preg_replace(
-				'/^(.+)\\\\Commands\\\\(.+)$/s', '$1\\\\Handlers\Commands\\\\$2Handler', $className
-			);
-
-			if (! class_exists($handler)) {
-				throw new InvalidArgumentException("No handler found for command [{$className}]");
+			$callback = function ($command)
+			{
+				return $this->container->call(array($command, 'handle'));
 			}
 		}
 
-		return array_pad(explode('@', $handler, 2), 2, 'handle');
+		return $this->pipeline->dispatch($command, $this->pipes, $callback);
 	}
 
 	/**
-	 * Register command-to-handler mappings.
+	 * Determine if the given command has a handler.
 	 *
-	 * @param array $commands
-	 *
-	 * @return void
+	 * @param  mixed  $command
+	 * @return bool
 	 */
-	public function maps(array $commands)
+	public function hasCommandHandler($command)
 	{
-		$this->mappings = array_merge($this->mappings, $commands);
+		return array_key_exists(get_class($command), $this->handlers);
 	}
 
 	/**
-	 * Register a fallback mapper callback.
+	 * Retrieve the handler for a command.
 	 *
-	 * @param \Closure $mapper
-	 *
-	 * @return void
+	 * @param  mixed  $command
+	 * @return bool|mixed
 	 */
-	public function mapUsing(Closure $mapper)
+	public function getCommandHandler($command)
 	{
-		$this->mapper = $mapper;
+		$name = get_class($command);
+
+		if (array_key_exists($name, $this->handlers)) {
+			$handler = $this->handlers[$name];
+
+			return $this->container->make($handler);
+		}
+
+		return false;
 	}
 
 	/**
@@ -153,6 +117,19 @@ class Dispatcher implements DispatcherInterface
 	public function pipeThrough(array $pipes)
 	{
 		$this->pipes = $pipes;
+
+		return $this;
+	}
+
+	/**
+	 * Map a command to a handler.
+	 *
+	 * @param  array  $map
+	 * @return $this
+	 */
+	public function map(array $map)
+	{
+		$this->handlers = array_merge($this->handlers, $map);
 
 		return $this;
 	}

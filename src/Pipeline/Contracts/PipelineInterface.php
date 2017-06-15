@@ -7,13 +7,6 @@ use Closure;
 
 interface PipelineInterface
 {
-	/**
-	 * Set the method to call on the stops.
-	 *
-	 * @param  string  $method
-	 * @return $this
-	 */
-	public function via($method);
 
 	/**
 	 * Run the pipeline with a final destination callback.

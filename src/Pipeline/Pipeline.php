@@ -11,13 +11,6 @@ use Closure;
 class Pipeline implements PipelineInterface
 {
 	/**
-	 * The method to call on each pipe.
-	 *
-	 * @var string
-	 */
-	protected $method = 'handle';
-
-	/**
 	 * The container implementation.
 	 *
 	 * @var \Mini\Container\Container
@@ -37,19 +30,6 @@ class Pipeline implements PipelineInterface
 	}
 
 	/**
-	 * Set the method to call on the pipes.
-	 *
-	 * @param  string  $method
-	 * @return $this
-	 */
-	public function via($method)
-	{
-		$this->method = $method;
-
-		return $this;
-	}
-
-	/**
 	 * Run the pipeline with a final destination callback.
 	 *
 	 * @param  mixed  $passable
@@ -65,7 +45,7 @@ class Pipeline implements PipelineInterface
 		$slice = $this->getInitialSlice($destination);
 
 		foreach(array_reverse($pipes) as $pipe) {
-			$slice = $this->getSlice($slice, $pipe);
+			$slice = $this->getSlice($pipe, $slice);
 		}
 
 		return call_user_func($slice, $passable);
@@ -88,14 +68,16 @@ class Pipeline implements PipelineInterface
 	/**
 	 * Get a Closure that represents a slice of the application onion.
 	 *
+	 * @param  mixed  $pipe
+	 * @param  \Closure  $next
 	 * @return \Closure
 	 */
-	protected function getSlice($stack, $pipe)
+	protected function getSlice($pipe, $next)
 	{
-		return function ($passable) use ($stack, $pipe)
+		return function ($passable) use ($pipe, $next)
 		{
 			if ($pipe instanceof Closure) {
-				return call_user_func($pipe, $passable, $stack);
+				return call_user_func($pipe, $passable, $next);
 			}
 
 			if (! is_object($pipe)) {
@@ -103,12 +85,12 @@ class Pipeline implements PipelineInterface
 
 				$pipe = $this->container->make($name);
 
-				$parameters = array_merge(array($passable, $stack), $parameters);
+				$parameters = array_merge(array($passable, $next), $parameters);
 			} else {
-				$parameters = array($passable, $stack);
+				$parameters = array($passable, $next);
 			}
 
-			return call_user_func_array(array($pipe, $this->method), $parameters);
+			return call_user_func_array(array($pipe, 'handle'), $parameters);
 		};
 	}
 

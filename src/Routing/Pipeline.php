@@ -40,13 +40,15 @@ class Pipeline extends BasePipeline
 	/**
 	 * Get a Closure that represents a slice of the application onion.
 	 *
+	 * @param  mixed  $pipe
+	 * @param  \Closure  $next
 	 * @return \Closure
 	 */
-	protected function getSlice($stack, $pipe)
+	protected function getSlice($pipe, $next)
 	{
-		return function ($passable) use ($stack, $pipe)
+		return function ($passable) use ($pipe, $next)
 		{
-			$slice = parent::getSlice($stack, $pipe);
+			$slice = parent::getSlice($pipe, $next);
 
 			try {
 				return call_user_func($slice, $passable);
