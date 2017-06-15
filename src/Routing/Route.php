@@ -59,25 +59,27 @@ class Route
 	/**
 	 * Create a new Route instance.
 	 *
-	 * @param  array|string  $method
+	 * @param  array|string  $methods
 	 * @param  string  $uri
 	 * @param  array  $action
 	 * @param  array  $wheres
 	 */
-	public function __construct($method, $uri, array $action, array $wheres = array())
+	public function __construct($methods, $uri, array $action, array $wheres = array())
 	{
-		$methods = is_array($method) ? $method : array($method);
+		$this->methods = (array) $methods;
 
-		if (in_array('GET', $methods) && ! in_array('HEAD', $methods)) {
-			array_push($methods, 'HEAD');
+		$this->uri = '/' .ltrim(trim($uri), '/');
+
+		$this->action = $action;
+		$this->wheres = $wheres;
+
+		if (in_array('GET', $this->methods) && ! in_array('HEAD', $this->methods)) {
+			$this->methods[] = 'HEAD';
 		}
 
-		$this->uri = '/' .trim($uri, '/');
-
-		//
-		$this->methods	= $methods;
-		$this->action	= $action;
-		$this->wheres	= $wheres;
+		if (isset($this->action['prefix'])) {
+			$this->prefix($this->action['prefix']);
+		}
 	}
 
 	/**
@@ -146,12 +148,9 @@ class Route
 			return true;
 		}
 
-		$path = '.' .$request->getHost();
-
-		//
 		$compiled = $this->compile();
 
-		return $this->matchPath($path, $compiled->getHostRegex());
+		return $this->matchPath($request->getHost(), $compiled->getHostRegex());
 	}
 
 	/**
@@ -162,7 +161,7 @@ class Route
 	 */
 	protected function matchUri(Request $request)
 	{
-		$path = '/' .ltrim($request->path(), '/');
+		$path = ($request->path() == '/') ? '/' : '/' .$request->path();
 
 		//
 		$compiled = $this->compile();
@@ -311,6 +310,25 @@ class Route
 	protected function parseWhere($name, $expression)
 	{
 		return is_array($name) ? $name : array($name => $expression);
+	}
+
+	/**
+	 * Add a prefix to the route URI.
+	 *
+	 * @param  string  $prefix
+	 * @return $this
+	 */
+	public function prefix($prefix)
+	{
+		$prefix = trim($prefix, '/');
+
+		if (! empty($prefix)) {
+			$uri = trim($this->uri, '/');
+
+			$this->uri = '/' .trim($prefix  .'/' .trim($this->uri, '/'), '/');
+		}
+
+		return $this;
 	}
 
 	/**

@@ -85,8 +85,11 @@ class RouteCompiler
 			return $regexp;
 		};
 
-		$result = preg_replace_callback('#' .$separator .'\{(.*?)(\?)?\}#', $callback, $pattern);
+		$regexp = $isHost ? '#\{(.*?)\}#' : '#/\{(.*?)(\?)?\}#';
 
+		$result = preg_replace_callback($regexp, $callback, $pattern);
+
+		//
 		$regexp = '#^' .$result .str_repeat(')?', $optionals) .'$#s' .($isHost ? 'i' : '');
 
 		return array($regexp, $variables);

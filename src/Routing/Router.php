@@ -282,6 +282,17 @@ class Router
 	}
 
 	/**
+	 * Merge the given array with the last group stack.
+	 *
+	 * @param  array  $new
+	 * @return array
+	 */
+	public function mergeWithLastGroup($new)
+	{
+		return $this->mergeGroup($new, end($this->groupStack));
+	}
+
+	/**
 	 * Merge the given group attributes.
 	 *
 	 * @param  array  $new
@@ -374,13 +385,7 @@ class Router
 		$action = $this->parseAction($action);
 
 		if ($this->hasGroupStack()) {
-			$group = end($this->groupStack);
-
-			if (isset($group['prefix'])) {
-				$uri = trim($group['prefix'], '/') .'/' .trim($uri, '/');
-			}
-
-			$action = $this->mergeGroup($action, $group);
+			$action = $this->mergeWithLastGroup($action);
 		}
 
 		return $this->newRoute($methods, $uri, $action);
