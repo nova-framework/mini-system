@@ -447,7 +447,8 @@ class Router
 			$this->patterns, isset($action['where']) ? $action['where'] : array()
 		);
 
-		return new Route($methods, $uri, $action, $patterns);
+		return (new Route($methods, $uri, $action, $patterns))
+			->setContainer($this->container);
 	}
 
 	/**
@@ -585,120 +586,9 @@ class Router
 		return $this->sendThroughPipeline($middleware, $request, function ($request) use ($route)
 		{
 			return $this->prepareResponse(
-				$request, $this->callRouteAction($route, $request)
+				$request, $route->run()
 			);
 		});
-	}
-
-	/**
-	 * Run the route action and return the response.
-	 *
-	 * @param  \Mini\Routing\Route	$route
-	 * @param  \Mini\Http\Request	$request
-	 * @return mixed
-	 */
-	public function callRouteAction(Route $route, Request $request)
-	{
-		$parameters = $route->parameters();
-
-		$action = $route->getAction();
-
-		if (isset($action['controller'])) {
-			// The action references a Controller.
-			list ($controller, $method) = explode('@', $action['controller']);
-
-			if (! method_exists($instance = $this->container->make($controller), $method)) {
-				throw new NotFoundHttpException();
-			}
-
-			$this->events->fire('router.executing.controller', array($instance, $request, $method, $parameters));
-
-			return $this->runControllerWithinStack($instance, $request, $method, $parameters);
-		}
-
-		// The action references a callback.
-		$callback = $action['uses'];
-
-		$parameters = $this->getMethodDependencies($callback, $parameters);
-
-		try {
-			return call_user_func_array($callback, $parameters);
-
-		} catch (HttpResponseException $e) {
-			return $e->getResponse();
-		}
-	}
-
-	/**
-	 *  Run the given Controller within a Pipeline instance stack.
-	 *
-	 * @param  \Mini\Routing\Controller  $controller
-	 * @param  \Mini\Http\Request  $request
-	 * @param  string  $method
-	 * @param  array  $parameters
-	 * @return mixed
-	 */
-	protected function runControllerWithinStack(Controller $controller, Request $request, $method, array $parameters)
-	{
-		// Gather the middleware from Controller's instance.
-		$middleware = array_map(function ($name)
-		{
-			return $this->resolveMiddleware($name);
-
-		}, $controller->getMiddlewareForMethod($method));
-
-		return $this->sendThroughPipeline($middleware, $request, function ($request) use ($controller, $method, $parameters)
-		{
-			return $this->callControllerAction($controller, $request, $method, $parameters);
-		});
-	}
-
-	/**
-	 * Call a controller instance and return the response.
-	 *
-	 * @param  \Mini\Routing\Controller  $controller
-	 * @param  \Mini\Http\Request  $request
-	 * @param  string  $method
-	 * @param  array  $parameters
-	 * @return \Illuminate\Http\Response
-	 */
-	protected function callControllerAction(Controller $controller, Request $request, $method, array $parameters = array())
-	{
-		$parameters = $this->getMethodDependencies(array($controller, $method), $parameters);
-
-		try {
-			return $this->prepareResponse(
-				$request, $controller->callAction($method, $parameters)
-			);
-		} catch (HttpResponseException $e) {
-			return $e->getResponse();
-		}
-	}
-
-	/**
-	 * Resolve the given method's type-hinted dependencies.
-	 *
-	 * @param  callable  $callback
-	 * @param  array  $parameters
-	 * @return array
-	 */
-	protected function getMethodDependencies(callable $callback, array $parameters)
-	{
-		if (is_array($callback)) {
-			$reflector = new ReflectionMethod($callback[0], $callback[1]);
-		} else {
-			$reflector = new ReflectionFunction($callback);
-		}
-
-		foreach ($reflector->getParameters() as $key => $parameter) {
-			if (! is_null($class = $parameter->getClass())) {
-				$instance = $this->container->make($class->getName());
-
-				array_splice($parameters, $key, 0, array($instance));
-			}
-		}
-
-		return array_values($parameters);
 	}
 
 	/**
@@ -713,7 +603,7 @@ class Router
 		{
 			return $this->resolveMiddleware($name);
 
-		}, $route->middleware());
+		}, $route->gatherMiddleware());
 
 		return Arr::flatten($middleware);
 	}

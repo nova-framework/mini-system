@@ -40,6 +40,16 @@ abstract class Controller
 	}
 
 	/**
+	 * Get the middleware assigned to the controller.
+	 *
+	 * @return array
+	 */
+	public function getMiddleware()
+	{
+		return $this->middleware;
+	}
+
+	/**
 	 * Get the middleware for a given method.
 	 *
 	 * @param  string  $method

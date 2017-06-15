@@ -3,17 +3,25 @@
 namespace Mini\Routing;
 
 use Mini\Container\Container;
+use Mini\Http\Exception\HttpResponseException;
 use Mini\Http\Request;
 use Mini\Routing\CompiledRoute;
+use Mini\Routing\ControllerDispatcher;
 use Mini\Routing\RouteCompiler;
+use Mini\Routing\RouteDependencyResolverTrait;
 use Mini\Support\Arr;
+use Mini\Support\Str;
 
 use Closure;
 use LogicException;
+use ReflectionFunction;
+use ReflectionMethod;
 
 
 class Route
 {
+	use RouteDependencyResolverTrait;
+
 	/**
 	 * The URI pattern the route responds to.
 	 *
@@ -34,6 +42,13 @@ class Route
 	 * @var mixed
 	 */
 	protected $action;
+
+	/**
+	 * The Controller instance.
+	 *
+	 * @var mixed
+	 */
+	public $controller;
 
 	/**
 	 * The regular expression requirements.
@@ -63,6 +78,20 @@ class Route
 	 */
 	protected $compiled;
 
+	/**
+	 * The computed gathered middleware.
+	 *
+	 * @var array|null
+	 */
+	public $computedMiddleware;
+
+	/**
+	 * The Container instance used by the Route.
+	 *
+	 * @var \Mini\Container\Container
+	 */
+	protected $container;
+
 
 	/**
 	 * Create a new Route instance.
@@ -91,18 +120,104 @@ class Route
 	}
 
 	/**
-	 * Compile the Route pattern for matching.
+	 * Run the route action and return the response.
 	 *
-	 * @return string
-	 * @throws \LogicException
+	 * @return mixed
 	 */
-	public function compile()
+	public function run()
 	{
-		if (isset($this->compiled)) {
-			return $this->compiled;
+		$this->container = $this->container ?: new Container();
+
+		try {
+			if ($this->isControllerAction()) {
+				return $this->runController();
+			}
+
+			return $this->runCallable();
+		}
+		catch (HttpResponseException $e) {
+			return $e->getResponse();
+		}
+	}
+
+	/**
+	 * Checks whether the route's action is a controller.
+	 *
+	 * @return bool
+	 */
+	protected function isControllerAction()
+	{
+		return is_string($this->action['uses']);
+	}
+
+	/**
+	 * Run the route action and return the response.
+	 *
+	 * @return mixed
+	 */
+	protected function runCallable()
+	{
+		$callable = $this->action['uses'];
+
+		$parameters = $this->resolveMethodDependencies(
+			$this->parameters(), new ReflectionFunction($callable)
+		);
+
+		return call_user_func_array($callable, $parameters);
+	}
+
+	/**
+	 * Run the route action and return the response.
+	 *
+	 * @return mixed
+	 *
+	 * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+	 */
+	protected function runController()
+	{
+		return (new ControllerDispatcher($this->container))->dispatch(
+			$this, $this->getController(), $this->getControllerMethod()
+		);
+	}
+
+	/**
+	 * Get the controller instance for the route.
+	 *
+	 * @return mixed
+	 */
+	public function getController()
+	{
+		if (! $this->controller) {
+			$callback = $this->parseControllerCallback();
+
+			$className = reset($callback);
+
+			$this->controller = $this->container->make($className);
 		}
 
-		return $this->compiled = RouteCompiler::compile($this);
+		return $this->controller;
+	}
+
+	/**
+	 * Get the controller method used for the route.
+	 *
+	 * @return string
+	 */
+	public function getControllerMethod()
+	{
+		$callback = $this->parseControllerCallback();
+
+		return end($callback);
+	}
+
+	/**
+	 * Parse the controller.
+	 *
+	 * @return array
+	 */
+	protected function parseControllerCallback()
+	{
+		return Str::parseCallback($this->action['uses']);
 	}
 
 	/**
@@ -126,7 +241,7 @@ class Route
 			return false;
 		}
 
-		$compiled = $this->compile();
+		$compiled = $this->compileRoute();
 
 		// Setup the parameter names.
 		$this->parameterNames = $compiled->getVariables();
@@ -187,6 +302,40 @@ class Route
 	}
 
 	/**
+	 * Compile the Route pattern for matching.
+	 *
+	 * @return string
+	 * @throws \LogicException
+	 */
+	public function compileRoute()
+	{
+		if (! isset($this->compiled)) {
+			$this->compiled = (new RouteCompiler($this))->compile();
+		}
+
+		return $this->compiled;
+	}
+
+	/**
+	 * Get all middleware, including the ones from the controller.
+	 *
+	 * @return array
+	 */
+	public function gatherMiddleware()
+	{
+		if (! is_null($this->computedMiddleware)) {
+			return $this->computedMiddleware;
+		}
+
+		$this->computedMiddleware = array();
+
+		return $this->computedMiddleware = array_unique(array_merge(
+			$this->middleware(), $this->controllerMiddleware()
+
+		), SORT_REGULAR);
+	}
+
+	/**
 	 * Get or set the middlewares attached to the route.
 	 *
 	 * @param  array|string|null $middleware
@@ -207,6 +356,22 @@ class Route
 		$this->action['middleware'] = array_merge($routeMiddleware, $middleware);
 
 		return $this;
+	}
+
+	/**
+	 * Get the middleware for the route's controller.
+	 *
+	 * @return array
+	 */
+	public function controllerMiddleware()
+	{
+		if (! $this->isControllerAction()) {
+			return array();
+		}
+
+		return ControllerDispatcher::getMiddleware(
+			$this->getController(), $this->getControllerMethod()
+		);
 	}
 
 	/**
@@ -400,7 +565,7 @@ class Route
 	 */
 	public function getCompiled()
 	{
-		return $this->compile();
+		return $this->compileRoute();
 	}
 
 	/**
@@ -469,6 +634,19 @@ class Route
 	public function getAction()
 	{
 		return $this->action;
+	}
+
+	/**
+	 * Set the container instance on the route.
+	 *
+	 * @param  \Mini\Container\Container  $container
+	 * @return $this
+	 */
+	public function setContainer(Container $container)
+	{
+		$this->container = $container;
+
+		return $this;
 	}
 
 	/**

@@ -10,6 +10,23 @@ use LogicException;
 
 class RouteCompiler
 {
+	/**
+	 * The Route instance.
+	 *
+	 * @var \Mini\Routing\Route
+	 */
+	protected $route;
+
+	/**
+	 * Create a new Route Compiler instance.
+	 *
+	 * @param  \Mini\Routing\Route  $route
+	 * @return void
+	 */
+	public function __construct(Route $route)
+	{
+		$this->route = $route;
+	}
 
 	/**
 	 * Compile an URI pattern to a valid regexp.
@@ -19,15 +36,15 @@ class RouteCompiler
 	 *
 	 * @throw \LogicException
 	 */
-	public static function compile(Route $route)
+	public function compile()
 	{
 		$hostRegex = null;
 
-		if (! is_null($domain = $route->domain())) {
-			list ($hostRegex, $hostVariables) = static::compilePattern($domain, $route->getWheres(), true);
+		if (! is_null($domain = $this->route->domain())) {
+			list ($hostRegex, $hostVariables) = $this->compilePattern($domain, $this->route->getWheres(), true);
 		}
 
-		list ($regex, $variables) = static::compilePattern($route->getUri(), $route->getWheres(), false);
+		list ($regex, $variables) = $this->compilePattern($this->route->getUri(), $this->route->getWheres(), false);
 
 		if (! empty($hostVariables)) {
 			$variables = array_unique(
@@ -48,7 +65,7 @@ class RouteCompiler
 	 *
 	 * @throw \LogicException
 	 */
-	protected static function compilePattern($pattern, $conditions, $isHost)
+	protected function compilePattern($pattern, $conditions, $isHost)
 	{
 		$optionals = 0;
 
