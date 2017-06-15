@@ -88,9 +88,9 @@ class Pipeline implements PipelineInterface
 				$pipe = $this->container->make($name);
 			}
 
-			return call_user_func_array(
-				array($pipe, 'handle'), array_merge(array($passable, $next), $parameters)
-			);
+			$parameters = array_merge(array($passable, $next), $parameters);
+
+			return call_user_func_array(array($pipe, 'handle'), $parameters);
 		};
 	}
 
