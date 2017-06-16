@@ -137,7 +137,7 @@ class RouteCollection implements Countable, IteratorAggregate
 	{
 		$routes = $this->get($request->getMethod());
 
-		if (! is_null($route = $this->check($routes, $request))) {
+		if (! is_null($route = $this->matchAgainstRoutes($routes, $request))) {
 			return $route;
 		}
 
@@ -145,10 +145,26 @@ class RouteCollection implements Countable, IteratorAggregate
 		$others = $this->checkForAlternateMethods($request);
 
 		if (count($others) > 0) {
-			return $this->getOtherMethodsRoute($request, $others);
+			return $this->getRouteForMethods($request, $others);
 		}
 
 		throw new NotFoundHttpException();
+	}
+
+	/**
+	 * Determine if a route in the array matches the request.
+	 *
+	 * @param  array  $routes
+	 * @param  \Mini\Http\Request  $request
+	 * @param  bool  $includingMethod
+	 * @return \Mini\Routing\Route|null
+	 */
+	protected function matchAgainstRoutes(array $routes, Request $request, $includingMethod = true)
+	{
+		return Arr::first($routes, function($uri, $route) use ($request, $includingMethod)
+		{
+			return $route->matches($request, $includingMethod);
+		});
 	}
 
 	/**
@@ -164,7 +180,9 @@ class RouteCollection implements Countable, IteratorAggregate
 		$others = array();
 
 		foreach ($methods as $method) {
-			if (! is_null($route = $this->check($this->get($method), $request, false))) {
+			$routes = $this->get($method);
+
+			if (! is_null($route = $this->matchAgainstRoutes($routes, $request, false))) {
 				$others[] = $method;
 			}
 		}
@@ -181,32 +199,18 @@ class RouteCollection implements Countable, IteratorAggregate
 	 *
 	 * @throws \Symfony\Component\Routing\Exception\MethodNotAllowedHttpException
 	 */
-	protected function getOtherMethodsRoute(Request $request, array $others)
+	protected function getRouteForMethods(Request $request, array $others)
 	{
 		if ($request->getMethod() !== 'OPTIONS') {
 			throw new MethodNotAllowedHttpException($others);
 		}
 
-		return new Route('OPTIONS', $request->path(), function() use ($others)
+		$route = new Route('OPTIONS', $request->path(), function() use ($others)
 		{
 			return new Response('', 200, array('Allow' => implode(',', $others)));
 		});
-	}
 
-	/**
-	 * Determine if a route in the array matches the request.
-	 *
-	 * @param  array  $routes
-	 * @param  \Mini\Http\Request  $request
-	 * @param  bool  $includingMethod
-	 * @return \Mini\Routing\Route|null
-	 */
-	protected function check(array $routes, Request $request, $includingMethod = true)
-	{
-		return Arr::first($routes, function($uri, $route) use ($request, $includingMethod)
-		{
-			return $route->matches($request, $includingMethod);
-		});
+		return $route->bind($request);
 	}
 
 	/**

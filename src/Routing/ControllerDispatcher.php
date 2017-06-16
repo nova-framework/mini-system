@@ -4,6 +4,7 @@ namespace Mini\Routing;
 
 use Mini\Container\Container;
 use Mini\Routing\RouteDependencyResolverTrait;
+use Mini\Support\Str;
 
 
 class ControllerDispatcher

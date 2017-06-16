@@ -275,11 +275,11 @@ class Route
 	 */
 	protected function matchPattern($pattern, $subject)
 	{
-		if (preg_match($pattern, $subject, $matches) === 1) {
-			$parameters = $this->matchToKeys($matches);
+		$parameters = $this->parameters ?: array();
 
+		if (preg_match($pattern, $subject, $matches) === 1) {
 			$this->parameters = array_merge(
-				isset($this->parameters) ? $this->parameters : array(), $parameters
+				$parameters, $this->matchToKeys(array_slice($matches, 1))
 			);
 
 			return true;
@@ -321,6 +321,42 @@ class Route
 		}
 
 		return $this->compiled;
+	}
+
+	/**
+	 * Bind the Route to a given Request for execution.
+	 *
+	 * @param  \Nova\Http\Request  $request
+	 * @return $this
+	 */
+	public function bind(Request $request)
+	{
+		if (isset($this->parameters)) {
+			// The parameters was already setup on matching.
+			return $this;
+		}
+
+		$compiled = $this->compileRoute();
+
+		if (! isset($this->parameterNames)) {
+			$this->parameterNames = $compiled->getVariables();
+		}
+
+		$parameters = array();
+
+		if (! is_null($pattern = $compiled->getHostRegex())) {
+			preg_match($pattern, $request->getHost(), $matches);
+
+			$parameters = $this->matchToKeys(array_slice($matches, 1));
+		}
+
+		preg_match($compiled->getRegex(), '/' .$request->decodedPath(), $matches);
+
+		$this->parameters = array_merge(
+			$parameters, $this->matchToKeys(array_slice($matches, 1))
+		);
+
+		return $this;
 	}
 
 	/**

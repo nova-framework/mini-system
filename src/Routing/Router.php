@@ -649,24 +649,20 @@ class Router
 		//
 		$callable = isset($this->middleware[$name]) ? $this->middleware[$name] : $name;
 
-		// When no parameters are defined, we will just return the callable.
 		if (is_null($parameters)) {
 			return $callable;
-		}
-
-		// If the callable is a string, we will append the parameters, then return it.
-		else if (is_string($callable)) {
+		} else if (is_string($callable)) {
 			return $callable .':' .$parameters;
 		}
 
-		// For a callback with parameters, we will create a proper middleware closure.
+		// A callback with parameters; we should create a proper middleware closure for it.
 		$parameters = explode(',', $parameters);
 
 		return function ($passable, $stack) use ($callable, $parameters)
 		{
-			$parameters = array_merge(array($passable, $stack), $parameters);
-
-			return call_user_func_array($callable, $parameters);
+			return call_user_func_array(
+				$callable, array_merge(array($passable, $stack), $parameters)
+			);
 		};
 	}
 
