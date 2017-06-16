@@ -80,17 +80,13 @@ class Pipeline implements PipelineInterface
 				return call_user_func($pipe, $passable, $stack);
 			}
 
-			$parameters = array();
+			list($name, $parameters) = $this->parsePipeString($pipe);
 
-			if (is_string($pipe)) {
-				list($name, $parameters) = $this->parsePipe($pipe);
+			$instance = $this->container->make($name);
 
-				$pipe = $this->container->make($name);
-			}
-
-			$parameters = array_merge(array($passable, $stack), $parameters);
-
-			return call_user_func_array(array($pipe, 'handle'), $parameters);
+			return call_user_func_array(array($instance, 'handle'),
+				array_merge(array($passable, $stack), $parameters)
+			);
 		};
 	}
 
@@ -100,7 +96,7 @@ class Pipeline implements PipelineInterface
 	 * @param  string $pipe
 	 * @return array
 	 */
-	protected function parsePipe($pipe)
+	protected function parsePipeString($pipe)
 	{
 		list($name, $parameters) = array_pad(explode(':', $pipe, 2), 2, array());
 
