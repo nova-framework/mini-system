@@ -211,7 +211,9 @@ class Route
 	public function getControllerMethod()
 	{
 		if (! isset($this->method)) {
-			list (, $this->method) = $this->parseControllerCallback();
+			list (, $method) = $this->parseControllerCallback();
+
+			return $this->method = $method;
 		}
 
 		return $this->method;
