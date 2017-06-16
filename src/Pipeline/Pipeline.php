@@ -95,7 +95,11 @@ class Pipeline implements PipelineInterface
 			return call_user_func($pipe, $passable, $stack);
 		}
 
-		list($name, $parameters) = $this->parsePipeString($pipe);
+		list($name, $parameters) = array_pad(explode(':', $pipe, 2), 2, array());
+
+		if (is_string($parameters)) {
+			$parameters = explode(',', $parameters);
+		}
 
 		$instance = $this->container->make($name);
 
@@ -104,20 +108,4 @@ class Pipeline implements PipelineInterface
 		);
 	}
 
-	/**
-	 * Parse full pipe string to get name and parameters.
-	 *
-	 * @param  string $pipe
-	 * @return array
-	 */
-	protected function parsePipeString($pipe)
-	{
-		list($name, $parameters) = array_pad(explode(':', $pipe, 2), 2, array());
-
-		if (is_string($parameters)) {
-			$parameters = explode(',', $parameters);
-		}
-
-		return array($name, $parameters);
-	}
 }

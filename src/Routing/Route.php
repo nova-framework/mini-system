@@ -44,6 +44,13 @@ class Route
 	protected $action;
 
 	/**
+	 * The Controller method.
+	 *
+	 * @var mixed
+	 */
+	public $method;
+
+	/**
 	 * The Controller instance.
 	 *
 	 * @var mixed
@@ -187,12 +194,10 @@ class Route
 	 */
 	public function getController()
 	{
-		if (! $this->controller) {
-			$callback = $this->parseControllerCallback();
+		if (! isset($this->controller)) {
+			list ($controller, $this->method) = $this->parseControllerCallback();
 
-			$className = reset($callback);
-
-			$this->controller = $this->container->make($className);
+			$this->controller = $this->container->make($controller);
 		}
 
 		return $this->controller;
@@ -205,9 +210,11 @@ class Route
 	 */
 	public function getControllerMethod()
 	{
-		$callback = $this->parseControllerCallback();
+		if (! isset($this->method)) {
+			list (, $this->method) = $this->parseControllerCallback();
+		}
 
-		return end($callback);
+		return $this->method;
 	}
 
 	/**
