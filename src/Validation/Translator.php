@@ -1,14 +1,6 @@
 <?php
-/**
- * Translator - Class to handle a Laravel-esque style Translations.
- *
- * NOTE: The real translation are made via the new Language API.
- *
- * @author Virgil-Adrian Teaca - virgil@giulianaeassociati.com
- * @version 3.0
- */
 
-namespace Mini\Validation\Language;
+namespace Mini\Validation;
 
 use Symfony\Component\Translation\TranslatorInterface;
 
@@ -25,10 +17,8 @@ class Translator implements TranslatorInterface
 	/**
 	 * Create a new Translator instance.
 	 */
-	public function __construct()
+	public function __construct(array $lines)
 	{
-		$lines = require realpath(__DIR__) .DS .'messages.php';
-
 		$this->messages = array('validation' => $lines);
 	}
 

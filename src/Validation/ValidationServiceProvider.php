@@ -10,7 +10,7 @@ namespace Mini\Validation;
 
 use Mini\Validation\Presence\DatabasePresenceVerifier;
 use Mini\Validation\Factory;
-use Mini\Validation\Language\Translator;
+use Mini\Validation\Translator;
 use Mini\Support\ServiceProvider;
 
 
@@ -76,7 +76,9 @@ class ValidationServiceProvider extends ServiceProvider
 	{
 		$this->app->bindShared('validation.translator', function($app)
 		{
-			return new Translator();
+			$lines = $this->app['config']->get('validation', array());
+
+			return new Translator($lines);
 		});
 	}
 
