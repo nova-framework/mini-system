@@ -704,7 +704,7 @@ class Router
 		if (! empty($middleware) && ! $this->shouldSkipMiddleware()) {
 			$pipeline = new Pipeline($this->container);
 
-			return $pipeline->dispatch($request, $middleware, $destination);
+			return $pipeline->through($middleware)->dispatch($request, $destination);
 		}
 
 		return call_user_func($destination, $request);

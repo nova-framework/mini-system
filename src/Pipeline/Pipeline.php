@@ -17,16 +17,48 @@ class Pipeline implements PipelineInterface
 	 */
 	protected $container;
 
+	/**
+	 * The array of class pipes.
+	 *
+	 * @var array
+	 */
+	protected $pipes = array();
+
+	/**
+	 * The method to call on each pipe.
+	 *
+	 * @var string
+	 */
+	protected $method = 'handle';
+
 
 	/**
 	 * Create a new class instance.
 	 *
 	 * @param  \Mini\Container\Container  $container
+	 * @param  string|null  $method
 	 * @return void
 	 */
-	public function __construct(Container $container)
+	public function __construct(Container $container, $method = null)
 	{
 		$this->container = $container;
+
+		if (! is_null($method)) {
+			$this->method = $method;
+		}
+	}
+
+	/**
+	 * Set the array of pipes.
+	 *
+	 * @param  array|mixed  $pipes
+	 * @return $this
+	 */
+	public function through($pipes)
+	{
+		$this->pipes = is_array($pipes) ? $pipes : func_get_args();
+
+		return $this;
 	}
 
 	/**
@@ -37,14 +69,14 @@ class Pipeline implements PipelineInterface
 	 * @param  \Closure  $destination
 	 * @return mixed
 	 */
-	public function dispatch($passable, $pipes, Closure $destination)
+	public function dispatch($passable, Closure $destination)
 	{
-		$pipes = is_array($pipes) ? $pipes : array($pipes);
+		$pipes = array_reverse($this->pipes);
 
 		// Create the slices stack.
 		$slice = $this->getInitialSlice($destination);
 
-		foreach (array_reverse($pipes) as $pipe) {
+		foreach ($pipes as $pipe) {
 			$slice = $this->getSlice($slice, $pipe);
 		}
 
@@ -99,7 +131,7 @@ class Pipeline implements PipelineInterface
 
 		$instance = $this->container->make($name);
 
-		return call_user_func_array(array($instance, 'handle'),
+		return call_user_func_array(array($instance, $this->method),
 			array_merge(array($passable, $stack), $parameters)
 		);
 	}

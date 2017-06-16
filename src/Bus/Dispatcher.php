@@ -20,13 +20,6 @@ class Dispatcher implements DispatcherInterface
 	protected $container;
 
 	/**
-	 * The pipeline instance for the bus.
-	 *
-	 * @var \Mini\Pipeline\Pipeline
-	 */
-	protected $pipeline;
-
-	/**
 	 * The pipes to send commands through before dispatching.
 	 *
 	 * @var array
@@ -50,8 +43,6 @@ class Dispatcher implements DispatcherInterface
 	public function __construct(Container $container)
 	{
 		$this->container = $container;
-
-		$this->pipeline = new Pipeline($container);
 	}
 
 	/**
@@ -75,7 +66,9 @@ class Dispatcher implements DispatcherInterface
 			}
 		}
 
-		return $this->pipeline->dispatch($command, $this->pipes, $callback);
+		$pipeline = new Pipeline($this->container);
+
+		return $pipeline->through($this->pipes)->dispatch($command, $callback);
 	}
 
 	/**
