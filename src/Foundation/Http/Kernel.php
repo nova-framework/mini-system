@@ -12,6 +12,7 @@ use Symfony\Component\Debug\Exception\FatalThrowableError;
 
 use Closure;
 use Exception;
+use Throwable;
 
 
 class Kernel implements KernelInterface
@@ -98,17 +99,11 @@ class Kernel implements KernelInterface
 
 			$response = $this->sendRequestThroughRouter($request);
 		}
-		catch (\Exception $e) {
-			$this->reportException($e);
-
-			$response = $this->renderException($request, $e);
+		catch (Exception $e) {
+			$response = $this->handleException($request, $e);
 		}
-		catch (\Throwable $e) {
-			$e = new FatalThrowableError($e);
-
-			$this->reportException($e);
-
-			$response = $this->renderException($request, $e);
+		catch (Throwable $e) {
+			$response = $this->handleException($request, new FatalThrowableError($e));
 		}
 
 		$this->app['events']->fire('kernel.handled', array($request, $response));
@@ -119,8 +114,8 @@ class Kernel implements KernelInterface
 	/**
 	 * Send the given request through the middleware / router.
 	 *
-	 * @param  \Illuminate\Http\Request  $request
-	 * @return \Illuminate\Http\Response
+	 * @param  \Mini\Http\Request  $request
+	 * @return \Mini\Http\Response
 	 */
 	protected function sendRequestThroughRouter($request)
 	{
@@ -177,7 +172,7 @@ class Kernel implements KernelInterface
 	/**
 	 * Gather the route middleware for the given request.
 	 *
-	 * @param  \Illuminate\Http\Request  $request
+	 * @param  \Mini\Http\Request  $request
 	 * @return array
 	 */
 	protected function gatherRouteMiddlewares($request)
@@ -270,6 +265,20 @@ class Kernel implements KernelInterface
 	}
 
 	/**
+	 * Handle the given exception.
+	 *
+	 * @param  \Mini\Http\Request  $request
+	 * @param  \Exception  $e
+	 * @return \Symfony\Component\HttpFoundation\Response
+	 */
+	protected function handleException($request, Exception $e)
+	{
+		$this->reportException($e);
+
+		return $this->renderException($request, $e);
+	}
+
+	/**
 	 * Report the exception to the exception handler.
 	 *
 	 * @param  \Exception  $e
@@ -283,7 +292,7 @@ class Kernel implements KernelInterface
 	/**
 	 * Render the exception to a response.
 	 *
-	 * @param  \Illuminate\Http\Request  $request
+	 * @param  \Mini\Http\Request  $request
 	 * @param  \Exception  $e
 	 * @return \Symfony\Component\HttpFoundation\Response
 	 */
