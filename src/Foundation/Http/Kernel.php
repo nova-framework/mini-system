@@ -131,7 +131,9 @@ class Kernel implements KernelInterface
 		$this->bootstrap();
 
 		//
-		$pipeline = new Pipeline($this->app, $this->middleware);
+		$pipeline = new Pipeline(
+			$this->app, $this->shouldSkipMiddleware() ? array() : $this->middleware
+		);
 
 		return $pipeline->dispatch($request, function ($request)
 		{
@@ -150,7 +152,7 @@ class Kernel implements KernelInterface
 	 */
 	public function terminate($request, $response)
 	{
-		$middlewares = array_merge(
+		$middlewares = $this->shouldSkipMiddleware() ? array() : array_merge(
 			$this->gatherRouteMiddlewares($request),
 			$this->middleware
 		);
@@ -235,7 +237,7 @@ class Kernel implements KernelInterface
 	 * Add a new middleware to end of the stack if it does not already exist.
 	 *
 	 * @param  string|\Closure  $middleware
-	 * @return \Nova\Foundation\Http\Kernel
+	 * @return \Mini\Foundation\Http\Kernel
 	 */
 	public function pushMiddleware($middleware)
 	{
@@ -255,6 +257,17 @@ class Kernel implements KernelInterface
 	public function hasMiddleware($middleware)
 	{
 		return in_array($middleware, $this->middleware);
+	}
+
+	/**
+	 * Determines whether middleware should be skipped during request.
+	 *
+	 * @return bool
+	 */
+	protected function shouldSkipMiddleware()
+	{
+		return $this->app->bound('middleware.disable') &&
+			($this->app->make('middleware.disable') === true);
 	}
 
 	/**

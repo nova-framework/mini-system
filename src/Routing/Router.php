@@ -717,7 +717,8 @@ class Router
 	 */
 	protected function shouldSkipMiddleware()
 	{
-		return $this->container->bound('middleware.disable') && ($this->container->make('middleware.disable') === true);
+		return $this->container->bound('middleware.disable') &&
+			($this->container->make('middleware.disable') === true);
 	}
 
 	/**
