@@ -95,11 +95,15 @@ class Pipeline implements PipelineInterface
 			return call_user_func($pipe, $passable, $stack);
 		}
 
-		list($name, $parameters) = $this->parsePipeString($pipe);
+		$parameters = array();
 
-		$instance = $this->container->make($name);
+		if (! is_object($pipe)) {
+			list($name, $parameters) = $this->parsePipeString($pipe);
 
-		return call_user_func_array(array($instance, 'handle'),
+			$pipe = $this->container->make($name);
+		}
+
+		return call_user_func_array(array($pipe, 'handle'),
 			array_merge(array($passable, $stack), $parameters)
 		);
 	}
