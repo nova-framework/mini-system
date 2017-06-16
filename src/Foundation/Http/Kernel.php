@@ -266,8 +266,7 @@ class Kernel implements KernelInterface
 	 */
 	protected function shouldSkipMiddleware()
 	{
-		return $this->app->bound('middleware.disable') &&
-			($this->app->make('middleware.disable') === true);
+		return $this->app->shouldSkipMiddleware();
 	}
 
 	/**
