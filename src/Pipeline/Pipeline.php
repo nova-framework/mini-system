@@ -88,6 +88,7 @@ class Pipeline implements PipelineInterface
 	 * @param  mixed  $passable
 	 * @param  \Closure  $stack
 	 * @return \Closure
+	 * @throws \BadMethodCallException
 	 */
 	protected function call($pipe, $passable, $stack)
 	{
