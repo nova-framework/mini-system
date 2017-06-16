@@ -76,7 +76,7 @@ class Pipeline implements PipelineInterface
 	{
 		return function ($passable) use ($stack, $pipe)
 		{
-			return $this->call($pipe, $stack, $passable);
+			return $this->call($pipe, $passable, $stack);
 		};
 	}
 
@@ -88,7 +88,7 @@ class Pipeline implements PipelineInterface
 	 * @param  \Closure  $stack
 	 * @return \Closure
 	 */
-	protected function call($pipe, $stack, $passable)
+	protected function call($pipe, $passable, $stack)
 	{
 		if ($pipe instanceof Closure) {
 			return call_user_func($pipe, $passable, $stack);
