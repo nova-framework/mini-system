@@ -81,7 +81,7 @@ class Pipeline implements PipelineInterface
 	}
 
 	/**
-	 * Call a Closure or a class instance resolved via container.
+	 * Call a Closure or the method 'handle' in a class instance.
 	 *
 	 * @param  mixed  $pipe
 	 * @param  mixed  $passable
