@@ -76,18 +76,31 @@ class Pipeline implements PipelineInterface
 	{
 		return function ($passable) use ($stack, $pipe)
 		{
-			if ($pipe instanceof Closure) {
-				return call_user_func($pipe, $passable, $stack);
-			}
-
-			list($name, $parameters) = $this->parsePipeString($pipe);
-
-			$instance = $this->container->make($name);
-
-			return call_user_func_array(array($instance, 'handle'),
-				array_merge(array($passable, $stack), $parameters)
-			);
+			return $this->call($pipe, $stack, $passable);
 		};
+	}
+
+	/**
+	 * Call a Closure or resolve the class via container and call it.
+	 *
+	 * @param  mixed  $pipe
+	 * @param  mixed  $passable
+	 * @param  \Closure  $stack
+	 * @return \Closure
+	 */
+	protected function call($pipe, $stack, $passable)
+	{
+		if ($pipe instanceof Closure) {
+			return call_user_func($pipe, $passable, $stack);
+		}
+
+		list($name, $parameters) = $this->parsePipeString($pipe);
+
+		$instance = $this->container->make($name);
+
+		return call_user_func_array(array($instance, 'handle'),
+			array_merge(array($passable, $stack), $parameters)
+		);
 	}
 
 	/**
