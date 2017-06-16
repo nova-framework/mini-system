@@ -5,7 +5,6 @@ namespace Mini\Pipeline;
 use Mini\Container\Container;
 use Mini\Pipeline\Contracts\PipelineInterface;
 
-use BadMethodCallException;
 use Closure;
 
 
@@ -98,9 +97,7 @@ class Pipeline implements PipelineInterface
 
 		list($name, $parameters) = $this->parsePipeString($pipe);
 
-		if (! method_exists($instance = $this->container->make($name), 'handle')) {
-			throw new BadMethodCallException("No [handle] method found on class [$name].");
-		}
+		$instance = $this->container->make($name);
 
 		return call_user_func_array(array($instance, 'handle'),
 			array_merge(array($passable, $stack), $parameters)
