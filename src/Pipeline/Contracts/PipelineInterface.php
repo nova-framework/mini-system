@@ -9,14 +9,6 @@ interface PipelineInterface
 {
 
 	/**
-	 * Set the stops of the pipeline.
-	 *
-	 * @param  array|array  $pipes
-	 * @return $this
-	 */
-	public function through($pipes);
-
-	/**
 	 * Run the pipeline with a final destination callback.
 	 *
 	 * @param  mixed  $passable

@@ -36,29 +36,19 @@ class Pipeline implements PipelineInterface
 	 * Create a new class instance.
 	 *
 	 * @param  \Mini\Container\Container  $container
+	 * @param  mixed|array  $pipes
 	 * @param  string|null  $method
 	 * @return void
 	 */
-	public function __construct(Container $container, $method = null)
+	public function __construct(Container $container, $pipes = array(), $method = null)
 	{
 		$this->container = $container;
+
+		$this->pipes = is_array($pipes) ? $pipes : array();
 
 		if (! is_null($method)) {
 			$this->method = $method;
 		}
-	}
-
-	/**
-	 * Set the array of pipes.
-	 *
-	 * @param  array|mixed  $pipes
-	 * @return $this
-	 */
-	public function through($pipes)
-	{
-		$this->pipes = is_array($pipes) ? $pipes : func_get_args();
-
-		return $this;
 	}
 
 	/**

@@ -66,9 +66,9 @@ class Dispatcher implements DispatcherInterface
 			}
 		}
 
-		$pipeline = new Pipeline($this->container);
+		$pipeline = new Pipeline($this->container, $this->pipes);
 
-		return $pipeline->through($this->pipes)->dispatch($command, $callback);
+		return $pipeline->dispatch($command, $callback);
 	}
 
 	/**

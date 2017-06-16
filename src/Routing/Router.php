@@ -702,9 +702,9 @@ class Router
 	protected function sendThroughPipeline(array $middleware, Request $request, Closure $destination)
 	{
 		if (! empty($middleware) && ! $this->shouldSkipMiddleware()) {
-			$pipeline = new Pipeline($this->container);
+			$pipeline = new Pipeline($this->container, $middleware);
 
-			return $pipeline->through($middleware)->dispatch($request, $destination);
+			return $pipeline->dispatch($request, $destination);
 		}
 
 		return call_user_func($destination, $request);

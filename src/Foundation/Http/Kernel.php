@@ -131,9 +131,9 @@ class Kernel implements KernelInterface
 		$this->bootstrap();
 
 		//
-		$pipeline = new Pipeline($this->app);
+		$pipeline = new Pipeline($this->app, $this->middleware);
 
-		return $pipeline->through($this->middleware)->dispatch($request, function ($request)
+		return $pipeline->dispatch($request, function ($request)
 		{
 			$this->app->instance('request', $request);
 
