@@ -224,7 +224,11 @@ class Event
 	{
 		$command = $this->compileCommand();
 
-		return ! is_null($this->user) && ! windows_os() ? 'sudo -u ' .$this->user .' -- sh -c \'' .$command .'\'' : $command;
+		if (! is_null($this->user) && ! windows_os()) {
+			return 'sudo -u ' .$this->user .' -- sh -c \'' .$command .'\'';
+		}
+
+		return $command;
 	}
 
 	/**
@@ -242,13 +246,13 @@ class Event
 			return $this->command .$redirect .$output .' 2>&1 &';
 		}
 
-		$path = $this->mutexPath();
+		$mutexPath = $this->mutexPath();
 
 		if (! windows_os()) {
-			return '(touch ' .$path .'; ' .$this->command .'; rm ' .$path .')' .$redirect .$output .' 2>&1 &';
+			return '(touch ' .$mutexPath .'; ' .$this->command .'; rm ' .$mutexPath .')' .$redirect .$output .' 2>&1 &';
+		} else {
+			return '(echo \'\' > "' .$mutexPath .'" & ' .$this->command .' & del "'.$mutexPath .'")' .$redirect .$output .' 2>&1 &';
 		}
-
-		return '(echo \'\' > "' .$path .'" & ' .$this->command .' & del "'.$path .'")' .$redirect .$output .' 2>&1 &';
 	}
 
 	/**
