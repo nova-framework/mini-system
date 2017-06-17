@@ -38,6 +38,7 @@ class ConsoleServiceProvider extends ServiceProvider
 	 * @var array
 	 */
 	protected $providers = array(
+		'Mini\Console\ScheduleServiceProvider',
 		'Mini\Foundation\Providers\ComposerServiceProvider',
 		'Mini\Foundation\Providers\PublisherServiceProvider',
 	);
@@ -246,7 +247,7 @@ class ConsoleServiceProvider extends ServiceProvider
 			return new ProviderMakeCommand($app['files']);
 		});
 	}
-	
+
 	/**
 	 * Register the command.
 	 *

@@ -58,7 +58,7 @@ class Dispatcher implements DispatcherInterface
 			$callback = function ($command) use ($handler)
 			{
 				return $handler->handle($command);
-			};
+			});
 		} else {
 			$callback = function ($command)
 			{
@@ -79,7 +79,9 @@ class Dispatcher implements DispatcherInterface
 	 */
 	public function hasCommandHandler($command)
 	{
-		return array_key_exists(get_class($command), $this->handlers);
+		$name = get_class($command);
+
+		return array_key_exists($name, $this->handlers);
 	}
 
 	/**

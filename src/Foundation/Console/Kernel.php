@@ -3,6 +3,7 @@
 namespace Mini\Foundation\Console;
 
 use Mini\Console\Contracts\KernelInterface;
+use Mini\Console\Scheduling\Schedule;
 use Mini\Console\Application as Forge;
 use Mini\Events\Dispatcher;
 use Mini\Foundation\Application;
@@ -71,6 +72,19 @@ class Kernel implements KernelInterface
 		$this->events = $events;
 	}
 
+	/**
+	 * Define the application's command schedule.
+	 *
+	 * @return void
+	 */
+	protected function defineConsoleSchedule()
+	{
+		$this->app->instance(
+			'Mini\Console\Scheduling\Schedule', $schedule = new Schedule()
+		);
+
+		$this->schedule($schedule);
+	}
 
 	/**
 	 * Run the console application.
@@ -112,6 +126,17 @@ class Kernel implements KernelInterface
 	public function terminate($input, $status)
 	{
 		$this->app->terminate();
+	}
+
+	/**
+	 * Define the application's command schedule.
+	 *
+	 * @param  \Mini\Console\Scheduling\Schedule  $schedule
+	 * @return void
+	 */
+	protected function schedule(Schedule $schedule)
+	{
+		//
 	}
 
 	/**
