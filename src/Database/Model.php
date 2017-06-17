@@ -293,6 +293,19 @@ class Model
 	}
 
 	/**
+	 * Dynamically access the model's attributes.
+	 *
+	 * @param  string  $key
+	 * @return mixed
+	 */
+	public function __get($key)
+	{
+		if ($key === 'db') {
+			return $this->getConnection();
+		}
+	}
+
+	/**
 	 * Handle dynamic method calls into the method.
 	 *
 	 * @param  string  $method
