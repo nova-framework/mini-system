@@ -3,7 +3,7 @@
 namespace Mini\Foundation\Console;
 
 use Mini\Console\Command;
-use Mini\Foundation\Composer;
+use Mini\Support\Composer;
 
 use Symfony\Component\Console\Input\InputOption;
 
