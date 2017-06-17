@@ -1844,9 +1844,7 @@ class Model implements ArrayAccess, ArrayableInterface, JsonableInterface, JsonS
 	{
 		$query = $this->newBaseQueryBuilder();
 
-		$builder = $this->newBuilder($query);
-
-		return $builder->setModel($this)->with($this->with);
+		return $this->newBuilder($query)->setModel($this)->with($this->with);
 	}
 
 	/**
@@ -1858,9 +1856,7 @@ class Model implements ArrayAccess, ArrayableInterface, JsonableInterface, JsonS
 	{
 		$connection = $this->getConnection();
 
-		$grammar = $connection->getQueryGrammar();
-
-		return new QueryBuilder($connection, $grammar);
+		return new QueryBuilder($connection, $connection->getQueryGrammar());
 	}
 
 	/**
