@@ -1572,7 +1572,9 @@ class Model implements ArrayAccess, ArrayableInterface, JsonableInterface, JsonS
 	 */
 	public function getTable()
 	{
-		if (isset($this->table)) return $this->table;
+		if (isset($this->table)) {
+			return $this->table;
+		}
 
 		return str_replace('\\', '', Str::snake(Str::plural(class_basename($this))));
 	}
