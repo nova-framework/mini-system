@@ -130,9 +130,7 @@ class Model
 	 */
 	public function delete($id)
 	{
-		$this->newQuery()->where($this->getKeyName(), $id)->delete();
-
-		return true;
+		return $this->newQuery()->where($this->getKeyName(), $id)->delete();
 	}
 
 	/**
