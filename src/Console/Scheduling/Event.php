@@ -116,6 +116,7 @@ class Event
 	 */
 	public $description;
 
+
 	/**
 	 * Create a new event instance.
 	 *
@@ -171,7 +172,7 @@ class Event
 	/**
 	 * Run the command in the foreground.
 	 *
-	 * @param  \Mini\Contracts\Container\Container  $container
+	 * @param  \Mini\Container\Container  $container
 	 * @return void
 	 */
 	protected function runCommandInForeground(Container $container)
@@ -190,7 +191,7 @@ class Event
 	/**
 	 * Call all of the "before" callbacks for the event.
 	 *
-	 * @param  \Mini\Contracts\Container\Container  $container
+	 * @param  \Mini\Container\Container  $container
 	 * @return void
 	 */
 	protected function callBeforeCallbacks(Container $container)
@@ -203,7 +204,7 @@ class Event
 	/**
 	 * Call all of the "after" callbacks for the event.
 	 *
-	 * @param  \Mini\Contracts\Container\Container  $container
+	 * @param  \Mini\Container\Container  $container
 	 * @return void
 	 */
 	protected function callAfterCallbacks(Container $container)
@@ -220,21 +221,33 @@ class Event
 	 */
 	public function buildCommand()
 	{
+		$command = $this->compileCommand();
+
+		return ! is_null($this->user) && ! windows_os() ? 'sudo -u ' .$this->user .' -- sh -c \'' .$command .'\'' : $command;
+	}
+
+	/**
+	 * Build a command string with mutex.
+	 *
+	 * @return string
+	 */
+	protected function compileCommand()
+	{
 		$output = ProcessUtils::escapeArgument($this->output);
 
 		$redirect = $this->shouldAppendOutput ? ' >> ' : ' > ';
 
-		if ($this->withoutOverlapping) {
-			if (windows_os()) {
-				$command = '(echo \'\' > "' .$this->mutexPath() .'" & ' .$this->command .' & del "'.$this->mutexPath() .'")' .$redirect .$output.' 2>&1 &';
-			} else {
-				$command = '(touch ' .$this->mutexPath() .'; ' .$this->command .'; rm ' .$this->mutexPath() .')' .$redirect .$output .' 2>&1 &';
-			}
-		} else {
-			$command = $this->command .$redirect .$output .' 2>&1 &';
+		if (! $this->withoutOverlapping) {
+			return $this->command .$redirect .$output .' 2>&1 &';
 		}
 
-		return ! is_null($this->user) && ! windows_os() ? 'sudo -u ' .$this->user .' -- sh -c \'' .$command .'\'' : $command;
+		$path = $this->mutexPath();
+
+		if (! windows_os()) {
+			return '(touch ' .$path .'; ' .$this->command .'; rm ' .$path .')' .$redirect .$output .' 2>&1 &';
+		}
+
+		return '(echo \'\' > "' .$path .'" & ' .$this->command .' & del "'.$path .'")' .$redirect .$output .' 2>&1 &';
 	}
 
 	/**
