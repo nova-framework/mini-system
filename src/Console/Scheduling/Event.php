@@ -126,6 +126,7 @@ class Event
 	public function __construct($command)
 	{
 		$this->command = $command;
+
 		$this->output = $this->getDefaultOutput();
 	}
 
@@ -242,7 +243,7 @@ class Event
 	 */
 	protected function mutexPath()
 	{
-		return storage_path('schedule-'.md5($this->expression .$this->command));
+		return storage_path('schedule-' .md5($this->expression .$this->command));
 	}
 
 	/**
@@ -286,7 +287,8 @@ class Event
 	 */
 	protected function filtersPass(Application $app)
 	{
-		if (($this->filter && ! $app->call($this->filter)) || $this->reject && $app->call($this->reject)) {
+		if (($this->filter && ! $app->call($this->filter)) ||
+			($this->reject && $app->call($this->reject))) {
 			return false;
 		}
 

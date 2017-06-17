@@ -66,7 +66,7 @@ class Schedule
 	public function exec($command, array $parameters = array())
 	{
 		if (count($parameters)) {
-			$command .= ' '.$this->compileParameters($parameters);
+			$command .= ' ' .$this->compileParameters($parameters);
 		}
 
 		$this->events[] = $event = new Event($command);
@@ -106,7 +106,7 @@ class Schedule
 	/**
 	 * Get all of the events on the schedule that are due.
 	 *
-	 * @param  \Mini\Contracts\Foundation\Application  $app
+	 * @param  \Mini\Foundation\Application  $app
 	 * @return array
 	 */
 	public function dueEvents(Application $app)

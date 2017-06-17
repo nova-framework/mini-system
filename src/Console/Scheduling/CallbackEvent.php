@@ -109,7 +109,7 @@ class CallbackEvent extends Event
 	 */
 	protected function mutexPath()
 	{
-		return storage_path('schedule-'.md5($this->description));
+		return storage_path('schedule-' .md5($this->description));
 	}
 
 	/**

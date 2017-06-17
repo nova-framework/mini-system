@@ -70,6 +70,8 @@ class Kernel implements KernelInterface
 		$this->app = $app;
 
 		$this->events = $events;
+
+		$this->defineConsoleSchedule();
 	}
 
 	/**
