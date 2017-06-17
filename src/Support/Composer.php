@@ -1,6 +1,6 @@
 <?php
 
-namespace Mini\Foundation;
+namespace Mini\Support;
 
 use Mini\Filesystem\Filesystem;
 

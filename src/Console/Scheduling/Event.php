@@ -11,7 +11,6 @@ use Symfony\Component\Process\ProcessUtils;
 
 use Carbon\Carbon;
 use Cron\CronExpression;
-use GuzzleHttp\Client as HttpClient;
 
 use Closure;
 use LogicException;
@@ -137,7 +136,7 @@ class Event
 	 */
 	protected function getDefaultOutput()
 	{
-		return (DIRECTORY_SEPARATOR == '\\') ? 'NUL' : '/dev/null';
+		return (DIRECTORY_SEPARATOR === '\\') ? 'NUL' : '/dev/null';
 	}
 
 	/**
@@ -148,7 +147,7 @@ class Event
 	 */
 	public function run(Container $container)
 	{
-		if (count($this->afterCallbacks) > 0 || count($this->beforeCallbacks) > 0) {
+		if ((count($this->afterCallbacks) > 0) || (count($this->beforeCallbacks) > 0)) {
 			$this->runCommandInForeground($container);
 		} else {
 			$this->runCommandInBackground();
@@ -164,7 +163,9 @@ class Event
 	{
 		chdir(base_path());
 
-		exec($this->buildCommand());
+		$command = $this->buildCommand();
+
+		exec($command);
 	}
 
 	/**
@@ -177,9 +178,9 @@ class Event
 	{
 		$this->callBeforeCallbacks($container);
 
-		$process = new Process(
-			trim($this->buildCommand(), '& '), base_path(), null, null, null
-		);
+		$command = $this->buildCommand();
+
+		$process = new Process(trim($command, '& '), base_path(), null, null, null);
 
 		$process->run();
 
@@ -225,7 +226,7 @@ class Event
 
 		if ($this->withoutOverlapping) {
 			if (windows_os()) {
-				$command = '(echo \'\' > "' .$this->mutexPath() .'" & '.$this->command .' & del "'.$this->mutexPath() .'")' .$redirect .$output.' 2>&1 &';
+				$command = '(echo \'\' > "' .$this->mutexPath() .'" & ' .$this->command .' & del "'.$this->mutexPath() .'")' .$redirect .$output.' 2>&1 &';
 			} else {
 				$command = '(touch ' .$this->mutexPath() .'; ' .$this->command .'; rm ' .$this->mutexPath() .')' .$redirect .$output .' 2>&1 &';
 			}
@@ -233,7 +234,7 @@ class Event
 			$command = $this->command .$redirect .$output .' 2>&1 &';
 		}
 
-		return $this->user && ! windows_os() ? 'sudo -u ' .$this->user .' -- sh -c \'' .$command .'\'' : $command;
+		return ! is_null($this->user) && ! windows_os() ? 'sudo -u ' .$this->user .' -- sh -c \'' .$command .'\'' : $command;
 	}
 
 	/**
@@ -258,9 +259,7 @@ class Event
 			return false;
 		}
 
-		return $this->expressionPasses() &&
-			   $this->filtersPass($app) &&
-			   $this->runsInEnvironment($app->environment());
+		return $this->expressionPasses() && $this->filtersPass($app) && $this->runsInEnvironment($app->environment());
 	}
 
 	/**
@@ -287,8 +286,7 @@ class Event
 	 */
 	protected function filtersPass(Application $app)
 	{
-		if (($this->filter && ! $app->call($this->filter)) ||
-			($this->reject && $app->call($this->reject))) {
+		if (($this->filter && ! $app->call($this->filter)) || ($this->reject && $app->call($this->reject))) {
 			return false;
 		}
 
@@ -370,8 +368,12 @@ class Event
 	{
 		$segments = explode(':', $time);
 
-		return $this->spliceIntoPosition(2, (int) $segments[0])
-					->spliceIntoPosition(1, (count($segments) == 2) ? (int) $segments[1] : '0');
+		//
+		$hours = (int) $segments[0];
+
+		$minutes = (count($segments) == 2) ? (int) $segments[1] : '0';
+
+		return $this->spliceIntoPosition(2, $hours)->spliceIntoPosition(1, $minutes);
 	}
 
 	/**
@@ -383,10 +385,9 @@ class Event
 	 */
 	public function twiceDaily($first = 1, $second = 13)
 	{
-		$hours = $first.','.$second;
+		$hours = $first .',' .$second;
 
-		return $this->spliceIntoPosition(1, 0)
-					->spliceIntoPosition(2, $hours);
+		return $this->spliceIntoPosition(1, 0)->spliceIntoPosition(2, $hours);
 	}
 
 	/**
@@ -741,20 +742,6 @@ class Event
 	}
 
 	/**
-	 * Register a callback to ping a given URL before the job runs.
-	 *
-	 * @param  string  $url
-	 * @return $this
-	 */
-	public function pingBefore($url)
-	{
-		return $this->before(function () use ($url)
-		{
-			with(new HttpClient)->get($url);
-		});
-	}
-
-	/**
 	 * Register a callback to be called before the operation.
 	 *
 	 * @param  \Closure  $callback
@@ -765,20 +752,6 @@ class Event
 		$this->beforeCallbacks[] = $callback;
 
 		return $this;
-	}
-
-	/**
-	 * Register a callback to ping a given URL after the job runs.
-	 *
-	 * @param  string  $url
-	 * @return $this
-	 */
-	public function thenPing($url)
-	{
-		return $this->then(function () use ($url)
-		{
-			with(new HttpClient)->get($url);
-		});
 	}
 
 	/**
@@ -840,7 +813,10 @@ class Event
 	{
 		$segments = explode(' ', $this->expression);
 
-		$segments[$position - 1] = $value;
+		//
+		$key = $position - 1;
+
+		$segments[$key] = $value;
 
 		return $this->cron(implode(' ', $segments));
 	}

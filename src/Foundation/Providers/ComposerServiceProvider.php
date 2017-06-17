@@ -2,7 +2,7 @@
 
 namespace Mini\Foundation\Providers;
 
-use Mini\Foundation\Composer;
+use Mini\Support\Composer;
 use Mini\Support\ServiceProvider;
 
 

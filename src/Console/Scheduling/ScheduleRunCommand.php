@@ -28,6 +28,7 @@ class ScheduleRunCommand extends Command
 	 */
 	protected $schedule;
 
+
 	/**
 	 * Create a new command instance.
 	 *
@@ -51,7 +52,7 @@ class ScheduleRunCommand extends Command
 		$events = $this->schedule->dueEvents($this->container);
 
 		foreach ($events as $event) {
-			$this->line('<info>Running scheduled command:</info> '.$event->getSummaryForDisplay());
+			$this->line('<info>Running scheduled command:</info> ' .$event->getSummaryForDisplay());
 
 			$event->run($this->container);
 		}
