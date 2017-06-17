@@ -38,7 +38,7 @@ class ConsoleServiceProvider extends ServiceProvider
 	 * @var array
 	 */
 	protected $providers = array(
-		'Mini\Console\ScheduleServiceProvider',
+		'Mini\Console\Scheduling\ScheduleServiceProvider',
 		'Mini\Foundation\Providers\ComposerServiceProvider',
 		'Mini\Foundation\Providers\PublisherServiceProvider',
 	);

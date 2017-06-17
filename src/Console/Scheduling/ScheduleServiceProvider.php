@@ -1,6 +1,6 @@
 <?php
 
-namespace Mini\Console;
+namespace Mini\Console\Scheduling;
 
 use Mini\Support\ServiceProvider;
 
