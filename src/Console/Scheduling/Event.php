@@ -181,6 +181,7 @@ class Event
 
 		$command = $this->buildCommand();
 
+		//
 		$process = new Process(trim($command, '& '), base_path(), null, null, null);
 
 		$process->run();
@@ -401,86 +402,6 @@ class Event
 		$hours = $first .',' .$second;
 
 		return $this->spliceIntoPosition(1, 0)->spliceIntoPosition(2, $hours);
-	}
-
-	/**
-	 * Schedule the event to run only on weekdays.
-	 *
-	 * @return $this
-	 */
-	public function weekdays()
-	{
-		return $this->spliceIntoPosition(5, '1-5');
-	}
-
-	/**
-	 * Schedule the event to run only on Mondays.
-	 *
-	 * @return $this
-	 */
-	public function mondays()
-	{
-		return $this->days(1);
-	}
-
-	/**
-	 * Schedule the event to run only on Tuesdays.
-	 *
-	 * @return $this
-	 */
-	public function tuesdays()
-	{
-		return $this->days(2);
-	}
-
-	/**
-	 * Schedule the event to run only on Wednesdays.
-	 *
-	 * @return $this
-	 */
-	public function wednesdays()
-	{
-		return $this->days(3);
-	}
-
-	/**
-	 * Schedule the event to run only on Thursdays.
-	 *
-	 * @return $this
-	 */
-	public function thursdays()
-	{
-		return $this->days(4);
-	}
-
-	/**
-	 * Schedule the event to run only on Fridays.
-	 *
-	 * @return $this
-	 */
-	public function fridays()
-	{
-		return $this->days(5);
-	}
-
-	/**
-	 * Schedule the event to run only on Saturdays.
-	 *
-	 * @return $this
-	 */
-	public function saturdays()
-	{
-		return $this->days(6);
-	}
-
-	/**
-	 * Schedule the event to run only on Sundays.
-	 *
-	 * @return $this
-	 */
-	public function sundays()
-	{
-		return $this->days(0);
 	}
 
 	/**
