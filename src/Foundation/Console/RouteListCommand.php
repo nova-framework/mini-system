@@ -58,7 +58,7 @@ class RouteListCommand extends Command
 	* @var array
 	*/
 	protected $headers = array(
-		'Method', 'URI', 'Name', 'Action', 'Middleware'
+		'Domain', 'Method', 'URI', 'Name', 'Action', 'Middleware'
 	);
 
 	/**
@@ -119,11 +119,12 @@ class RouteListCommand extends Command
 	protected function getRouteInformation(Route $route)
 	{
 		return $this->filterRoute(array(
-			'method'	 => implode('|', $route->getMethods()),
-			'uri'		=> $route->getUri(),
-			'name'	   => $route->getName(),
-			'action'	 => $route->getActionName(),
-			'middleware' => $this->getMiddleware($route),
+			'host'			=> $route->domain(),
+			'method'		=> implode('|', $route->getMethods()),
+			'uri'			=> $route->getUri(),
+			'name'			=> $route->getName(),
+			'action'		=> $route->getActionName(),
+			'middleware'	=> $this->getMiddleware($route),
 		));
 	}
 
@@ -187,13 +188,28 @@ class RouteListCommand extends Command
 
 		$results = array();
 
-		foreach ($controller->getMiddlewareForMethod($method) as $name) {
-			$middleware = Arr::get($middlewares, $name, $name);
+		foreach ($controller->getMiddleware() as $name => $options) {
+			if (! $this->methodExcludedByOptions($method, $options)) {
+				$middleware = Arr::get($middlewares, $name, $name);
 
-			$results[] = ($middleware instanceof Closure) ? $name : $middleware;
+				$results[] = (! $middleware instanceof Closure) ? $middleware : $name;
+			}
 		}
 
 		return $results;
+	}
+
+	/**
+	 * Determine if the given options exclude a particular method.
+	 *
+	 * @param  string  $method
+	 * @param  array  $options
+	 * @return bool
+	 */
+	protected function methodExcludedByOptions($method, array $options)
+	{
+		return ((! empty($options['only']) && ! in_array($method, (array) $options['only'])) ||
+			(! empty($options['except']) && in_array($method, (array) $options['except'])));
 	}
 
 	/**
