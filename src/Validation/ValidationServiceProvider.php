@@ -3,14 +3,12 @@
  * ValidationServiceProvider - Implements a Service Provider for Validation.
  *
  * @author Virgil-Adrian Teaca - virgil@giulianaeassociati.com
- * @version 3.0
  */
 
 namespace Mini\Validation;
 
 use Mini\Validation\Presence\DatabasePresenceVerifier;
 use Mini\Validation\Factory;
-use Mini\Validation\Translator;
 use Mini\Support\ServiceProvider;
 
 
@@ -31,16 +29,11 @@ class ValidationServiceProvider extends ServiceProvider
 	 */
 	public function register()
 	{
-		$this->registerTranslator();
-
 		$this->registerPresenceVerifier();
 
 		$this->app->bindShared('validator', function($app)
 		{
-			$translator = $app['validation.translator'];
-
-			// Get a Validation Factory instance.
-			$validator = new Factory($translator);
+			$validator = new Factory($app['config']);
 
 			if (isset($app['validation.presence'])) {
 				$presenceVerifier = $app['validation.presence'];
@@ -64,21 +57,6 @@ class ValidationServiceProvider extends ServiceProvider
 			$connection = $app['db']->connection();
 
 			return new DatabasePresenceVerifier($connection);
-		});
-	}
-
-	/**
-	 * Register the Database Presence Verifier.
-	 *
-	 * @return void
-	 */
-	protected function registerTranslator()
-	{
-		$this->app->bindShared('validation.translator', function($app)
-		{
-			$lines = $this->app['config']->get('validation', array());
-
-			return new Translator($lines);
 		});
 	}
 

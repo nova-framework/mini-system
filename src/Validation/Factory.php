@@ -8,8 +8,8 @@
 
 namespace Mini\Validation;
 
+use Mini\Config\Repository as Config;
 use Mini\Support\Str;
-use Mini\Validation\Language\Translator;
 use Mini\Validation\Presence\DatabasePresenceVerifier;
 
 use Closure;
@@ -18,11 +18,11 @@ use Closure;
 class Factory
 {
 	/**
-	 * The Translator implementation.
+	 * The Config instance.
 	 *
-	 * @var \Validation\Translator
+	 * @var \Mini\Config\Repository
 	 */
-	protected $translator;
+	protected $config;
 
 	/**
 	 * The Database Presence Verifier implementation.
@@ -66,15 +66,16 @@ class Factory
 	 */
 	protected $resolver;
 
+
 	/**
 	 * Create a new Validator Factory instance.
 	 *
 	 * @param  \Validation\Translator  $translator
 	 * @return void
 	 */
-	public function __construct(Translator $translator)
+	public function __construct(Config $config)
 	{
-		$this->translator = $translator;
+		$this->config = $config;
 	}
 
 	/**
@@ -128,9 +129,9 @@ class Factory
 	protected function resolve($data, $rules, $messages, $customAttributes)
 	{
 		if (is_null($this->resolver)) {
-			return new Validator($this->translator, $data, $rules, $messages, $customAttributes);
+			return new Validator($this->config, $data, $rules, $messages, $customAttributes);
 		} else {
-			return call_user_func($this->resolver, $this->translator, $data, $rules, $messages, $customAttributes);
+			return call_user_func($this->resolver, $this->config, $data, $rules, $messages, $customAttributes);
 		}
 	}
 
@@ -202,7 +203,7 @@ class Factory
 	 */
 	public function getTranslator()
 	{
-		return $this->translator;
+		return $this->config;
 	}
 
 	/**

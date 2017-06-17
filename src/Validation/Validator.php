@@ -2,6 +2,7 @@
 
 namespace Mini\Validation;
 
+use Mini\Config\Repository as Config;
 use Mini\Container\Container;
 use Mini\Support\Fluent;
 use Mini\Support\MessageBag;
@@ -10,7 +11,6 @@ use Mini\Support\Str;
 use Mini\Validation\Presence\PresenceVerifierInterface;
 
 use Symfony\Component\HttpFoundation\File\File;
-use Symfony\Component\Translation\TranslatorInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 use Closure;
@@ -21,11 +21,11 @@ use DateTimeZone;
 class Validator implements MessageProviderInterface
 {
 	/**
-	 * The Translator implementation.
+	 * The Config instance.
 	 *
-	 * @var \Symfony\Component\Translation\TranslatorInterface
+	 * @var \Mini\Config\Repository
 	 */
-	protected $translator;
+	protected $config;
 
 	/**
 	 * The Presence Verifier implementation.
@@ -134,19 +134,21 @@ class Validator implements MessageProviderInterface
 		'Required', 'RequiredWith', 'RequiredWithAll', 'RequiredWithout', 'RequiredWithoutAll', 'RequiredIf', 'Accepted'
 	);
 
+
 	/**
 	 * Create a new Validator instance.
 	 *
-	 * @param  \Symfony\Component\Translation\TranslatorInterface  $translator
+	 * @param  \Mini\Config\Repository  $config
 	 * @param  array  $data
 	 * @param  array  $rules
 	 * @param  array  $messages
 	 * @param  array  $customAttributes
 	 * @return void
 	 */
-	public function __construct(TranslatorInterface $translator, array $data, array $rules, array $messages = array(), array $customAttributes = array())
+	public function __construct(Config $config, array $data, array $rules, array $messages = array(), array $customAttributes = array())
 	{
-		$this->translator = $translator;
+		$this->config = $config;
+
 		$this->customMessages = $messages;
 
 		$this->data  = $this->parseData($data);
@@ -1406,33 +1408,29 @@ class Validator implements MessageProviderInterface
 	 */
 	protected function getMessage($attribute, $rule)
 	{
-		$lowerRule = Str::snake($rule);
+		$lowerRule = Str::camel($rule);
 
-		$inlineMessage = $this->getInlineMessage($attribute, $lowerRule);
-
-		if (! is_null($inlineMessage)) {
+		if (! is_null($inlineMessage = $this->getInlineMessage($attribute, $lowerRule))) {
 			return $inlineMessage;
 		}
 
 		$customKey = "validation.custom.{$attribute}.{$lowerRule}";
 
-		$customMessage = $this->translator->trans($customKey);
-
-		if ($customMessage !== $customKey) {
+		if (! is_null($customMessage = $this->config->get($customKey))) {
 			return $customMessage;
-		} else if (in_array($rule, $this->sizeRules))
-		{
+		} else if (in_array($rule, $this->sizeRules)) {
 			return $this->getSizeMessage($attribute, $rule);
 		}
 
 		$key = "validation.{$lowerRule}";
 
-		if ($key != ($value = $this->translator->trans($key))) {
+		if (! is_null($value = $this->config->get($key))) {
 			return $value;
 		}
 
 		return $this->getInlineMessage(
 			$attribute, $lowerRule, $this->fallbackMessages
+
 		) ?: $key;
 	}
 
@@ -1451,7 +1449,9 @@ class Validator implements MessageProviderInterface
 		$keys = array("{$attribute}.{$lowerRule}", $lowerRule);
 
 		foreach ($keys as $key) {
-			if (isset($source[$key])) return $source[$key];
+			if (isset($source[$key])) {
+				return $source[$key];
+			}
 		}
 	}
 
@@ -1464,13 +1464,13 @@ class Validator implements MessageProviderInterface
 	 */
 	protected function getSizeMessage($attribute, $rule)
 	{
-		$lowerRule = Str::snake($rule);
+		$lowerRule = Str::camel($rule);
 
 		$type = $this->getAttributeType($attribute);
 
 		$key = "validation.{$lowerRule}.{$type}";
 
-		return $this->translator->trans($key);
+		return $this->config->get($key, $key);
 	}
 
 	/**
@@ -1545,7 +1545,7 @@ class Validator implements MessageProviderInterface
 
 		$key = "validation.attributes.{$attribute}";
 
-		if (($line = $this->translator->trans($key)) !== $key) {
+		if (! is_null($line = $this->config->get($key))) {
 			return $line;
 		}
 
@@ -1567,7 +1567,7 @@ class Validator implements MessageProviderInterface
 
 		$key = "validation.values.{$attribute}.{$value}";
 
-		if (($line = $this->translator->trans($key)) !== $key) {
+		if (! is_null($line = $this->config->get($key))) {
 			return $line;
 		}
 
