@@ -148,7 +148,7 @@ class Kernel implements KernelInterface
 	public function terminate($request, $response)
 	{
 		$middlewares = $this->shouldSkipMiddleware() ? array() : array_merge(
-			$this->gatherRouteMiddlewares($request),
+			$this->gatherRouteMiddleware($request),
 			$this->middleware
 		);
 
@@ -175,10 +175,10 @@ class Kernel implements KernelInterface
 	 * @param  \Mini\Http\Request  $request
 	 * @return array
 	 */
-	protected function gatherRouteMiddlewares($request)
+	protected function gatherRouteMiddleware($request)
 	{
 		if (! is_null($route = $request->route())) {
-			return $this->router->gatherRouteMiddlewares($route);
+			return $this->router->gatherRouteMiddleware($route);
 		}
 
 		return array();

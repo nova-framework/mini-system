@@ -594,7 +594,7 @@ class Router
 	 */
 	protected function runRouteWithinStack(Route $route, Request $request)
 	{
-		$middleware = $this->gatherRouteMiddlewares($route);
+		$middleware = $this->gatherRouteMiddleware($route);
 
 		return $this->sendThroughPipeline($middleware, $request, function ($request) use ($route)
 		{
@@ -610,7 +610,7 @@ class Router
 	 * @param  \Mini\Routing\Route  $route
 	 * @return array
 	 */
-	public function gatherRouteMiddlewares(Route $route)
+	public function gatherRouteMiddleware(Route $route)
 	{
 		$middleware = array_map(function ($name)
 		{

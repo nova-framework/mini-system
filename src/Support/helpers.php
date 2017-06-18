@@ -181,7 +181,7 @@ if (! function_exists('base_path'))
 		 */
 		function base_path($path = '')
 		{
-				return app()->make('path.base') .(! empty($path) ? DS .$path : $path);
+			return app()->make('path.base') .(! empty($path) ? DS .$path : $path);
 		}
 }
 
