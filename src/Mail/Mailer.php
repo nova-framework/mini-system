@@ -2,7 +2,7 @@
 
 namespace Mini\Mail;
 
-use Mini\Log\Writter;
+use Mini\Log\Writer;
 use Mini\View\Factory;
 use Mini\Events\Dispatcher;
 use Mini\Container\Container;
@@ -372,7 +372,7 @@ class Mailer
 	 * @param  \Log\Writer  $logger
 	 * @return $this
 	 */
-	public function setLogger(Writter $logger)
+	public function setLogger(Writer $logger)
 	{
 		$this->logger = $logger;
 

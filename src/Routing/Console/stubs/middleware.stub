@@ -10,7 +10,7 @@ class {{className}}
     /**
      * Handle an incoming request.
      *
-     * @param  \Nova\Http\Request  $request
+     * @param  \Mini\Http\Request  $request
      * @param  \Closure  $next
      * @return mixed
      */

@@ -643,7 +643,7 @@ class Application extends Container
 			'cache'			=> 'Mini\Cache\CacheManager',
 			'cache.store'	=> 'Mini\Cache\Repository',
 			'gate'			=> 'Mini\Auth\Contracts\Access\GateInterface',
-			'log'			=> array('Mini\Log\Writter', 'Psr\Log\LoggerInterface'),
+			'log'			=> array('Mini\Log\Writer', 'Psr\Log\LoggerInterface'),
 			'config'		=> 'Mini\Config\Repository',
 			'cookie'		=> 'Mini\Cookie\CookieJar',
 			'encrypter'	 	=> 'Mini\Encryption\Encrypter',
