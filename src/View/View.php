@@ -4,6 +4,8 @@ namespace Mini\View;
 
 use Mini\Support\Contracts\ArrayableInterface;
 use Mini\Support\Contracts\RenderableInterface;
+use Nova\Support\Contracts\MessageProviderInterface as MessageProvider;
+use Nova\Support\MessageBag;
 use Mini\View\Contracts\EngineInterface;
 use Mini\View\Factory;
 
@@ -150,20 +152,6 @@ class View implements ArrayAccess, RenderableInterface
 	}
 
 	/**
-	 * Add a key / value pair to the shared view data.
-	 *
-	 * @param  string  $key
-	 * @param  mixed   $value
-	 * @return View
-	 */
-	public function shares($key, $value)
-	{
-		$this->factory->share($key, $value);
-
-		return $this;
-	}
-
-	/**
 	 * Add a key / value pair to the view data.
 	 *
 	 * Bound data will be available to the view as variables.
@@ -179,6 +167,37 @@ class View implements ArrayAccess, RenderableInterface
 		} else {
 			$this->data[$key] = $value;
 		}
+
+		return $this;
+	}
+
+	/**
+	 * Add validation errors to the view.
+	 *
+	 * @param  \Mini\Support\Contracts\MessageProviderInterface|array  $provider
+	 * @return \Mini\View\View
+	 */
+	public function withErrors($provider)
+	{
+		if ($provider instanceof MessageProvider) {
+			$this->with('errors', $provider->getMessageBag());
+		} else {
+			$this->with('errors', new MessageBag((array) $provider));
+		}
+
+		return $this;
+	}
+
+	/**
+	 * Add a key / value pair to the shared view data.
+	 *
+	 * @param  string  $key
+	 * @param  mixed   $value
+	 * @return View
+	 */
+	public function shares($key, $value)
+	{
+		$this->factory->share($key, $value);
 
 		return $this;
 	}
