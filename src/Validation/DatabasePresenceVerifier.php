@@ -6,11 +6,11 @@
  * @version 3.0
  */
 
-namespace Mini\Validation\Presence;
+namespace Mini\Validation;
 
 use Mini\Database\Connection;
 use Mini\Database\Query\Builder as QueryBuilder;
-use Mini\Validation\Presence\PresenceVerifierInterface;
+use Mini\Validation\Contracts\PresenceVerifierInterface;
 
 
 class DatabasePresenceVerifier implements PresenceVerifierInterface

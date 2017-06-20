@@ -8,7 +8,7 @@ use Mini\Support\Fluent;
 use Mini\Support\MessageBag;
 use Mini\Support\Contracts\MessageProviderInterface;
 use Mini\Support\Str;
-use Mini\Validation\Presence\PresenceVerifierInterface;
+use Mini\Validation\Contracts\PresenceVerifierInterface;
 
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -30,7 +30,7 @@ class Validator implements MessageProviderInterface
 	/**
 	 * The Presence Verifier implementation.
 	 *
-	 * @var \Validation\PresenceVerifierInterface
+	 * @var \Nova\Validation\Contracts\PresenceVerifierInterface
 	 */
 	protected $presenceVerifier;
 
@@ -2136,7 +2136,7 @@ class Validator implements MessageProviderInterface
 	/**
 	 * Get the Presence Verifier implementation.
 	 *
-	 * @return \Validation\PresenceVerifierInterface
+	 * @return \Nova\Validation\Cotnracts\PresenceVerifierInterface
 	 *
 	 * @throws \RuntimeException
 	 */
@@ -2152,7 +2152,7 @@ class Validator implements MessageProviderInterface
 	/**
 	 * Set the Presence Verifier implementation.
 	 *
-	 * @param  \Validation\PresenceVerifierInterface  $presenceVerifier
+	 * @param  \Nova\Validation\Cotnracts\PresenceVerifierInterface  $presenceVerifier
 	 * @return void
 	 */
 	public function setPresenceVerifier(PresenceVerifierInterface $presenceVerifier)

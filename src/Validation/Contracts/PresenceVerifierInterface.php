@@ -1,6 +1,6 @@
 <?php
 
-namespace Mini\Validation\Presence;
+namespace Mini\Validation\Contracts;
 
 interface PresenceVerifierInterface
 {

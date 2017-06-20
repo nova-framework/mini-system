@@ -10,7 +10,7 @@ namespace Mini\Validation;
 
 use Mini\Config\Repository as Config;
 use Mini\Support\Str;
-use Mini\Validation\Presence\DatabasePresenceVerifier;
+use Mini\Validation\DatabasePresenceVerifier;
 
 use Closure;
 
