@@ -16,7 +16,7 @@ class CompilerEngine extends PhpEngine
 	/**
 	 * The Compiler implementation.
 	 *
-	 * @var \Mini\View\Compilers\CompilerInterface
+	 * @var \Mini\View\Contracts\CompilerInterface
 	 */
 	protected $compiler;
 
@@ -31,7 +31,7 @@ class CompilerEngine extends PhpEngine
 	/**
 	 * Create a new Compiler Engine instance.
 	 *
-	 * @param  \Mini\View\Compilers\CompilerInterface  $compiler
+	 * @param  \Mini\View\Contracts\CompilerInterface  $compiler
 	 * @return void
 	 */
 	public function __construct(CompilerInterface $compiler)
