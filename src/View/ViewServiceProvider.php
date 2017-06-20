@@ -66,7 +66,7 @@ class ViewServiceProvider extends ServiceProvider
 	 */
 	public function registerMarkdownCompiler()
 	{
-		$this->app->bindShared('template', function($app)
+		$this->app->bindShared('markdown', function($app)
 		{
 			$cachePath = $app['config']['view.compiled'];
 

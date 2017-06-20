@@ -9,7 +9,7 @@ use Mini\Support\Arr;
 use Mini\Support\Str;
 
 
-class TemplateCompiler
+class TemplateCompiler extends Compiler implements CompilerInterface
 {
 	/**
 	 * All of the registered extensions.
