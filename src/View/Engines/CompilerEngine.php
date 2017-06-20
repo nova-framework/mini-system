@@ -2,8 +2,8 @@
 
 namespace Mini\View\Engines;
 
+use Mini\View\Compilers\CompilerInterface;
 use Mini\View\Engines\PhpEngine;
-use Mini\View\Template;
 use Mini\Support\Str;
 
 use Symfony\Component\Debug\Exception\FatalThrowableError;
@@ -11,17 +11,17 @@ use Symfony\Component\Debug\Exception\FatalThrowableError;
 use ErrorException;
 
 
-class TemplateEngine extends PhpEngine
+class CompilerEngine extends PhpEngine
 {
 	/**
-	 * The Template instance.
+	 * The Compiler implementation.
 	 *
-	 * @var \Mini\View\Template
+	 * @var \Mini\View\Compilers\CompilerInterface
 	 */
-	protected $template;
+	protected $compiler;
 
 	/**
-	 * A stack of the last compiled templates.
+	 * A stack of the last compiled files.
 	 *
 	 * @var array
 	 */
@@ -29,14 +29,14 @@ class TemplateEngine extends PhpEngine
 
 
 	/**
-	 * Create a new Template Engine instance.
+	 * Create a new Compiler Engine instance.
 	 *
-	 * @param  \Mini\View\Template  $template
+	 * @param  \Mini\View\Compilers\CompilerInterface  $compiler
 	 * @return void
 	 */
-	public function __construct(Template $template)
+	public function __construct(CompilerInterface $compiler)
 	{
-		$this->template = $template;
+		$this->compiler = $compiler;
 	}
 
 	/**
@@ -50,11 +50,11 @@ class TemplateEngine extends PhpEngine
 	{
 		$this->lastCompiled[] = $path;
 
-		if ($this->template->isExpired($path)) {
-			$this->template->compile($path);
+		if ($this->compiler->isExpired($path)) {
+			$this->compiler->compile($path);
 		}
 
-		$compiled = $this->template->getCompiledPath($path);
+		$compiled = $this->compiler->getCompiledPath($path);
 
 		$results = $this->evaluatePath($compiled, $data);
 
@@ -103,6 +103,6 @@ class TemplateEngine extends PhpEngine
 	 */
 	public function getCompiler()
 	{
-		return $this->template;
+		return $this->compiler;
 	}
 }

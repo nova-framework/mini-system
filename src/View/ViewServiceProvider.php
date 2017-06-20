@@ -2,14 +2,16 @@
 
 namespace Mini\View;
 
+use Mini\View\Compilers\MarkdownCompiler;
+use Mini\View\Compilers\TemplateCompiler;
+use Mini\View\Engines\CompilerEngine;
 use Mini\View\Engines\EngineResolver;
 use Mini\View\Engines\FileEngine;
 use Mini\View\Engines\PhpEngine;
-use Mini\View\Engines\TemplateEngine;
 use Mini\View\Factory;
 use Mini\View\FileViewFinder;
 use Mini\View\Section;
-use Mini\View\Template;
+
 use Mini\Support\ServiceProvider;
 
 
@@ -29,7 +31,9 @@ class ViewServiceProvider extends ServiceProvider
 	 */
 	public function register()
 	{
-		$this->registerTemplate();
+		$this->registerTemplateCompiler();
+
+		$this->registerMarkdownCompiler();
 
 		$this->registerEngineResolver();
 
@@ -45,13 +49,28 @@ class ViewServiceProvider extends ServiceProvider
 	 *
 	 * @return void
 	 */
-	public function registerTemplate()
+	public function registerTemplateCompiler()
 	{
 		$this->app->bindShared('template', function($app)
 		{
 			$cachePath = $app['config']['view.compiled'];
 
-			return new Template($app['files'], $cachePath);
+			return new TemplateCompiler($app['files'], $cachePath);
+		});
+	}
+
+	/**
+	 * Register the Markdown compiler instance.
+	 *
+	 * @return void
+	 */
+	public function registerMarkdownCompiler()
+	{
+		$this->app->bindShared('template', function($app)
+		{
+			$cachePath = $app['config']['view.compiled'];
+
+			return new MarkdownCompiler($app['files'], $cachePath);
 		});
 	}
 
@@ -81,7 +100,13 @@ class ViewServiceProvider extends ServiceProvider
 			// Register the Template Engine instance.
 			$resolver->register('template', function() use ($app)
 			{
-				return new TemplateEngine($app['template'], $app['files']);
+				return new CompilerEngine($app['template'], $app['files']);
+			});
+
+			// Register the Markdown Engine instance.
+			$resolver->register('markdown', function() use ($app)
+			{
+				return new CompilerEngine($app['markdown'], $app['files']);
 			});
 
 			return $resolver;
@@ -144,6 +169,6 @@ class ViewServiceProvider extends ServiceProvider
 	 */
 	public function provides()
 	{
-		return array('view', 'view.engine.resolver', 'view.finder', 'template', 'section');
+		return array('view', 'view.engine.resolver', 'view.finder', 'template', 'markdown', 'section');
 	}
 }

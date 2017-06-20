@@ -17,6 +17,7 @@
         "ext-mbstring": "*",
         "danielstjules/stringy": "~1.8",
         "nesbot/carbon": "^1.21",
+        "erusev/parsedown": "~1.6",
         "doctrine/inflector": "1.1.*",
         "symfony/console": "3.1.*",
         "symfony/finder": "3.1.*",

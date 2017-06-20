@@ -1,13 +1,15 @@
 <?php
 
-namespace Mini\View;
+namespace Mini\View\Compilers;
 
-use Mini\Filesystem\Filesystem;
+use Mini\View\Compilers\Compiler;
+use Mini\View\Compilers\CompilerInterface;
+
 use Mini\Support\Arr;
 use Mini\Support\Str;
 
 
-class Template
+class TemplateCompiler
 {
 	/**
 	 * All of the registered extensions.
@@ -17,25 +19,11 @@ class Template
 	protected $extensions = array();
 
 	/**
-	* The Filesystem instance.
-	*
-	* @var \Mini\Filesystem\Filesystem
-	*/
-	protected $files;
-
-	/**
 	 * The file currently being compiled.
 	 *
 	 * @var string
 	 */
 	protected $path;
-
-	/**
-	* Get the cache path for the compiled views.
-	*
-	* @var string
-	*/
-	protected $cachePath;
 
 	/**
 	 * All of the available compiler functions.
@@ -65,51 +53,26 @@ class Template
 
 
 	/**
-	* Create a new Template Engine instance.
-	*
-	* @param  \Mini\Filesystem\Filesystem  $files
-	* @param  string  $cachePath
-	* @return void
-	*/
-	public function __construct(Filesystem $files, $cachePath)
+	 * Compile the view at the given path.
+	 *
+	 * @param  string  $path
+	 * @return void
+	 */
+	public function compile($path = null)
 	{
-		$this->files = $files;
+		$this->footer = array();
 
-		$this->cachePath = $cachePath;
-	}
-
-	/**
-	* Determine if the view at the given path is expired.
-	*
-	* @param  string  $path
-	* @return bool
-	*/
-	public function isExpired($path)
-	{
-		$compiled = $this->getCompiledPath($path);
-
-		if (is_null($this->cachePath) || ! $this->files->exists($compiled)) {
-			return true;
+		if (! is_null($path)) {
+			$this->setPath($path);
 		}
 
-		$lastModified = $this->files->lastModified($path);
+		$contents = $this->compileString($this->files->get($path));
 
-		if ($lastModified >= $this->files->lastModified($compiled)) {
-			return true;
+		if ( ! is_null($this->cachePath)) {
+			$compiled = $this->getCompiledPath($this->getPath());
+
+			$this->files->put($compiled, $contents);
 		}
-
-		return false;
-	}
-
-	/**
-	* Get the path to the compiled version of a view.
-	*
-	* @param  string  $path
-	* @return string
-	*/
-	public function getCompiledPath($path)
-	{
-		return $this->cachePath .DS .sha1($path) .'.php';
 	}
 
 	/**
@@ -131,29 +94,6 @@ class Template
 	public function setPath($path)
 	{
 		$this->path = $path;
-	}
-
-	/**
-	 * Compile the view at the given path.
-	 *
-	 * @param  string  $path
-	 * @return void
-	 */
-	public function compile($path = null)
-	{
-		$this->footer = array();
-
-		if (! is_null($path)) {
-			$this->setPath($path);
-		}
-
-		$contents = $this->compileString($this->files->get($path));
-
-		if ( ! is_null($this->cachePath)) {
-			$compiled = $this->getCompiledPath($this->getPath());
-
-			$this->files->put($compiled, $contents);
-		}
 	}
 
 	/**
