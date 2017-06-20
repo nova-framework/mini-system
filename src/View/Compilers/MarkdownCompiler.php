@@ -7,8 +7,6 @@ use Mini\View\Compilers\CompilerInterface;
 
 use Parsedown;
 
-use Closure;
-
 
 class MarkdownCompiler extends Compiler implements CompilerInterface
 {
