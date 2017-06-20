@@ -1,6 +1,6 @@
 <?php
 
-namespace Mini\View\Compilers;
+namespace Mini\View\Contracts;
 
 
 interface CompilerInterface

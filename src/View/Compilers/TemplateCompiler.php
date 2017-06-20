@@ -3,7 +3,7 @@
 namespace Mini\View\Compilers;
 
 use Mini\View\Compilers\Compiler;
-use Mini\View\Compilers\CompilerInterface;
+use Mini\View\Contracts\CompilerInterface;
 
 use Mini\Support\Arr;
 use Mini\Support\Str;

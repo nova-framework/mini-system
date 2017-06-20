@@ -2,7 +2,7 @@
 
 namespace Mini\View\Engines;
 
-use Mini\View\Compilers\CompilerInterface;
+use Mini\View\Contracts\CompilerInterface;
 use Mini\View\Engines\PhpEngine;
 use Mini\Support\Str;
 
