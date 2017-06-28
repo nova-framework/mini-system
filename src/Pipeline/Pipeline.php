@@ -98,7 +98,7 @@ class Pipeline implements PipelineInterface
 	{
 		return function ($passable) use ($stack, $pipe)
 		{
-			return $this->call($pipe, $passable, $stack);
+			return $this->callPipe($pipe, $passable, $stack);
 		};
 	}
 
@@ -111,7 +111,7 @@ class Pipeline implements PipelineInterface
 	 * @return \Closure
 	 * @throws \BadMethodCallException
 	 */
-	protected function call($pipe, $passable, $stack)
+	protected function callPipe($pipe, $passable, $stack)
 	{
 		if ($pipe instanceof Closure) {
 			return call_user_func($pipe, $passable, $stack);
