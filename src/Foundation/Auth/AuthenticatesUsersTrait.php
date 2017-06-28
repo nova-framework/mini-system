@@ -7,6 +7,7 @@ use Mini\Foundation\Auth\ThrottlesLoginsTrait;
 use Mini\Http\Request;
 use Mini\Support\Facades\Auth;
 use Mini\Support\Facades\Redirect;
+use Mini\Support\Facades\Response;
 use Mini\Support\Facades\Validator;
 use Mini\Support\Facades\View;
 use Mini\Validation\ValidationException;
