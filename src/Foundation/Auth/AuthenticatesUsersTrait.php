@@ -7,7 +7,6 @@ use Mini\Foundation\Auth\ThrottlesLoginsTrait;
 use Mini\Http\Request;
 use Mini\Support\Facades\Auth;
 use Mini\Support\Facades\Redirect;
-use Mini\Support\Facades\Response;
 use Mini\Support\Facades\Validator;
 use Mini\Support\Facades\View;
 use Mini\Validation\ValidationException;
@@ -115,13 +114,9 @@ trait AuthenticatesUsersTrait
 	 */
 	protected function sendFailedLoginResponse(Request $request)
 	{
-		$error = __d('nova', 'These credentials do not match our records.');
-
-		$errors = array($this->username() => $error);
-
-		if ($request->json() || $request->expectsJson()) {
-			return Response::json($errors, 422);
-		}
+		$errors = array(
+			$this->username() => __d('nova', 'These credentials do not match our records.')
+		);
 
 		return Redirect::back()
 			->withInput($request->only($this->username(), 'remember'))
@@ -148,9 +143,7 @@ trait AuthenticatesUsersTrait
 	{
 		Auth::guard($this->getGuard())->logout();
 
-		$uri = property_exists($this, 'redirectAfterLogout')
-			? $this->redirectAfterLogout
-			: $this->loginPath();
+		$uri = property_exists($this, 'redirectAfterLogout') ? $this->redirectAfterLogout : $this->loginPath();
 
 		return Redirect::to($uri);
 	}
