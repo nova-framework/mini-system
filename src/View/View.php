@@ -6,6 +6,7 @@ use Mini\Support\Contracts\ArrayableInterface;
 use Mini\Support\Contracts\RenderableInterface;
 use Nova\Support\Contracts\MessageProviderInterface as MessageProvider;
 use Nova\Support\MessageBag;
+use Nova\Support\Str;
 use Mini\View\Contracts\EngineInterface;
 use Mini\View\Factory;
 
@@ -326,8 +327,8 @@ class View implements ArrayAccess, RenderableInterface
 	public function __call($method, $params)
 	{
 		// Add the support for the dynamic withX Methods.
-		if (substr($method, 0, 4) == 'with') {
-			$name = lcfirst(substr($method, 4));
+		if (Str::startsWith($method, 'with')) {
+			$name = Str::camel(substr($method, 4));
 
 			return $this->with($name, array_shift($params));
 		}
