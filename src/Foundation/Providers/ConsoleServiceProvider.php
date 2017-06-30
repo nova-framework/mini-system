@@ -19,6 +19,7 @@ use Mini\Foundation\Console\ListenerMakeCommand;
 use Mini\Foundation\Console\ProviderMakeCommand;
 use Mini\Foundation\Console\HandlerEventCommand;
 use Mini\Foundation\Console\HandlerCommandCommand;
+use Mini\Foundation\Console\VendorPublishCommand;
 
 use Mini\Support\ServiceProvider;
 
@@ -65,6 +66,7 @@ class ConsoleServiceProvider extends ServiceProvider
 		'RouteList'			=> 'command.route.list',
 		'Serve'				=> 'command.serve',
 		'Up'				=> 'command.up',
+		'VendorPublish'		=> 'command.vendor.publish',
 		'ViewClear'			=> 'command.view.clear'
 	);
 
@@ -284,6 +286,19 @@ class ConsoleServiceProvider extends ServiceProvider
 		$this->app->singleton('command.up', function ()
 		{
 			return new UpCommand;
+		});
+	}
+
+	/**
+	 * Register the vendor publish console command.
+	 *
+	 * @return void
+	 */
+	protected function registerVendorPublishCommand()
+	{
+		$this->app->singleton('command.vendor.publish', function ($app)
+		{
+			return new VendorPublishCommand($app['files']);
 		});
 	}
 
