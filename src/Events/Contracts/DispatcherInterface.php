@@ -1,6 +1,6 @@
 <?php
 
-namespace Mini\Events;
+namespace Mini\Events\Contracts;
 
 
 interface DispatcherInterface
@@ -30,7 +30,7 @@ interface DispatcherInterface
 	 * @param  array  $payload
 	 * @return void
 	 */
-	public function queue($event, $payload = array());
+	public function push($event, $payload = array());
 
 	/**
 	 * Register an event subscriber with the dispatcher.

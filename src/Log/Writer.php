@@ -2,7 +2,7 @@
 
 namespace Mini\Log;
 
-use Mini\Events\DispatcherInterface;
+use Mini\Events\Contracts\DispatcherInterface;
 use Mini\Support\Contracts\JsonableInterface as Jsonable;
 use Mini\Support\Contracts\ArrayableInterface as Arrayable;
 

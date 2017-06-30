@@ -3,7 +3,7 @@
 namespace Mini\Routing;
 
 use Mini\Container\Container;
-use Mini\Events\DispatcherInterface;
+use Mini\Events\Contracts\DispatcherInterface;
 use Mini\Http\Exception\HttpResponseException;
 use Mini\Http\Request;
 use Mini\Http\Response;

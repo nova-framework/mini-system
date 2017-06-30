@@ -3,7 +3,7 @@
 namespace Mini\Events;
 
 use Mini\Container\Container;
-use Mini\Events\DispatcherInterface;
+use Mini\Events\Contracts\DispatcherInterface;
 use Mini\Support\Str;
 
 
@@ -101,15 +101,15 @@ class Dispatcher implements DispatcherInterface
 	}
 
 	/**
-	 * Register a queued event and payload.
+	 * Register an event and payload to be fired later.
 	 *
 	 * @param  string  $event
 	 * @param  array   $payload
 	 * @return void
 	 */
-	public function queue($event, $payload = array())
+	public function push($event, $payload = array())
 	{
-		$this->listen($event .'_queue', function() use ($event, $payload)
+		$this->listen($event .'_pushed', function() use ($event, $payload)
 		{
 			$this->fire($event, $payload);
 		});
@@ -163,7 +163,7 @@ class Dispatcher implements DispatcherInterface
 	 */
 	public function flush($event)
 	{
-		$this->fire($event .'_queue');
+		$this->fire($event .'_pushed');
 	}
 
 	/**
@@ -348,7 +348,7 @@ class Dispatcher implements DispatcherInterface
 	public function forgetQueued()
 	{
 		foreach ($this->listeners as $key => $value) {
-			if (Str::endsWith($key, '_queue')) {
+			if (Str::endsWith($key, '_pushed')) {
 				$this->forget($key);
 			}
 		}
