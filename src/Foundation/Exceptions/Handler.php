@@ -2,6 +2,7 @@
 
 namespace Mini\Foundation\Exceptions;
 
+use Mini\Container\Container;
 use Mini\Http\Response as HttpResponse;
 use Mini\Foundation\Contracts\ExceptionHandlerInterface;
 use Mini\Support\Facades\Config;
@@ -22,11 +23,11 @@ use Exception;
 class Handler implements ExceptionHandlerInterface
 {
 	/**
-	 * The log implementation.
+	 * The container implementation.
 	 *
-	 * @var \Psr\Log\LoggerInterface
+	 * @var \Mini\Container\Container
 	 */
-	protected $log;
+	protected $container;
 
 	/**
 	 * A list of the exception types that should not be reported.
@@ -38,12 +39,12 @@ class Handler implements ExceptionHandlerInterface
 	/**
 	 * Create a new exception handler instance.
 	 *
-	 * @param  \Psr\Log\LoggerInterface  $log
+	 * @param  \Mini\Container\Container  $container
 	 * @return void
 	 */
-	public function __construct(LoggerInterface $log)
+	public function __construct(Container $container)
 	{
-		$this->log = $log;
+		$this->container = $container;
 	}
 
 	/**
@@ -54,10 +55,30 @@ class Handler implements ExceptionHandlerInterface
 	 */
 	public function report(Exception $e)
 	{
-		if ($this->shouldReport($e)) {
-			$this->log->error($e);
+		if ($this->shouldntReport($e)) {
+			return;
 		}
+
+		try {
+            $logger = $this->container->make(LoggerInterface::class);
+        }
+        catch (Exception $exception) {
+            throw $e; // Throw the original exception
+        }
+
+        $logger->error($e);
 	}
+
+    /**
+     * Determine if the exception should be reported.
+     *
+     * @param  \Exception  $e
+     * @return bool
+     */
+    public function shouldReport(Exception $e)
+    {
+        return ! $this->shouldntReport($e);
+    }
 
 	/**
 	 * Determine if the exception should be reported.
@@ -65,15 +86,15 @@ class Handler implements ExceptionHandlerInterface
 	 * @param  \Exception  $e
 	 * @return bool
 	 */
-	public function shouldReport(Exception $e)
+	public function shouldntReport(Exception $e)
 	{
 		foreach ($this->dontReport as $type) {
 			if ($e instanceof $type) {
-				return false;
+				return true;
 			}
 		}
 
-		return true;
+		return false;
 	}
 
 	/**

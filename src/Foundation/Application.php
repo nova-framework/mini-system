@@ -9,6 +9,7 @@ use Mini\Filesystem\Filesystem;
 use Mini\Foundation\EnvironmentDetector;
 use Mini\Foundation\ProviderRepository;
 use Mini\Http\Request;
+use Mini\Log\LogServiceProvider;
 use Mini\Routing\RoutingServiceProvider;
 use Mini\Support\Arr;
 use Mini\Support\ServiceProvider;
@@ -140,6 +141,8 @@ class Application extends Container
 	protected function registerBaseServiceProviders()
 	{
 		$this->register(new EventServiceProvider($this));
+
+		$this->register(new LogServiceProvider($this));
 
 		$this->register(new RoutingServiceProvider($this));
 	}
