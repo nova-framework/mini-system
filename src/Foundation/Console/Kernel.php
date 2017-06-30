@@ -49,7 +49,6 @@ class Kernel implements KernelInterface
 	 */
 	protected $bootstrappers = array(
 		'Mini\Foundation\Bootstrap\LoadConfiguration',
-		'Mini\Foundation\Bootstrap\ConfigureLogging',
 		'Mini\Foundation\Bootstrap\HandleExceptions',
 		'Mini\Foundation\Bootstrap\BootApplication',
 		'Mini\Foundation\Bootstrap\SetRequestForConsole',
