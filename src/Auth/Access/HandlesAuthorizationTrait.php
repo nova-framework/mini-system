@@ -3,7 +3,7 @@
 namespace Mini\Auth\Access;
 
 use Mini\Auth\Access\Response;
-use Mini\Auth\Access\UnauthorizedException;
+use Mini\Auth\Access\AuthorizationException;
 
 
 trait HandlesAuthorizationTrait
@@ -25,12 +25,12 @@ trait HandlesAuthorizationTrait
 	 * @param  string  $message
 	 * @return void
 	 *
-	 * @throws \Mini\Auth\Access\UnauthorizedException
+	 * @throws \Mini\Auth\Access\AuthorizationException
 	 */
 	protected function deny($message = null)
 	{
 		$message = $message ?: __d('nova', 'This action is unauthorized.');
 
-		throw new UnauthorizedException($message);
+		throw new AuthorizationException($message);
 	}
 }

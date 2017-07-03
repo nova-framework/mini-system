@@ -3,7 +3,7 @@
 namespace Mini\Foundation\Auth\Access;
 
 use Mini\Auth\Contracts\Access\GateInterface as Gate;
-use Mini\Auth\Access\UnauthorizedException;
+use Mini\Auth\Access\AuthorizationException;
 use Mini\Support\Facades\App;
 
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -63,8 +63,8 @@ trait AuthorizesRequestsTrait
 		try {
 			return $gate->authorize($ability, $arguments);
 		}
-		catch (UnauthorizedException $e) {
-			$exception = $this->createGateUnauthorizedException($ability, $arguments, $e->getMessage(), $e);
+		catch (AuthorizationException $e) {
+			$exception = $this->createGateAuthorizationException($ability, $arguments, $e->getMessage(), $e);
 
 			throw $exception;
 		}
@@ -127,7 +127,7 @@ trait AuthorizesRequestsTrait
 	 * @param  \Exception  $previousException
 	 * @return \Symfony\Component\HttpKernel\Exception\HttpException
 	 */
-	protected function createGateUnauthorizedException($ability, $arguments, $message = null, $previousException = null)
+	protected function createGateAuthorizationException($ability, $arguments, $message = null, $previousException = null)
 	{
 		$message = $message ?: __d('nova', 'This action is unauthorized.');
 

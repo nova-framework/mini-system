@@ -5,7 +5,7 @@ namespace Mini\Auth\Access;
 use Mini\Auth\Contracts\Access\GateInterface;
 use Mini\Auth\Access\HandlesAuthorizationTrait;
 use Mini\Auth\Access\Response;
-use Mini\Auth\Access\UnauthorizedException;
+use Mini\Auth\Access\AuthorizationException;
 use Mini\Container\Container;
 use Mini\Support\Str;
 
@@ -210,7 +210,7 @@ class Gate implements GateInterface
 		try {
 			$result = $this->raw($ability, $arguments);
 		}
-		catch (UnauthorizedException $e) {
+		catch (AuthorizationException $e) {
 			return false;
 		}
 
@@ -224,7 +224,7 @@ class Gate implements GateInterface
 	 * @param  array|mixed  $arguments
 	 * @return \Mini\Auth\Access\Response
 	 *
-	 * @throws \Mini\Auth\Access\UnauthorizedException
+	 * @throws \Mini\Auth\Access\AuthorizationException
 	 */
 	public function authorize($ability, $arguments = array())
 	{

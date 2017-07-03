@@ -2,7 +2,7 @@
 
 namespace Mini\Foundation\Exceptions;
 
-use Mini\Auth\Access\UnauthorizedException;
+use Mini\Auth\Access\AuthorizationException;
 use Mini\Auth\AuthenticationException;
 use Mini\Container\Container;
 use Mini\Database\ORM\ModelNotFoundException;
@@ -123,7 +123,7 @@ class Handler implements ExceptionHandlerInterface
 	{
 		if ($e instanceof ModelNotFoundException) {
 			$e = new NotFoundHttpException($e->getMessage(), $e);
-		} elseif ($e instanceof UnauthorizedException) {
+		} elseif ($e instanceof AuthorizationException) {
 			$e = new HttpException(403, $e->getMessage());
 		}
 
