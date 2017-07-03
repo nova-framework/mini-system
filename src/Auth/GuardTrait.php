@@ -22,6 +22,22 @@ trait GuardTrait
 	/**
 	 * Determine if the current user is authenticated.
 	 *
+	 * @return \Mini\Auth\Contracts\UserInterface
+	 *
+	 * @throws \Mini\Auth\AuthenticationException
+	 */
+	public function authenticate()
+	{
+		if (! is_null($user = $this->user())) {
+			return $user;
+		}
+
+		throw new AuthenticationException;
+	}
+
+	/**
+	 * Determine if the current user is authenticated.
+	 *
 	 * @return bool
 	 */
 	public function check()

@@ -3,6 +3,7 @@
 namespace Mini\Foundation\Exceptions;
 
 use Mini\Auth\Access\UnauthorizedException;
+use Mini\Auth\AuthenticationException;
 use Mini\Container\Container;
 use Mini\Http\Exception\HttpResponseException;
 use Mini\Http\Response as HttpResponse;
@@ -117,7 +118,11 @@ class Handler implements ExceptionHandlerInterface
 	 */
 	public function render($request, Exception $e)
 	{
-		if ($this->isUnauthorizedException($e)) {
+		if ($e instanceof HttpResponseException) {
+			return $e->getResponse();
+		} else if ($e instanceof AuthenticationException) {
+			return $this->unauthenticated($request, $e);
+		} else if ($this->isUnauthorizedException($e)) {
 			$e = new HttpException(403, $e->getMessage());
 		}
 
