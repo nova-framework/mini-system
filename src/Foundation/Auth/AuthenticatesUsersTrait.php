@@ -52,7 +52,7 @@ trait AuthenticatesUsersTrait
 	/**
 	 * Validate the user login request.
 	 *
-	 * @param  \Illuminate\Http\Request  $request
+	 * @param  \Mini\Http\Request  $request
 	 * @return void
 	 */
 	protected function validateLogin(Request $request)

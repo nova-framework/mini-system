@@ -8,7 +8,7 @@ use Mini\Events\EventServiceProvider;
 use Mini\Filesystem\Filesystem;
 use Mini\Foundation\EnvironmentDetector;
 use Mini\Foundation\ProviderRepository;
-use Mini\Http\Request;
+// use Mini\Http\Request;
 use Mini\Log\LogServiceProvider;
 use Mini\Routing\RoutingServiceProvider;
 use Mini\Support\Arr;

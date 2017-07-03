@@ -4,6 +4,7 @@ namespace Mini\Foundation\Exceptions;
 
 use Mini\Auth\Access\UnauthorizedException;
 use Mini\Container\Container;
+use Mini\Http\Exception\HttpResponseException;
 use Mini\Http\Response as HttpResponse;
 use Mini\Foundation\Contracts\ExceptionHandlerInterface;
 use Mini\Support\Facades\Config;
@@ -94,7 +95,11 @@ class Handler implements ExceptionHandlerInterface
 	 */
 	public function shouldntReport(Exception $e)
 	{
-		foreach ($this->dontReport as $type) {
+		$dontReport = array_merge($this->dontReport, array(
+			HttpResponseException::class
+		));
+
+		foreach ($dontReport as $type) {
 			if ($e instanceof $type) {
 				return true;
 			}

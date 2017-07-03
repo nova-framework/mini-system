@@ -9,6 +9,7 @@ use Mini\Support\Contracts\RenderableInterface;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 use ArrayObject;
+use Exception;
 
 
 class Response extends SymfonyResponse
@@ -21,6 +22,14 @@ class Response extends SymfonyResponse
 	 * @var mixed
 	 */
 	public $original;
+
+	/**
+	 * The exception that triggered the error response (if applicable).
+	 *
+	 * @var \Exception|null
+	 */
+	public $exception;
+
 
 	/**
 	 * Set the content on the response.
@@ -85,6 +94,19 @@ class Response extends SymfonyResponse
 	public function getOriginalContent()
 	{
 		return $this->original;
+	}
+
+	/**
+	 * Set the exception to attach to the response.
+	 *
+	 * @param  \Exception  $e
+	 * @return $this
+	 */
+	public function withException(Exception $e)
+	{
+		$this->exception = $e;
+
+		return $this;
 	}
 
 }

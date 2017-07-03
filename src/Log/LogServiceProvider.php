@@ -31,7 +31,7 @@ class LogServiceProvider extends ServiceProvider
 	protected function createLogger()
 	{
 		$log = new Writer(
-			new Monolog('nova'), $this->app['events']
+			new Monolog('mini-nova'), $this->app['events']
 		);
 
 		$this->configureHandler($log);
@@ -89,7 +89,7 @@ class LogServiceProvider extends ServiceProvider
 	 */
 	protected function configureSyslogHandler(Writer $log)
 	{
-		$log->useSyslog('nova');
+		$log->useSyslog('mini-nova');
 	}
 
 	/**
