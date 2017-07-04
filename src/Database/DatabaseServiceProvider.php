@@ -10,7 +10,6 @@ namespace Mini\Database;
 
 use Mini\Database\DatabaseManager;
 use Mini\Database\ORM\Model;
-use Mini\Database\Model as ClassicModel;
 use Mini\Support\ServiceProvider;
 
 
@@ -27,9 +26,6 @@ class DatabaseServiceProvider extends ServiceProvider
 		Model::setConnectionResolver($this->app['db']);
 
 		Model::setEventDispatcher($this->app['events']);
-
-		// Setup the classic Model.
-		ClassicModel::setConnectionResolver($this->app['db']);
 	}
 
 	/**
