@@ -1041,15 +1041,20 @@ class Validator implements MessageProviderInterface
 	/**
 	 * Get the number of records that exist in storage.
 	 *
+	 * @param  string  $connection
 	 * @param  string  $table
 	 * @param  string  $column
 	 * @param  mixed   $value
 	 * @param  array   $parameters
 	 * @return int
 	 */
-	protected function getExistCount($table, $column, $value, $parameters)
+	protected function getExistCount($connection, $table, $column, $value, $parameters)
 	{
 		$verifier = $this->getPresenceVerifier();
+
+		if (! is_null($connection)) {
+			$verifier->setConnection($connection);
+		}
 
 		$extra = $this->getExtraExistConditions($parameters);
 
