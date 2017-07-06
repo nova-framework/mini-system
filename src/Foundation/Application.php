@@ -225,7 +225,7 @@ class Application extends Container
 	{
 		$args = isset($_SERVER['argv']) ? $_SERVER['argv'] : null;
 
-		return $this['env'] = (new EnvironmentDetector())->detect($envs, $args);
+		return $this['env'] = with(new EnvironmentDetector())->detect($envs, $args);
 	}
 
 	/**
