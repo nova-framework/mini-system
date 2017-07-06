@@ -8,7 +8,7 @@
 
 namespace Mini\Validation;
 
-use Mini\Database\Connection;
+use Mini\Database\Contracts\ConnectionResolverInterface;
 use Mini\Database\Query\Builder as QueryBuilder;
 use Mini\Validation\Contracts\PresenceVerifierInterface;
 
@@ -16,18 +16,26 @@ use Mini\Validation\Contracts\PresenceVerifierInterface;
 class DatabasePresenceVerifier implements PresenceVerifierInterface
 {
 	/**
-	 * The database Connection instance.
+	 * The Database Connection Resolver implementation.
 	 *
-	 * @var  \Mini\Database\Connection
+	 * @var  \Mini\Database\Contracts\ConnectionResolverInterface
 	 */
 	protected $db;
+
+	/**
+	 * The database connection to use.
+	 *
+	 * @var string
+	 */
+	protected $connection = null;
+
 
 	/**
 	 * Create a new Database Presence Verifier.
 	 *
 	 * @return void
 	 */
-	public function __construct(Connection $db)
+	public function __construct(ConnectionResolverInterface $db)
 	{
 		$this->db = $db;
 	}
@@ -105,6 +113,19 @@ class DatabasePresenceVerifier implements PresenceVerifierInterface
 	 */
 	protected function table($table)
 	{
-		return $this->db->table($table);
+		$connection = $this->db->connection($this->connection);
+
+		return $connection->table($table);
+	}
+
+	/**
+	 * Set the connection to be used.
+	 *
+	 * @param  string  $connection
+	 * @return void
+	 */
+	public function setConnection($connection)
+	{
+		$this->connection = $connection;
 	}
 }

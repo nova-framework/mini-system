@@ -3,6 +3,7 @@
  * ValidationServiceProvider - Implements a Service Provider for Validation.
  *
  * @author Virgil-Adrian Teaca - virgil@giulianaeassociati.com
+ * @version 3.0
  */
 
 namespace Mini\Validation;
@@ -54,9 +55,7 @@ class ValidationServiceProvider extends ServiceProvider
 	{
 		$this->app->bindShared('validation.presence', function($app)
 		{
-			$connection = $app['db']->connection();
-
-			return new DatabasePresenceVerifier($connection);
+			return new DatabasePresenceVerifier( $app['db']);
 		});
 	}
 

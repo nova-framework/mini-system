@@ -683,13 +683,13 @@ class Application extends Container
 	/**
 	 * Get the used kernel object.
 	 *
-	 * @return \Nova\Console\Contracts\KernelInterface|\Nova\Http\Contracts\KernelInterface
+	 * @return \Mini\Console\Contracts\KernelInterface|\Mini\Http\Contracts\KernelInterface
 	 */
 	protected function getKernel()
 	{
 		$kernelInterface = $this->runningInConsole()
-			? 'Nova\Console\Contracts\KernelInterface'
-			: 'Nova\Http\Contracts\KernelInterface';
+			? 'Mini\Console\Contracts\KernelInterface'
+			: 'Mini\Http\Contracts\KernelInterface';
 
 		return $this->make($kernelInterface);
 	}
