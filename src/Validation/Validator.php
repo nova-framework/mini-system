@@ -1030,6 +1030,7 @@ class Validator implements MessageProviderInterface
 
 		list($connection, $table) = $this->parseTable($parameters[0]);
 
+		//
 		$column = isset($parameters[1]) ? $parameters[1] : $attribute;
 
 		$expected = (is_array($value)) ? count($value) : 1;
