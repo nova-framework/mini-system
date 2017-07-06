@@ -1028,7 +1028,7 @@ class Validator implements MessageProviderInterface
 	{
 		$this->requireParameterCount(1, $parameters, 'exists');
 
-		$table = $parameters[0];
+		list($connection, $table) = $this->parseTable($parameters[0]);
 
 		$column = isset($parameters[1]) ? $parameters[1] : $attribute;
 
