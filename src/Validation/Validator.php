@@ -1035,7 +1035,7 @@ class Validator implements MessageProviderInterface
 
 		$expected = (is_array($value)) ? count($value) : 1;
 
-		return $this->getExistCount($table, $column, $value, $parameters) >= $expected;
+		return $this->getExistCount($connection, $table, $column, $value, $parameters) >= $expected;
 	}
 
 	/**
