@@ -25,8 +25,5 @@ class LoadConfiguration
 
 		// Set the default Timezone.
 		date_default_timezone_set($config->get('app.timezone', 'UTC'));
-
-		// Set the internal encoding.
-		mb_internal_encoding('UTF-8');
 	}
 }
