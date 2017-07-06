@@ -60,7 +60,9 @@ class Kernel implements KernelInterface
 	protected $bootstrappers = array(
 		'Mini\Foundation\Bootstrap\LoadConfiguration',
 		'Mini\Foundation\Bootstrap\HandleExceptions',
-		'Mini\Foundation\Bootstrap\BootApplication',
+		'Mini\Foundation\Bootstrap\RegisterFacades',
+		'Mini\Foundation\Bootstrap\RegisterProviders',
+		'Mini\Foundation\Bootstrap\BootProviders',
 	);
 
 
