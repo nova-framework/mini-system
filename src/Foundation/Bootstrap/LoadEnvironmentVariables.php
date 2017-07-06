@@ -18,9 +18,7 @@ class LoadEnvironmentVariables
 	{
 		$env = $app['env'];
 
-		$loader = new EnvironmentVariables(
-			$app->getEnvironmentVariablesLoader()
-		);
+		$loader = new EnvironmentVariables($app);
 
 		$loader->load($env);
 	}
