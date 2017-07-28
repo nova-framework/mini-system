@@ -10,10 +10,10 @@ use Mini\Support\Facades\Facade;
  */
 class Assets extends Facade
 {
-	/**
-	 * Get the registered name of the component.
-	 *
-	 * @return string
-	 */
-	protected static function getFacadeAccessor() { return 'asset.dispatcher'; }
+    /**
+     * Get the registered name of the component.
+     *
+     * @return string
+     */
+    protected static function getFacadeAccessor() { return 'asset.dispatcher'; }
 }

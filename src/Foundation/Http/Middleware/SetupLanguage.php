@@ -9,47 +9,47 @@ use Closure;
 
 class SetupLanguage
 {
-	/**
-	 * The application implementation.
-	 *
-	 * @var \Mini\Foundation\Application
-	 */
-	protected $app;
+    /**
+     * The application implementation.
+     *
+     * @var \Mini\Foundation\Application
+     */
+    protected $app;
 
-	/**
-	 * Create a new middleware instance.
-	 *
-	 * @param  \Mini\Foundation\Application  $app
-	 * @return void
-	 */
-	public function __construct(Application $app)
-	{
-		$this->app = $app;
-	}
+    /**
+     * Create a new middleware instance.
+     *
+     * @param  \Mini\Foundation\Application  $app
+     * @return void
+     */
+    public function __construct(Application $app)
+    {
+        $this->app = $app;
+    }
 
-	/**
-	 * Handle an incoming request.
-	 *
-	 * @param  \Mini\Http\Request  $request
-	 * @param  \Closure  $next
-	 * @return mixed
-	 */
-	public function handle($request, Closure $next)
-	{
-		$session = $this->app['session'];
+    /**
+     * Handle an incoming request.
+     *
+     * @param  \Mini\Http\Request  $request
+     * @param  \Closure  $next
+     * @return mixed
+     */
+    public function handle($request, Closure $next)
+    {
+        $session = $this->app['session'];
 
-		if (! $session->has('language')) {
-			if (is_null($locale = $request->cookie(PREFIX .'language', null))) {
-				$locale = $this->app['config']->get('app.locale');
-			}
+        if (! $session->has('language')) {
+            if (is_null($locale = $request->cookie(PREFIX .'language', null))) {
+                $locale = $this->app['config']->get('app.locale');
+            }
 
-			$session->set('language', $locale);
-		} else {
-			$locale = $session->get('language');
-		}
+            $session->set('language', $locale);
+        } else {
+            $locale = $session->get('language');
+        }
 
-		$this->app['language']->setLocale($locale);
+        $this->app['language']->setLocale($locale);
 
-		return $next($request);
-	}
+        return $next($request);
+    }
 }

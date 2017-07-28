@@ -10,194 +10,194 @@ use Mini\Database\ORM\Model;
 
 class MorphMany extends HasMany
 {
-	/**
-	 * The foreign key type for the relationship.
-	 *
-	 * @var string
-	 */
-	protected $morphType;
+    /**
+     * The foreign key type for the relationship.
+     *
+     * @var string
+     */
+    protected $morphType;
 
-	/**
-	 * The class name of the parent model.
-	 *
-	 * @var string
-	 */
-	protected $morphClass;
+    /**
+     * The class name of the parent model.
+     *
+     * @var string
+     */
+    protected $morphClass;
 
 
-	/**
-	 * Create a new has many relationship instance.
-	 *
-	 * @param  \Mini\Database\ORM\Model  $related
-	 * @param  \Mini\Database\ORM\Model  $parent
-	 * @param  string  $type
-	 * @param  string  $id
-	 * @param  string  $localKey
-	 * @return void
-	 */
-	public function __construct(Model $related, Model $parent, $type, $id, $localKey)
-	{
-		$this->morphType = $type;
+    /**
+     * Create a new has many relationship instance.
+     *
+     * @param  \Mini\Database\ORM\Model  $related
+     * @param  \Mini\Database\ORM\Model  $parent
+     * @param  string  $type
+     * @param  string  $id
+     * @param  string  $localKey
+     * @return void
+     */
+    public function __construct(Model $related, Model $parent, $type, $id, $localKey)
+    {
+        $this->morphType = $type;
 
-		$this->morphClass = $parent->getMorphClass();
+        $this->morphClass = $parent->getMorphClass();
 
-		parent::__construct($related, $parent, $id, $localKey);
-	}
+        parent::__construct($related, $parent, $id, $localKey);
+    }
 
-	/**
-	 * Get the results of the relationship.
-	 *
-	 * @return mixed
-	 */
-	public function getResults()
-	{
-		return $this->query->get();
-	}
+    /**
+     * Get the results of the relationship.
+     *
+     * @return mixed
+     */
+    public function getResults()
+    {
+        return $this->query->get();
+    }
 
-	/**
-	 * Set the base constraints on the relation query.
-	 *
-	 * @return void
-	 */
-	public function addConstraints()
-	{
-		parent::addConstraints();
+    /**
+     * Set the base constraints on the relation query.
+     *
+     * @return void
+     */
+    public function addConstraints()
+    {
+        parent::addConstraints();
 
-		if (static::$constraints) {
-			$this->query->where($this->morphType, $this->morphClass);
-		}
-	}
+        if (static::$constraints) {
+            $this->query->where($this->morphType, $this->morphClass);
+        }
+    }
 
-	/**
-	 * Set the constraints for an eager load of the relation.
-	 *
-	 * @param  array  $models
-	 * @return void
-	 */
-	public function addEagerConstraints(array $models)
-	{
-		parent::addEagerConstraints($models);
+    /**
+     * Set the constraints for an eager load of the relation.
+     *
+     * @param  array  $models
+     * @return void
+     */
+    public function addEagerConstraints(array $models)
+    {
+        parent::addEagerConstraints($models);
 
-		$this->query->where($this->morphType, $this->morphClass);
-	}
+        $this->query->where($this->morphType, $this->morphClass);
+    }
 
-	/**
-	 * Initialize the relation on a set of models.
-	 *
-	 * @param  array   $models
-	 * @param  string  $relation
-	 * @return array
-	 */
-	public function initRelation(array $models, $relation)
-	{
-		foreach ($models as $model) {
-			$model->setRelation($relation, $this->related->newCollection());
-		}
+    /**
+     * Initialize the relation on a set of models.
+     *
+     * @param  array   $models
+     * @param  string  $relation
+     * @return array
+     */
+    public function initRelation(array $models, $relation)
+    {
+        foreach ($models as $model) {
+            $model->setRelation($relation, $this->related->newCollection());
+        }
 
-		return $models;
-	}
+        return $models;
+    }
 
-	/**
-	 * Match the eagerly loaded results to their parents.
-	 *
-	 * @param  array   $models
-	 * @param  \Mini\Database\ORM\Collection  $results
-	 * @param  string  $relation
-	 * @return array
-	 */
-	public function match(array $models, Collection $results, $relation)
-	{
-		return parent::match($models, $results, $relation);
-	}
+    /**
+     * Match the eagerly loaded results to their parents.
+     *
+     * @param  array   $models
+     * @param  \Mini\Database\ORM\Collection  $results
+     * @param  string  $relation
+     * @return array
+     */
+    public function match(array $models, Collection $results, $relation)
+    {
+        return parent::match($models, $results, $relation);
+    }
 
-	/**
-	 * Get the relationship count query.
-	 *
-	 * @param  \Mini\Database\ORM\Builder  $query
-	 * @param  \Mini\Database\ORM\Builder  $parent
-	 * @return \Mini\Database\ORM\Builder
-	 */
-	public function getRelationCountQuery(Builder $query, Builder $parent)
-	{
-		$query = parent::getRelationCountQuery($query, $parent);
+    /**
+     * Get the relationship count query.
+     *
+     * @param  \Mini\Database\ORM\Builder  $query
+     * @param  \Mini\Database\ORM\Builder  $parent
+     * @return \Mini\Database\ORM\Builder
+     */
+    public function getRelationCountQuery(Builder $query, Builder $parent)
+    {
+        $query = parent::getRelationCountQuery($query, $parent);
 
-		return $query->where($this->morphType, $this->morphClass);
-	}
+        return $query->where($this->morphType, $this->morphClass);
+    }
 
-	/**
-	 * Attach a model instance to the parent model.
-	 *
-	 * @param  \Mini\Database\ORM\Model  $model
-	 * @return \Mini\Database\ORM\Model
-	 */
-	public function save(Model $model)
-	{
-		$model->setAttribute($this->getPlainMorphType(), $this->morphClass);
+    /**
+     * Attach a model instance to the parent model.
+     *
+     * @param  \Mini\Database\ORM\Model  $model
+     * @return \Mini\Database\ORM\Model
+     */
+    public function save(Model $model)
+    {
+        $model->setAttribute($this->getPlainMorphType(), $this->morphClass);
 
-		return parent::save($model);
-	}
+        return parent::save($model);
+    }
 
-	/**
-	 * Create a new instance of the related model.
-	 *
-	 * @param  array  $attributes
-	 * @return \Nova\Database\ORM\Model
-	 */
-	public function create(array $attributes)
-	{
-		$instance = $this->related->newInstance($attributes);
+    /**
+     * Create a new instance of the related model.
+     *
+     * @param  array  $attributes
+     * @return \Nova\Database\ORM\Model
+     */
+    public function create(array $attributes)
+    {
+        $instance = $this->related->newInstance($attributes);
 
-		$this->setForeignAttributesForCreate($instance);
+        $this->setForeignAttributesForCreate($instance);
 
-		$instance->save();
+        $instance->save();
 
-		return $instance;
-	}
+        return $instance;
+    }
 
-	/**
-	 * Set the foreign ID and type for creating a related model.
-	 *
-	 * @param  \Nova\Database\ORM\Model  $model
-	 * @return void
-	 */
-	protected function setForeignAttributesForCreate(Model $model)
-	{
-		$model->{$this->getPlainForeignKey()} = $this->getParentKey();
+    /**
+     * Set the foreign ID and type for creating a related model.
+     *
+     * @param  \Nova\Database\ORM\Model  $model
+     * @return void
+     */
+    protected function setForeignAttributesForCreate(Model $model)
+    {
+        $model->{$this->getPlainForeignKey()} = $this->getParentKey();
 
-		//
-		$morphClass = last(explode('.', $this->morphType));
+        //
+        $morphClass = last(explode('.', $this->morphType));
 
-		$model->{$morphClass} = $this->morphClass;
-	}
+        $model->{$morphClass} = $this->morphClass;
+    }
 
-	/**
-	 * Get the foreign key "type" name.
-	 *
-	 * @return string
-	 */
-	public function getMorphType()
-	{
-		return $this->morphType;
-	}
+    /**
+     * Get the foreign key "type" name.
+     *
+     * @return string
+     */
+    public function getMorphType()
+    {
+        return $this->morphType;
+    }
 
-	/**
-	 * Get the plain morph type name without the table.
-	 *
-	 * @return string
-	 */
-	public function getPlainMorphType()
-	{
-		return last(explode('.', $this->morphType));
-	}
+    /**
+     * Get the plain morph type name without the table.
+     *
+     * @return string
+     */
+    public function getPlainMorphType()
+    {
+        return last(explode('.', $this->morphType));
+    }
 
-	/**
-	 * Get the class name of the parent model.
-	 *
-	 * @return string
-	 */
-	public function getMorphClass()
-	{
-		return $this->morphClass;
-	}
+    /**
+     * Get the class name of the parent model.
+     *
+     * @return string
+     */
+    public function getMorphClass()
+    {
+        return $this->morphClass;
+    }
 
 }

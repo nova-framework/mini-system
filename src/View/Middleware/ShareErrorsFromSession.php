@@ -11,19 +11,19 @@ use Closure;
 class ShareErrorsFromSession
 {
 
-	/**
-	 * Handle an incoming request.
-	 *
-	 * @param  \Mini\Http\Request  $request
-	 * @param  \Closure  $next
-	 * @return mixed
-	 */
-	public function handle($request, Closure $next)
-	{
-		$errors = $request->session()->pull('errors', new ViewErrorBag());
+    /**
+     * Handle an incoming request.
+     *
+     * @param  \Mini\Http\Request  $request
+     * @param  \Closure  $next
+     * @return mixed
+     */
+    public function handle($request, Closure $next)
+    {
+        $errors = $request->session()->pull('errors', new ViewErrorBag());
 
-		View::share('errors', $errors);
+        View::share('errors', $errors);
 
-		return $next($request);
-	}
+        return $next($request);
+    }
 }
