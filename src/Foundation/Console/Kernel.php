@@ -8,6 +8,8 @@ use Mini\Console\Application as Forge;
 use Mini\Events\Dispatcher;
 use Mini\Foundation\Application;
 
+use Symfony\Component\Debug\Exception\FatalErrorException;
+
 use Exception;
 use Throwable;
 
