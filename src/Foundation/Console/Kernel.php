@@ -55,8 +55,8 @@ class Kernel implements KernelInterface
         'Mini\Foundation\Bootstrap\HandleExceptions',
         'Mini\Foundation\Bootstrap\RegisterFacades',
         'Mini\Foundation\Bootstrap\RegisterProviders',
-        'Mini\Foundation\Bootstrap\BootProviders',
         'Mini\Foundation\Bootstrap\SetRequestForConsole',
+        'Mini\Foundation\Bootstrap\BootProviders',
     );
 
     /**
