@@ -207,13 +207,13 @@ class Router
      * Register a new route with the given verbs.
      *
      * @param  array|string  $methods
-     * @param  string  $uri
+     * @param  string  $route
      * @param  \Closure|array|string  $action
      * @return \Mini\Routing\Route
      */
     public function match($methods, $route, $action)
     {
-        return $this->addRoute(array_map('strtoupper', (array) $methods), $uri, $action);
+        return $this->addRoute(array_map('strtoupper', (array) $methods), $route, $action);
     }
 
     /**

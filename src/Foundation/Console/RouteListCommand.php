@@ -3,6 +3,7 @@
 namespace Mini\Foundation\Console;
 
 use Mini\Http\Request;
+use Mini\Routing\ControllerDispatcher;
 use Mini\Routing\Route;
 use Mini\Routing\Router;
 use Mini\Console\Command;
@@ -119,12 +120,12 @@ class RouteListCommand extends Command
     protected function getRouteInformation(Route $route)
     {
         return $this->filterRoute(array(
-            'host'            => $route->domain(),
-            'method'        => implode('|', $route->getMethods()),
-            'uri'            => $route->getUri(),
-            'name'            => $route->getName(),
-            'action'        => $route->getActionName(),
-            'middleware'    => $this->getMiddleware($route),
+            'host'       => $route->domain(),
+            'method'     => implode('|', $route->getMethods()),
+            'uri'        => $route->getUri(),
+            'name'       => $route->getName(),
+            'action'     => $route->getActionName(),
+            'middleware' => $this->getMiddleware($route),
         ));
     }
 
@@ -188,28 +189,19 @@ class RouteListCommand extends Command
 
         $results = array();
 
-        foreach ($controller->getMiddleware() as $name => $options) {
-            if (! $this->methodExcludedByOptions($method, $options)) {
-                $middleware = Arr::get($middlewares, $name, $name);
-
-                $results[] = (! $middleware instanceof Closure) ? $middleware : $name;
+        foreach ($controller->getMiddleware() as $middleware => $options) {
+            if (ControllerDispatcher::methodExcludedByOptions($method, $options)) {
+                continue;
             }
+
+            list($name, $parameters) = array_pad(explode(':', $middleware, 2), 2, null);
+
+            $middleware = Arr::get($middlewares, $name, $name);
+
+            $results[] = (! $middleware instanceof Closure) ? $middleware : $name;
         }
 
         return $results;
-    }
-
-    /**
-     * Determine if the given options exclude a particular method.
-     *
-     * @param  string  $method
-     * @param  array  $options
-     * @return bool
-     */
-    protected function methodExcludedByOptions($method, array $options)
-    {
-        return ((! empty($options['only']) && ! in_array($method, (array) $options['only'])) ||
-            (! empty($options['except']) && in_array($method, (array) $options['except'])));
     }
 
     /**
